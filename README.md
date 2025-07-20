@@ -10,16 +10,15 @@ A nostalgic, interactive portfolio website built to look and feel like Windows 9
 
 ## 🎮 Live Demo
 
-[**Experience the Windows 95 Portfolio**](https://your-deployment-url.com)
+[**Experience the Windows 95 Portfolio**](https://builtbyjoel.vercel.app/))
 
 ## ✨ Features
 
 ### 🖥️ Authentic Windows 95 Experience
-- **Boot Sequence**: Realistic Windows 95 startup with authentic boot sound
+- **Boot Sequence**: Realistic Windows 95 startup
 - **Desktop Interface**: Classic desktop with draggable icons and context menus
 - **Taskbar**: Functional taskbar with start menu and system tray
 - **Window Management**: Minimize, maximize, and close windows just like the real thing
-- **Screen Saver**: Configurable screen saver with classic options (Mystify, Starfield)
 
 ### 🎯 Portfolio Sections
 - **About Me**: Personal information and background
@@ -37,59 +36,12 @@ A nostalgic, interactive portfolio website built to look and feel like Windows 9
 - **Tetris**: Classic tetris with falling blocks
 - **Pokemon Battle**: Hidden Pokemon battle game (Konami code: ↑↑↓↓←→←→BA)
 
-### 🎨 Customization
-- **Desktop Backgrounds**: Multiple classic Windows 95 backgrounds
-- **Color Schemes**: Different Windows 95 color themes
-- **Icon Arrangement**: Auto-arrange, line up, or manual positioning
-- **Context Menus**: Right-click menus with classic options
-
 ### 🔧 Technical Features
 - **Responsive Design**: Works on desktop and mobile devices
 - **Keyboard Shortcuts**: Classic Windows shortcuts
 - **Local Storage**: Saves user preferences and settings
 - **Sound Effects**: Authentic Windows 95 sounds
 - **Blue Screen of Death**: Easter egg BSOD simulation
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- pnpm (recommended) or npm
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/windows95-portfolio.git
-   cd windows95-portfolio
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   # or
-   npm install
-   ```
-
-3. **Run the development server**
-   ```bash
-   pnpm dev
-   # or
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-### Building for Production
-
-```bash
-# Build the application
-pnpm build
-
-# Start the production server
-pnpm start
-```
 
 ## 🎮 How to Use
 
@@ -108,7 +60,6 @@ pnpm start
 
 ### Hidden Features
 - **Konami Code**: Press ↑↑↓↓←→←→BA to trigger Pokemon battle
-- **Screen Saver**: Configure in Display Properties
 - **Blue Screen**: Available in system menu (easter egg)
 
 ## 🛠️ Tech Stack
@@ -119,7 +70,6 @@ pnpm start
 - **UI Components**: Radix UI primitives
 - **State Management**: React hooks and context
 - **Icons**: Lucide React + custom Windows 95 icons
-- **Audio**: HTML5 Audio API
 - **Storage**: Local Storage for persistence
 
 ## 📁 Project Structure
@@ -143,52 +93,6 @@ windows95-portfolio/
 └── hooks/               # Custom React hooks
 ```
 
-## 🎨 Customization
-
-### Adding New Desktop Icons
-Edit `components/desktop.tsx` and add to the `DEFAULT_ICONS` array:
-
-```typescript
-{
-  id: "your-app",
-  label: "Your App",
-  icon: "/images/desktop-icons/your-icon.png",
-  type: "application",
-}
-```
-
-### Creating New Windows
-1. Create a new component in `components/window-content/`
-2. Add it to the window rendering logic in `app/page.tsx`
-3. Add corresponding desktop icon
-
-### Adding New Games
-1. Create game component in `components/window-content/games/`
-2. Add to the games menu in `components/arcade-menu.tsx`
-3. Update routing logic
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy automatically
-
-### Other Platforms
-The app can be deployed to any platform that supports Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -200,13 +104,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Sounds**: Authentic Windows 95 audio clips
 - **Games**: Classic implementations of retro games
 - **Community**: Thanks to all contributors and supporters
-
-## 📞 Contact
-
-- **Portfolio**: [Your Portfolio URL]
-- **Email**: [your.email@example.com]
-- **LinkedIn**: [Your LinkedIn]
-- **GitHub**: [Your GitHub]
 
 ---
 
