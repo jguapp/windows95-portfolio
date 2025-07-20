@@ -10,7 +10,7 @@ A nostalgic, interactive portfolio website built to look and feel like Windows 9
 
 ## 🎮 Live Demo
 
-[**Experience the Windows 95 Portfolio**](https://builtbyjoel.vercel.app/))
+[**Experience the Windows 95 Portfolio**](https://builtbyjoel.vercel.app/)
 
 ## ✨ Features
 
