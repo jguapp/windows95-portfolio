@@ -107,8 +107,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Made with ❤️ and nostalgia for the golden age of computing*
-
 <div align="center">
   <img src="https://img.shields.io/badge/Windows-95-00A4EF?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 95">
   <img src="https://img.shields.io/badge/Next.js-14.2.16-black?style=for-the-badge&logo=next.js" alt="Next.js">
