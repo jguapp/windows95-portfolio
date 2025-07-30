@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 export default function AboutMe() {
   return (
     <div className="bg-[#D8DFEA] text-black h-full overflow-auto">
@@ -146,11 +148,7 @@ export default function AboutMe() {
                 </div>
 
                 {/* Actions */}
-<<<<<<< HEAD
                 <div className="space-y-0 -ml-2">
-=======
-                <div className="space-y-0">
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
                   <button className="w-full bg-white border border-[#538ADC] px-3 py-1 text-[#42b3f5] text-sm hover:underline text-left">
                     Send Joel a Message
                   </button>
