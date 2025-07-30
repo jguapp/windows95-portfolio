@@ -1,0 +1,1290 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+:root {
+  --win95-desktop-color: #008080;
+}
+
+@font-face {
+  font-family: "MS Sans Serif";
+  src: url("/fonts/ms-sans-serif.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+.text-shadow {
+  text-shadow: 1px 1px 0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "MS Sans Serif", "VT323", monospace !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #008080 !important; /* Authentic Windows 95 teal */
+  font-size: 16px; /* Increased from 12px to 14px */
+  color: black;
+  font-family: "MS Sans Serif", "VT323", monospace !important;
+}
+
+* {
+  font-family: "MS Sans Serif", "VT323", monospace !important;
+}
+
+#desktop {
+  width: 100%;
+  height: calc(100vh - 34px); /* Full height minus taskbar */
+  background-color: #008080 !important; /* Authentic Windows 95 teal */
+  position: relative;
+}
+
+.desktop-icon {
+  transition: transform 0.1s ease;
+  margin-bottom: 8px; /* Add bottom margin for spacing */
+  user-select: none;
+}
+
+.desktop-icon:hover {
+  transform: scale(1.05);
+}
+
+/* Desktop Icon Text */
+.desktop-icon-text {
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  font-size: 15px !important; /* Adjusted from 15px to 13px */
+  text-align: center;
+  max-width: 70px; /* Adjusted from 80px to 70px */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon.highlighted p {
+  color: white;
+  border: 1px dotted white;
+}
+
+.icon.highlighted {
+  background-color: #000080;
+  color: white;
+}
+
+.taskbar-item.active {
+  background-color: #8d8d8d;
+  color: white;
+  border: 2px inset #ffffff;
+}
+
+.win95-checkbox {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  background-color: white;
+  border: 1px solid #808080;
+  position: relative;
+  cursor: pointer;
+}
+
+.win95-checkbox:checked {
+  background-color: #000080;
+}
+
+.win95-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 10px;
+  top: -1px;
+  left: 1px;
+}
+
+.win95-button {
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.win95-button:active {
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  border-right: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf;
+}
+
+.start-menu {
+  width: 200px;
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.start-menu-title {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 22px;
+  background-color: #808080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+  font-weight: bold;
+  color: white;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.font-pixel {
+  font-family: "Press Start 2P", monospace !important;
+}
+
+#taskbar {
+  background: linear-gradient(180deg, #c0c0c0 0%, #9e9e9e 100%);
+}
+
+#taskbar #start-button {
+  /* No borders or box-shadow */
+}
+
+#taskbar #start-button:active {
+  /* No borders or box-shadow */
+}
+
+#taskbar .taskbar-item {
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+
+#taskbar .taskbar-item:active,
+#taskbar .taskbar-item.active {
+  box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+}
+
+#desktop {
+  height: calc(100vh - 34px); /* Full height minus taskbar */
+}
+
+#taskbar {
+  background-color: #c0c0c0;
+}
+
+#start-button {
+  display: flex;
+  align-items: center;
+  background-color: transparent; /* Make background transparent to match taskbar */
+  border: none;
+  padding: 0; /* Remove padding to eliminate any color differences */
+  cursor: pointer;
+}
+
+#start-button img {
+  height: 24px;
+  border: none;
+}
+
+#right-section {
+  display: flex;
+  align-items: center;
+  background-color: #c0c0c0;
+  border: 2px inset #ffffff;
+  height: 30px;
+}
+
+#sound-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  background-color: #c0c0c0;
+}
+
+#sound-button img {
+  width: 36px;
+  height: 28px;
+  object-fit: contain;
+}
+
+#clock {
+  font-size: 13px;
+  color: black;
+  text-shadow: 1px 1px 0 #ffffff;
+  background-color: #c0c0c0;
+  padding: 0 8px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Windows 95 Checkbox */
+.win95-text {
+  font-family: "MS Sans Serif", sans-serif !important;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  font-size: 13px !important;
+  line-height: 1.2;
+}
+
+/* Increase font sizes throughout the application */
+.text-xs {
+  font-size: 1.0rem !important; /* Larger than default */
+}
+
+.text-sm {
+  font-size: 1.15rem !important; /* Larger than default */
+}
+
+p,
+span,
+div,
+button,
+input,
+textarea,
+select,
+option {
+  font-size: 1.2rem !important; /* Base font size for most elements */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 1.4em !important; /* Larger headings */
+}
+
+/* Increase menu text size */
+.menu-bar span {
+  font-size: 15px !important; /* Increased from default */
+}
+
+/* 80s Arcade Styles */
+.arcade-background {
+  background-color: #000;
+  background-image: linear-gradient(rgba(18, 16, 16, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 16, 16, 0.8) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center center;
+  position: relative;
+  overflow: hidden;
+}
+
+.arcade-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(62, 20, 123, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%);
+  pointer-events: none;
+}
+
+/* Scanlines effect for retro displays */
+.scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 100% 2px;
+  pointer-events: none;
+}
+
+.arcade-title {
+  font-family: "Press Start 2P", monospace !important;
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff00de, 0 0 35px #ff00de, 0 0 40px #ff00de;
+  letter-spacing: 2px;
+}
+
+.neon-subtitle {
+  font-family: "Press Start 2P", monospace !important;
+  letter-spacing: 1px;
+}
+
+.arcade-cabinet {
+  background: linear-gradient(135deg, #1e0b30 0%, #3a1060 100%);
+  border: 3px solid #ff00de;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 0, 222, 0.7), 0 0 20px rgba(255, 0, 222, 0.5), 0 0 30px rgba(255, 0, 222, 0.3), 0 0
+    40px rgba(255, 0, 222, 0.1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.cabinet-screen {
+  background-color: #000;
+  border: 2px solid #444;
+  border-radius: 5px;
+  padding: 5px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.cabinet-screen img {
+  image-rendering: pixelated;
+  filter: brightness(1.2) contrast(1.2);
+}
+
+.screen-glare {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.cabinet-title {
+  font-family: "Press Start 2P", monospace !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.joystick {
+  width: 20px;
+  height: 20px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  border: 2px solid #880000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+}
+
+.joystick::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 15px;
+  background-color: #222;
+  border-radius: 4px;
+}
+
+.glow-cyan {
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 15px #0ff;
+}
+
+.glow-yellow {
+  text-shadow: 0 0 5px #ff0, 0 0 10px #ff0, 0 0 15px #ff0;
+}
+
+.glow-green {
+  text-shadow: 0 0 5px #0f0, 0 0 10px #0f0, 0 0 15px #0f0;
+}
+
+.glow-blue {
+  text-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
+  letter-spacing: 1px;
+}
+
+.glow-pink {
+  text-shadow: 0 0 5px #f0f, 0 0 10px #f0f, 0 0 15px #f0f;
+}
+
+.sound-button {
+  background: linear-gradient(to right, #ff00de, #00ffff);
+  border: 2px solid #fff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.7), 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.blink-text {
+  animation: blink 1s infinite;
+  font-family: "Press Start 2P", monospace !important;
+  color: #ff0;
+  text-shadow: 0 0 5px #ff0;
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Override for arcade games */
+.arcade-background .font-pixel * {
+  font-family: "Press Start 2P", monospace !important;
+}
+
+/* Add these styles to the end of your globals.css file */
+
+/* Bomberman Theme (Minesweeper) */
+.bomberman-theme {
+  background-color: #000;
+  background-image: linear-gradient(rgba(0, 0, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+}
+
+.bomberman-btn {
+  box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.bomberman-btn:hover {
+  box-shadow: 0 0 15px rgba(0, 0, 255, 0.7);
+}
+
+.grid-overlay {
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+  z-index: 1;
+}
+
+.glow-red {
+  text-shadow: 0 0 5px #f00, 0 0 10px #f00, 0 0 15px #f00;
+}
+
+/* Tron Theme (Snake) */
+.tron-theme {
+  background-color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.tron-theme::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+}
+
+.tron-btn {
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.tron-btn:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
+
+.grid-overlay-tron {
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+  z-index: 1;
+}
+
+/* Arkanoid Theme (Pong) */
+.arkanoid-theme {
+  background-color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.arkanoid-theme::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 0, 255, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+}
+
+.arkanoid-btn {
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.arkanoid-btn:hover {
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+}
+
+/* Pac-Man Theme (Memory Game) */
+.pacman-theme {
+  background-color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.pacman-theme::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+}
+
+.pacman-btn {
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+.pacman-btn:hover {
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+}
+
+.maze-overlay {
+  background-image: linear-gradient(90deg, rgba(0, 0, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(rgba(0, 0, 255, 0.2) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+}
+
+/* Additional Animation Effects */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Game-specific fonts override */
+.bomberman-theme *,
+.tron-theme *,
+.arkanoid-theme *,
+.pacman-theme * {
+  font-family: "Press Start 2P", monospace !important;
+}
+
+/* Retro CRT effect */
+.crt-effect::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* RetroTube Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes moveVHSLine {
+  from {
+    top: 0%;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+/* RetroTube Color Theme */
+.retro-youtube {
+  --primary-color: #4a148c;
+  --secondary-color: #880e4f;
+  --accent-color: #ff6f00;
+  --highlight-color: #ffeb3b;
+  --light-bg: #f3e5f5;
+}
+
+/* VHS Effect */
+.vhs-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.vhs-effect::before {
+  content: "";
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 111, 0, 0.3);
+  animation: moveVHSLine 8s linear infinite;
+  pointer-events: none;
+}
+
+/* Glowing elements */
+.glow-text {
+  text-shadow: 0 0 5px currentColor;
+}
+
+.glow-box {
+  box-shadow: 0 0 10px rgba(255, 111, 0, 0.5);
+}
+
+/* Retro button hover effects */
+.retro-button {
+  transition: all 0.3s ease;
+}
+
+.retro-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(255, 111, 0, 0.7);
+}
+
+/* Animated thumbnails */
+.thumbnail-hover {
+  overflow: hidden;
+}
+
+.thumbnail-hover img {
+  transition: transform 0.5s ease;
+}
+
+.thumbnail-hover:hover img {
+  transform: scale(1.1);
+}
+
+/* Add these styles to your globals.css file */
+
+.context-menu {
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.context-menu-item {
+  padding: 4px 20px;
+  cursor: pointer;
+}
+
+.context-menu-item:hover {
+  background-color: #000080;
+  color: white;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: #808080;
+  margin: 2px 0;
+}
+
+.desktop-icon img,
+.desktop-icon p {
+  pointer-events: none;
+}
+
+/* Properties dialog tabs */
+.properties-tab {
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  padding: 4px 10px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.properties-tab.active {
+  background-color: #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.properties-content {
+  border-top: 1px solid #000000;
+  padding: 10px;
+  background-color: #c0c0c0;
+}
+
+/* Add these styles to your globals.css file */
+
+/* Context Menu Styles */
+.context-menu {
+  user-select: none;
+}
+
+.context-menu-item {
+  font-size: 12px;
+  height: 20px;
+}
+
+/* Desktop Icon Styles */
+.desktop-icon {
+  user-select: none;
+}
+
+.desktop-icon img {
+  pointer-events: none;
+}
+
+.desktop-icon-text {
+  pointer-events: none;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Game Boy Pokemon Battle Styles */
+.gameboy-screen {
+  background-color: #9bbc0f;
+  image-rendering: pixelated;
+}
+
+.gameboy-text {
+  font-family: "Press Start 2P", monospace !important;
+  color: #0f380f;
+}
+
+.gameboy-border {
+  border: 4px solid #0f380f;
+}
+
+.gameboy-hp-bar {
+  background-color: #0f380f;
+  height: 10px;
+}
+
+.gameboy-menu-item {
+  font-family: "Press Start 2P", monospace !important;
+  color: #0f380f;
+}
+
+.gameboy-menu-item:hover {
+  color: #306230;
+}
+
+/* Selection Box Styles */
+.selection-box {
+  position: absolute;
+  border: 1px dashed #ffffff;
+  background-color: rgba(0, 0, 255, 0.2);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Multi-select styles */
+.desktop-icon.selected {
+  background-color: rgba(0, 0, 128, 0.3);
+}
+
+/* Windows 95 Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: block;
+  background-color: #c0c0c0;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #000000;
+  border-bottom: 1px solid #000000;
+  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+  width: 16px;
+  height: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:vertical:start:decrement {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath d='M0 4 L4 0 L8 4 Z' fill='%23000000'/%3E%3C/svg%3E");
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:vertical:end:increment {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath d='M0 0 L4 4 L8 0 Z' fill='%23000000'/%3E%3C/svg%3E");
+}
+
+.guestbook-entry {
+  transition: background-color 0.2s ease;
+}
+
+.guestbook-entry:hover {
+  background-color: #e6e6e6;
+}
+
+.guestbook-form input,
+.guestbook-form textarea {
+  border: 2px inset #808080;
+  background-color: white;
+}
+
+.guestbook-form input:focus,
+.guestbook-form textarea:focus {
+  outline: 1px dotted #000080;
+}
+
+@keyframes mystify {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.5);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes starfield {
+  from {
+    transform: translateZ(0px);
+  }
+  to {
+    transform: translateZ(1000px);
+  }
+}
+
+@keyframes flyingWindows {
+  0% {
+    transform: translate(-100%, -100%) rotate(0deg);
+  }
+  25% {
+    transform: translate(100%, -100%) rotate(90deg);
+  }
+  50% {
+    transform: translate(100%, 100%) rotate(180deg);
+  }
+  75% {
+    transform: translate(-100%, 100%) rotate(270deg);
+  }
+  100% {
+    transform: translate(-100%, -100%) rotate(360deg);
+  }
+}
+
+/* Add these animation classes to your globals.css */
+@keyframes attack-out {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-20px);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes hit {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(10px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(-10px);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateX(5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes electric {
+  0% {
+    opacity: 0.7;
+  }
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes psychic {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotate(5deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(0deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.7;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0.7;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes wiggle {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-attack-out {
+  animation: attack-out 0.5s ease-in-out;
+}
+
+.animate-hit {
+  animation: hit 0.5s ease-in-out;
+}
+
+.animate-electric {
+  animation: electric 0.5s ease-in-out infinite;
+}
+
+.animate-ripple {
+  animation: ripple 0.5s ease-in-out infinite;
+}
+
+.animate-grow {
+  animation: grow 0.5s ease-in-out infinite;
+}
+
+.animate-psychic {
+  animation: psychic 0.5s ease-in-out infinite;
+}
+
+.animate-fade {
+  animation: fade 0.5s ease-in-out infinite;
+}
+
+.animate-flash {
+  animation: flash 0.5s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 0.5s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 0.5s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out infinite;
+}
+
+/* Add a specific override for the Pokemon battle move text */
+.font-pixel {
+  font-family: "Press Start 2P", monospace !important;
+}
+
+/* Override for move text */
+.font-pixel span,
+.font-pixel div,
+.font-pixel button {
+  font-size: 32px !important;
+  line-height: 1.2 !important;
+}
+
+/* Ensure the font is loaded */
+@font-face {
+  font-family: "Press Start 2P";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3nVivM.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
