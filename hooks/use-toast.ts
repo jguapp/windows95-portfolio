@@ -1,8 +1,18 @@
 "use client"
 
+<<<<<<< HEAD
 import * as React from "react"
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
+=======
+// Inspired by react-hot-toast library
+import * as React from "react"
+
+import type {
+  ToastActionElement,
+  ToastProps,
+} from "@/components/ui/toast"
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -81,12 +91,23 @@ export const reducer = (state: State, action: Action): State => {
     case "UPDATE_TOAST":
       return {
         ...state,
+<<<<<<< HEAD
         toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
+=======
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
       }
 
     case "DISMISS_TOAST": {
       const { toastId } = action
 
+<<<<<<< HEAD
+=======
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -103,7 +124,11 @@ export const reducer = (state: State, action: Action): State => {
                 ...t,
                 open: false,
               }
+<<<<<<< HEAD
             : t,
+=======
+            : t
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
         ),
       }
     }
