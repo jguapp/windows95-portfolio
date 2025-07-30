@@ -21,20 +21,6 @@ export default function RootLayout({
         <link rel="preload" href="/fonts/ms-sans-serif.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
-<<<<<<< HEAD
-=======
-        <style>
-          {`
-            @font-face {
-              font-family: 'MS Sans Serif';
-              src: url('/fonts/ms-sans-serif.woff2') format('woff2');
-              font-weight: normal;
-              font-style: normal;
-              font-display: swap;
-            }
-          `}
-        </style>
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
       </head>
       <body className="font-['MS_Sans_Serif',sans-serif]">
         <Suspense>
