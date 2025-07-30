@@ -10,7 +10,7 @@ A nostalgic, interactive portfolio website built to look and feel like Windows 9
 
 ## 🎮 Live Demo
 
-[**Experience the Windows 95 Portfolio**](https://your-deployment-url.com)
+[**Experience the Windows 95 Portfolio**](https://win95-portfolio-rh5ub63fc-jguapps-projects.vercel.app/)
 
 ## ✨ Features
 
