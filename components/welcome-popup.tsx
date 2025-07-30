@@ -1,10 +1,6 @@
 "use client"
 
 import type React from "react"
-<<<<<<< HEAD
-=======
-
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 
@@ -13,16 +9,11 @@ interface WelcomePopupProps {
 }
 
 export default function WelcomePopup({ onClose }: WelcomePopupProps) {
-<<<<<<< HEAD
   const [position, setPosition] = useState({ x: 0, y: 0 })
-=======
-  const [position, setPosition] = useState({ x: 50, y: 50 })
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [showAgain, setShowAgain] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
-<<<<<<< HEAD
   const [isVisible, setIsVisible] = useState(false)
 
   const popupRef = useRef<HTMLDivElement>(null)
@@ -35,27 +26,6 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
     return () => clearTimeout(timer)
   }, [])
-
-=======
-
-  const popupRef = useRef<HTMLDivElement>(null)
-
-  // Start dragging the popup
-  const startDrag = (e: React.MouseEvent) => {
-    e.preventDefault()
-
-    setIsDragging(true)
-    if (popupRef.current) {
-      const rect = popupRef.current.getBoundingClientRect()
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      })
-    }
-  }
-
-  // Handle popup dragging
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return
@@ -77,15 +47,8 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
       setIsDragging(false)
     }
 
-<<<<<<< HEAD
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
-=======
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove)
-      document.addEventListener("mouseup", handleMouseUp)
-    }
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove)
@@ -93,22 +56,15 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
     }
   }, [isDragging, dragOffset])
 
-<<<<<<< HEAD
   // Center the popup when it becomes visible
   useEffect(() => {
     if (isVisible && popupRef.current) {
-=======
-  // Center the popup initially
-  useEffect(() => {
-    if (popupRef.current) {
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
       const rect = popupRef.current.getBoundingClientRect()
       setPosition({
         x: (window.innerWidth - rect.width) / 2,
         y: (window.innerHeight - rect.height) / 2,
       })
     }
-<<<<<<< HEAD
   }, [isVisible])
 
   const startDrag = (e: React.MouseEvent) => {
@@ -124,9 +80,6 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
     
     setIsDragging(true)
   }
-=======
-  }, [])
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
 
   const handleOpenProjects = () => {
     onClose()
@@ -148,7 +101,6 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
   return (
     <>
-<<<<<<< HEAD
       {isVisible && (
         <div
           ref={popupRef}
@@ -362,7 +314,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           </button>
         </div>
       </div>
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
+      )}
 
       {showWhatsNew && (
         <div
@@ -406,11 +358,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </ul>
           </div>
 
-<<<<<<< HEAD
           <div className="win95-footer flex justify-end items-center border-t border-t-[#808040] p-[10px] bg-[#c0c0c0]">
-=======
-          <div className="win95-footer flex justify-end items-center border-t border-t-[#808080] p-[10px] bg-[#c0c0c0]">
->>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
             <button
               className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
               onClick={toggleWhatsNew}
