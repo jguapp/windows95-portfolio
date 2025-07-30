@@ -1577,7 +1577,11 @@ export default function Resume() {
             Joel Vasquez
           </h1>
           <p className="text-center mb-4" contentEditable suppressContentEditableWarning>
+<<<<<<< HEAD
             New York, NY |{" "}
+=======
+            New York, NY | 347-608-1406 | jfvasq1@gmail.com |{" "}
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
             <a
               href="https://linkedin.com/in/jvasquezcs"
               className="text-blue-800 underline"

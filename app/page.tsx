@@ -78,6 +78,12 @@ export default function Home() {
     }
   }
 
+<<<<<<< HEAD
+=======
+  // Update the handleMaximizeWindow function to properly handle window maximization
+
+  // Replace the handleMaximizeWindow function with this:
+>>>>>>> 95980238faa674fded7712a92e4e51fae16851ce
   // Handle maximizing a window
   const handleMaximizeWindow = (id: string) => {
     console.log("handleMaximizeWindow called for:", id)
