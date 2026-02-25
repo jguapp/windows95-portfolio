@@ -345,9 +345,40 @@ const InsertTableDialog = ({
                   onChange={(e) => setColumns(Number(e.target.value))}
                   className="w-16 border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm"
                 />
-              </div>
             </div>
           </div>
+
+          <div className="mb-4">
+            <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
+              LEADERSHIP & PROFESSIONAL DEVELOPMENT
+            </h2>
+            <div className="mb-3" contentEditable suppressContentEditableWarning>
+              <div className="flex justify-between">
+                <p>
+                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
+                </p>
+                <p>January 2024 - Present</p>
+              </div>
+              <ul className="list-disc pl-5">
+                <li>
+                  Expanded ColorStack Baruch Chapter from <strong>4</strong> founding members to over{" "}
+                  <strong>200</strong> active participants in two semesters, cultivating a diverse community of
+                  underrepresented students in tech.
+                </li>
+                <li>
+                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants, with{" "}
+                  <strong>80%</strong> reporting improved job readiness in web development, cloud computing, and
+                  database management.
+                </li>
+                <li>
+                  Established relationships with <strong>5+</strong> tech companies, including{" "}
+                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
+                  through office visits, networking events, and interview prep sessions.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
           <div className="flex justify-end gap-2">
             <button
@@ -1622,7 +1653,7 @@ export default function Resume() {
               <p>
                 <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
                 Computer Networking, Probability & Statistics, Systems Analysis & Design, Object-Oriented Programming,
-                Computer Architecture, Web Design
+                Computer Architecture, Web Development
               </p>
             </div>
           </div>
@@ -1643,6 +1674,10 @@ export default function Resume() {
                 <strong>Developer Tools:</strong> AWS (ES2, S3), Microsoft Azure, Git, MongoDB, Docker, Kubernetes,
                 PowerBI, Tableau, Linux
               </p>
+              <p>
+                <strong>Certifications:</strong> CompTIA ITF+, CompTIA A+, CodePath Android Development, CodePath
+                iOS Development
+              </p>
             </div>
           </div>
 
@@ -1654,22 +1689,7 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Incoming Software Engineer</strong>
-                </p>
-                <p>June 2026 - Present</p>
-              </div>
-              <div className="flex justify-between">
-                <p>
-                  <strong>Liberty Mutual Insurance</strong>
-                </p>
-                <p>Portsmouth, NH</p>
-              </div>
-            </div>
-
-            <div className="mb-3" contentEditable suppressContentEditableWarning>
-              <div className="flex justify-between">
-                <p>
-                  <strong>Agent Systems Engineer</strong> | Python, LLMs, Agent Systems
+                  <strong>Agentic AI Developer</strong> | Python, LLMs, Agent Systems
                 </p>
                 <p>November 2025 - Present</p>
               </div>
@@ -1698,7 +1718,7 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Data Engineer</strong> | Python, R
+                  <strong>Data Scientist</strong> | Python, R
                 </p>
                 <p>November 2023 - November 2025</p>
               </div>
@@ -1710,16 +1730,16 @@ export default function Resume() {
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Spearhead critical data support on a research project for urban growth models, directly impacting
+                  Spearheaded critical data support on a research project for urban growth models, directly impacting
                   policy and planning decisions for <strong>145</strong> countries representing <strong>80%</strong> of
                   the world{"'"}s population.
                 </li>
                 <li>
-                  Develop R and Python scripts to automate data cleaning processes, reducing preprocessing time and
+                  Developed R and Python scripts to automate data cleaning processes, reducing preprocessing time and
                   improving data quality for over <strong>1000</strong> files.
                 </li>
                 <li>
-                  Specialize in converting demographic data from <strong>145</strong> PDFs into structured Excel
+                  Specialized in converting demographic data from <strong>145</strong> PDFs into structured Excel
                   spreadsheets, enhancing data accessibility and reducing manual data entry time by <strong>75%</strong>.
                 </li>
               </ul>
@@ -1761,33 +1781,6 @@ export default function Resume() {
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
               PERSONAL PROJECTS
             </h2>
-
-            <div className="mb-3" contentEditable suppressContentEditableWarning>
-              <div className="flex justify-between">
-                <p>
-                  <strong>Windows 95 Portfolio</strong> | TypeScript, React, Next.js, Node.js
-                </p>
-                <a href="https://github.com/jguapp" className="text-blue-800 underline">
-                  GitHub
-                </a>
-              </div>
-              <ul className="list-disc pl-5">
-                <li>
-                  Engineered a Windows 95-themed portfolio using React.js, TypeScript, Next.js, and custom CSS modules,
-                  simulating full OS behavior including window dragging, taskbar state, and modal navigation.
-                </li>
-                <li>
-                  Integrated game logic and recursive algorithms across <strong>7</strong> retro apps (Solitaire, Chess,
-                  Minesweeper, Tetris) with advanced React state management and Canvas API for interactive gameplay and
-                  drawing tools.
-                </li>
-                <li>
-                  Deployed via Vercel with server actions, email integration, responsive layout, and analytics tracking,
-                  combining nostalgic UI design with modern Jamstack principles, resulting in a <strong>0%</strong> bounce
-                  rate.
-                </li>
-              </ul>
-            </div>
 
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
