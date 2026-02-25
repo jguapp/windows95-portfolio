@@ -345,9 +345,40 @@ const InsertTableDialog = ({
                   onChange={(e) => setColumns(Number(e.target.value))}
                   className="w-16 border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm"
                 />
-              </div>
             </div>
           </div>
+
+          <div className="mb-4">
+            <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
+              LEADERSHIP & PROFESSIONAL DEVELOPMENT
+            </h2>
+            <div className="mb-3" contentEditable suppressContentEditableWarning>
+              <div className="flex justify-between">
+                <p>
+                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
+                </p>
+                <p>January 2024 - Present</p>
+              </div>
+              <ul className="list-disc pl-5">
+                <li>
+                  Expanded ColorStack Baruch Chapter from <strong>4</strong> founding members to over{" "}
+                  <strong>200</strong> active participants in two semesters, cultivating a diverse community of
+                  underrepresented students in tech.
+                </li>
+                <li>
+                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants, with{" "}
+                  <strong>80%</strong> reporting improved job readiness in web development, cloud computing, and
+                  database management.
+                </li>
+                <li>
+                  Established relationships with <strong>5+</strong> tech companies, including{" "}
+                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
+                  through office visits, networking events, and interview prep sessions.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
           <div className="flex justify-end gap-2">
             <button
@@ -1577,7 +1608,7 @@ export default function Resume() {
             Joel Vasquez
           </h1>
           <p className="text-center mb-4" contentEditable suppressContentEditableWarning>
-            New York, NY | 347-608-1406 | jfvasq1@gmail.com |{" "}
+            New York, NY | jfvasq1@gmail.com |{" "}
             <a
               href="https://linkedin.com/in/jvasquezcs"
               className="text-blue-800 underline"
@@ -1620,9 +1651,9 @@ export default function Resume() {
                 <span>Expected December 2026</span>
               </p>
               <p>
-                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Object-Oriented Programming, Systems
-                Analysis & Design, Database Management Systems, Operating Systems, Computer Networking, Computer
-                Architecture, Cloud Computing
+                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
+                Computer Networking, Probability & Statistics, Systems Analysis & Design, Object-Oriented Programming,
+                Computer Architecture, Web Development
               </p>
             </div>
           </div>
@@ -1633,17 +1664,18 @@ export default function Resume() {
             </h2>
             <div contentEditable suppressContentEditableWarning>
               <p>
-                <strong>Programming Languages:</strong> Python, R, C++, SQL, HTML/CSS, JavaScript, Swift, Kotlin
+                <strong>Programming Languages:</strong> Python, R, SQL, C++, JavaScript, TypeScript, HTML/CSS
               </p>
               <p>
-                <strong>Frameworks and Libraries:</strong> MySQL, Pandas, NumPy, TensorFlow, React, Flask, Redis,
-                scikit-learn
+                <strong>Frameworks and Libraries:</strong> Pandas, NumPy, Matplotlib, PyTorch, scikit-learn, TensorFlow,
+                MySQL, React, Flask, Redis
               </p>
               <p>
-                <strong>Developer Tools:</strong> AWS, Azure, Git, Docker, PowerBI, Linux
+                <strong>Developer Tools:</strong> AWS (ES2, S3), Microsoft Azure, Git, MongoDB, Docker, Kubernetes,
+                PowerBI, Tableau, Linux
               </p>
               <p>
-                <strong>Certifications:</strong> CompTIA ITF+, CompTIA A+, CodePath Technical Interview Prep, CodePath
+                <strong>Certifications:</strong> CompTIA ITF+, CompTIA A+, CodePath Android Development, CodePath
                 iOS Development
               </p>
             </div>
@@ -1653,12 +1685,42 @@ export default function Resume() {
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
               PROFESSIONAL EXPERIENCE
             </h2>
+
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Data Engineer</strong> | Python, R
+                  <strong>Agentic AI Developer</strong> | Python, LLMs, Agent Systems
                 </p>
-                <p>November 2023 - Present</p>
+                <p>November 2025 - Present</p>
+              </div>
+              <div className="flex justify-between">
+                <p>
+                  <strong>Robert Wood Johnson Foundation</strong>
+                </p>
+                <p>New York, NY</p>
+              </div>
+              <ul className="list-disc pl-5">
+                <li>
+                  Designed and deployed <strong>8</strong> AI agents to automate investment research workflows, including
+                  financial statement analysis, memo drafting, and risk flag generation.
+                </li>
+                <li>
+                  Built multi-step agent pipelines integrating LLM reasoning, financial data retrieval, and structured
+                  output validation to support portfolio evaluation decisions.
+                </li>
+                <li>
+                  Implemented retrieval-augmented generation (RAG) systems to synthesize internal investment documents and
+                  external market data into structured investment summaries.
+                </li>
+              </ul>
+            </div>
+
+            <div className="mb-3" contentEditable suppressContentEditableWarning>
+              <div className="flex justify-between">
+                <p>
+                  <strong>Data Scientist</strong> | Python, R
+                </p>
+                <p>November 2023 - November 2025</p>
               </div>
               <div className="flex justify-between">
                 <p>
@@ -1668,18 +1730,17 @@ export default function Resume() {
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Spearhead critical data support on a research project for urban growth models, directly impacting
+                  Spearheaded critical data support on a research project for urban growth models, directly impacting
                   policy and planning decisions for <strong>145</strong> countries representing <strong>80%</strong> of
-                  the world's population.
+                  the world{"'"}s population.
                 </li>
                 <li>
-                  Develop R and Python scripts to automate data cleaning processes, reducing preprocessing time and
+                  Developed R and Python scripts to automate data cleaning processes, reducing preprocessing time and
                   improving data quality for over <strong>1000</strong> files.
                 </li>
                 <li>
-                  Specialize in converting demographic data from <strong>145</strong> PDFs into structured Excel
-                  spreadsheets, enhancing data accessibility and reducing manual data entry time by <strong>75%</strong>
-                  .
+                  Specialized in converting demographic data from <strong>145</strong> PDFs into structured Excel
+                  spreadsheets, enhancing data accessibility and reducing manual data entry time by <strong>75%</strong>.
                 </li>
               </ul>
             </div>
@@ -1687,7 +1748,7 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Front-End Developer</strong> | HTML, CSS, JavaScript
+                  <strong>Front-End Developer</strong> | JavaScript, HTML, CSS
                 </p>
                 <p>February 2024 - May 2024</p>
               </div>
@@ -1720,12 +1781,13 @@ export default function Resume() {
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
               PERSONAL PROJECTS
             </h2>
+
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Bloomberg Real-Time News Feed</strong> | React, Flask, Redis
+                  <strong>Bloomberg Real-Time News Feed</strong> | Flask, Redis, React
                 </p>
-                <a href="#" className="text-blue-800 underline">
+                <a href="https://github.com/jguapp" className="text-blue-800 underline">
                   GitHub
                 </a>
               </div>
@@ -1752,7 +1814,7 @@ export default function Resume() {
                 <p>
                   <strong>IMDB Reviews Sentiment Classifier</strong> | Python, NumPy, TensorFlow
                 </p>
-                <a href="#" className="text-blue-800 underline">
+                <a href="https://github.com/jguapp" className="text-blue-800 underline">
                   GitHub
                 </a>
               </div>
@@ -1778,12 +1840,12 @@ export default function Resume() {
 
           <div className="mb-4">
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
-              LEADERSHIP EXPERIENCE
+              LEADERSHIP & PROFESSIONAL DEVELOPMENT
             </h2>
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>ColorStack Baruch Chapter</strong> | Vice President
+                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
                 </p>
                 <p>January 2024 - Present</p>
               </div>
@@ -1799,9 +1861,9 @@ export default function Resume() {
                   database management.
                 </li>
                 <li>
-                  Established relationships with <strong>5</strong> tech companies, including <strong>Bloomberg</strong>{" "}
-                  and <strong>Protiviti</strong>, resulting in job and internship opportunities through targeted mock
-                  case studies, networking events, and interview prep sessions.
+                  Established relationships with <strong>5+</strong> tech companies, including{" "}
+                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
+                  through office visits, networking events, and interview prep sessions.
                 </li>
               </ul>
             </div>
