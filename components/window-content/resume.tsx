@@ -1837,6 +1837,37 @@ export default function Resume() {
               </ul>
             </div>
           </div>
+
+          <div className="mb-4">
+            <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
+              LEADERSHIP & PROFESSIONAL DEVELOPMENT
+            </h2>
+            <div className="mb-3" contentEditable suppressContentEditableWarning>
+              <div className="flex justify-between">
+                <p>
+                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
+                </p>
+                <p>January 2024 - Present</p>
+              </div>
+              <ul className="list-disc pl-5">
+                <li>
+                  Expanded ColorStack Baruch Chapter from <strong>4</strong> founding members to over{" "}
+                  <strong>200</strong> active participants in two semesters, cultivating a diverse community of
+                  underrepresented students in tech.
+                </li>
+                <li>
+                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants, with{" "}
+                  <strong>80%</strong> reporting improved job readiness in web development, cloud computing, and
+                  database management.
+                </li>
+                <li>
+                  Established relationships with <strong>5+</strong> tech companies, including{" "}
+                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
+                  through office visits, networking events, and interview prep sessions.
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
