@@ -264,7 +264,7 @@ export default function AboutMe() {
                             </tr>
                             <tr>
                               <td className="pr-4">Last Update:</td>
-                              <td>May 7, 2025</td>
+                              <td>February 25, 2026</td>
                             </tr>
                           </tbody>
                         </table>
