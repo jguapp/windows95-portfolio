@@ -4,10 +4,31 @@ import "./globals.css"
 import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 
+const siteUrl = "https://builtbyjoel.vercel.app"
+const title = "joel.codes() // human-readable"
+const description =
+  "Joel Vasquez's portfolio, rebuilt as a working Windows 95 desktop — draggable windows, a Start menu, MS Paint, and five playable classic games."
+
 export const metadata: Metadata = {
-  title: "joel.codes() // human-readable",
-  description: "Joel's retro Windows 95-themed portfolio website",
-    generator: 'v0.dev'
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    url: siteUrl,
+    siteName: title,
+    type: "website",
+    // Image comes from app/opengraph-image.tsx via the file convention.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({

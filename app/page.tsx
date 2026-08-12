@@ -174,28 +174,32 @@ export default function Home() {
               </style>
             `
             break
-          case "starfield":
+          case "starfield": {
             screenSaverEl.innerHTML = `
-              <div id="starfield" style="width:100%;height:100%;overflow:hidden;"></div>
-              <script>
-                const starfield = document.getElementById('starfield');
-                for (let i = 0; i < 200; i++) {
-                  const star = document.createElement('div');
-                  star.style.position = 'absolute';
-                  star.style.width = '2px';
-                  star.style.height = '2px';
-                  star.style.backgroundColor = 'white';
-                  star.style.left = Math.random() * 100 + '%';
-                  star.style.top = Math.random() * 100 + '%';
-                  star.style.animation = 'twinkle ' + (Math.random() * 5 + 1) + 's infinite';
-                  starfield.appendChild(star);
-                }
-              </script>
+              <div id="starfield" style="width:100%;height:100%;overflow:hidden;position:relative;"></div>
               <style>
                 @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
               </style>
             `
+
+            // Scripts inserted via innerHTML never execute, so the stars have
+            // to be built directly rather than from an inline <script>.
+            const starfield = screenSaverEl.querySelector<HTMLElement>("#starfield")
+            if (starfield) {
+              for (let i = 0; i < 200; i++) {
+                const star = document.createElement("div")
+                star.style.position = "absolute"
+                star.style.width = "2px"
+                star.style.height = "2px"
+                star.style.backgroundColor = "white"
+                star.style.left = `${Math.random() * 100}%`
+                star.style.top = `${Math.random() * 100}%`
+                star.style.animation = `twinkle ${Math.random() * 5 + 1}s infinite`
+                starfield.appendChild(star)
+              }
+            }
             break
+          }
           case "flying-windows":
             screenSaverEl.innerHTML = `
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">

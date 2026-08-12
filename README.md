@@ -3,14 +3,14 @@
 A nostalgic, interactive portfolio website built to look and feel like Windows 95, complete with authentic UI elements, classic games, and retro aesthetics.
 
 ![Windows 95 Portfolio](https://img.shields.io/badge/Windows-95-00A4EF?style=for-the-badge&logo=windows&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?style=for-the-badge&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-14.2.35-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css)
 
 ## 🎮 Live Demo
 
-[**Experience the Windows 95 Portfolio**]((https://builtbyjoel.vercel.app/))
+[**Experience the Windows 95 Portfolio**](https://builtbyjoel.vercel.app/)
 
 ## ✨ Features
 
@@ -92,6 +92,21 @@ windows95-portfolio/
 └── hooks/               # Custom React hooks
 ```
 
+## 🚀 Running Locally
+
+```bash
+pnpm install
+cp .env.example .env.local   # add your Web3Forms key to enable the contact form
+pnpm dev
+```
+
+The site runs at `http://localhost:3000`. Everything except the contact form
+works without any environment variables.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `WEB3FORMS_ACCESS_KEY` | Contact form only | Delivers contact form submissions. Get a free key at [web3forms.com](https://web3forms.com) and restrict it to your domain. |
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -107,6 +122,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <img src="https://img.shields.io/badge/Windows-95-00A4EF?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 95">
-  <img src="https://img.shields.io/badge/Next.js-14.2.16-black?style=for-the-badge&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/Next.js-14.2.35-black?style=for-the-badge&logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React">
 </div>
