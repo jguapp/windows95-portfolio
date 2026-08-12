@@ -9,7 +9,10 @@ interface WelcomePopupProps {
 }
 
 export default function WelcomePopup({ onClose }: WelcomePopupProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  // null means "never dragged", which renders centred via CSS. Measuring the
+  // popup in an effect instead would paint it at a stale coordinate for one
+  // frame, which is what made it visibly jump in from the top-left.
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [showAgain, setShowAgain] = useState(false)
@@ -56,16 +59,16 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
     }
   }, [isDragging, dragOffset])
 
-  // Center the popup when it becomes visible
-  useEffect(() => {
-    if (isVisible && popupRef.current) {
-      const rect = popupRef.current.getBoundingClientRect()
-      setPosition({
-        x: (window.innerWidth - rect.width) / 2,
-        y: (window.innerHeight - rect.height) / 2,
-      })
-    }
-  }, [isVisible])
+  // Centred until dragged, then pinned to explicit coordinates. `offset` nudges
+  // the What's New panel down-right of the main one.
+  const panelStyle = (offset = 0): React.CSSProperties =>
+    position
+      ? { left: `${position.x + offset}px`, top: `${position.y + offset}px` }
+      : {
+          left: "50%",
+          top: "50%",
+          transform: `translate(calc(-50% + ${offset}px), calc(-50% + ${offset}px))`,
+        }
 
   const startDrag = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -106,10 +109,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           ref={popupRef}
           id="win95-popup"
           className="absolute w-[600px] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1000]"
-          style={{
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-          }}
+          style={panelStyle()}
         >
           <div
             className="win95-title-bar bg-[#000080] text-white p-[3px_5px] font-bold flex justify-between items-center"
@@ -212,10 +212,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
       {showWhatsNew && (
         <div
           className="absolute w-[400px] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1001]"
-          style={{
-            left: `${position.x + 50}px`,
-            top: `${position.y + 50}px`,
-          }}
+          style={panelStyle(50)}
         >
           <div
             className="win95-title-bar bg-[#000080] text-white p-[3px_5px] font-bold flex justify-between items-center"
