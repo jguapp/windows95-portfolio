@@ -234,21 +234,21 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           <div className="win95-content p-[10px_20px] max-h-[300px] overflow-auto">
             <h2 className="text-sm font-bold mb-2">Recent Updates</h2>
             <ul className="list-disc pl-5 text-xs mb-4">
-              <li className="mb-1">Updated desktop icons with authentic Windows 95 style</li>
-              <li className="mb-1">Fixed taskbar styling to match Windows 95</li>
-              <li className="mb-1">Improved font rendering across all components</li>
-              <li className="mb-1">Added hover effects to desktop icons</li>
-              <li className="mb-1">Enhanced start menu appearance and functionality</li>
+              <li className="mb-1">Redrew the title bar buttons to match the Windows 95 bitmaps</li>
+              <li className="mb-1">Cut page weight by 90%, so the desktop loads much faster</li>
+              <li className="mb-1">Refreshed the résumé with current experience and projects</li>
+              <li className="mb-1">Fixed the Starfield screen saver, which never drew any stars</li>
+              <li className="mb-1">Welcome screen now opens centred instead of jumping in</li>
             </ul>
 
             <h2 className="text-sm font-bold mb-2">Planned Features</h2>
             <ul className="list-disc pl-5 text-xs">
-              <li className="mb-1">MS-DOS Command Prompt simulator</li>
-              <li className="mb-1">Windows 95 Paint application</li>
-              <li className="mb-1">Minesweeper and Solitaire games</li>
-              <li className="mb-1">File Explorer with drag and drop functionality</li>
-              <li className="mb-1">Animated boot sequence</li>
-              <li className="mb-1">System sounds and notifications</li>
+              <li className="mb-1">MS-DOS Prompt with working commands</li>
+              <li className="mb-1">Windows Explorer for browsing the C:\ drive</li>
+              <li className="mb-1">Notepad, and Calculator in both Standard and Scientific</li>
+              <li className="mb-1">Resizable windows you can drag by any edge or corner</li>
+              <li className="mb-1">Recycle Bin that restores what you delete</li>
+              <li className="mb-1">Close Program dialog on Ctrl+Alt+Del</li>
             </ul>
           </div>
 
