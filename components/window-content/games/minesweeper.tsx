@@ -12,6 +12,8 @@ type CellState = {
   isMine: boolean
   isRevealed: boolean
   isFlagged: boolean
+  /** Right-click cycles flag -> question mark -> empty, as Windows 95 did. */
+  isQuestioned: boolean
   neighborMines: number
 }
 
@@ -135,6 +137,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
           isMine: false,
           isRevealed: false,
           isFlagged: false,
+          isQuestioned: false,
           neighborMines: 0,
         })
       }
@@ -274,6 +277,33 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   }
 
   // Toggle flag on a cell
+  /**
+   * Chording. On a revealed number whose neighbouring flags already equal its
+   * count, reveal every unflagged neighbour. This is how the game is played at
+   * speed, and it will happily detonate a mine if the flags are wrong.
+   */
+  const chord = (row: number, col: number) => {
+    if (gameStatus !== "playing") return
+    const cell = grid[row][col]
+    if (!cell.isRevealed || cell.neighborMines === 0) return
+
+    const neighbours: [number, number][] = []
+    let flagged = 0
+    for (let di = -1; di <= 1; di++) {
+      for (let dj = -1; dj <= 1; dj++) {
+        if (di === 0 && dj === 0) continue
+        const ni = row + di
+        const nj = col + dj
+        if (ni < 0 || ni >= gridSize.rows || nj < 0 || nj >= gridSize.cols) continue
+        if (grid[ni][nj].isFlagged) flagged++
+        else if (!grid[ni][nj].isRevealed) neighbours.push([ni, nj])
+      }
+    }
+
+    if (flagged !== cell.neighborMines) return
+    for (const [ni, nj] of neighbours) revealCell(ni, nj)
+  }
+
   const toggleFlag = (row: number, col: number) => {
     if (gameStatus !== "playing" || grid[row][col].isRevealed) {
       return
@@ -282,8 +312,13 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     const newGrid = [...grid]
 
     if (newGrid[row][col].isFlagged) {
+      // Flag becomes a question mark, which does not count against the mine
+      // counter, and a second right-click clears it.
       newGrid[row][col].isFlagged = false
+      newGrid[row][col].isQuestioned = true
       setFlagsPlaced(flagsPlaced - 1)
+    } else if (newGrid[row][col].isQuestioned) {
+      newGrid[row][col].isQuestioned = false
     } else if (flagsPlaced < mineCount) {
       // Play flag sound
       if (flagSound && soundEnabled) {
@@ -374,29 +409,23 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     initializeGrid()
   }, [initializeGrid])
 
-  // Get cell color based on neighbor count
-  const getCellColor = (count: number) => {
-    switch (count) {
-      case 1:
-        return "text-blue-600"
-      case 2:
-        return "text-green-600"
-      case 3:
-        return "text-red-600"
-      case 4:
-        return "text-purple-600"
-      case 5:
-        return "text-orange-600"
-      case 6:
-        return "text-teal-600"
-      case 7:
-        return "text-pink-600"
-      case 8:
-        return "text-yellow-600"
-      default:
-        return ""
-    }
+  /**
+   * The Windows 95 number colours, which are fixed and instantly recognisable.
+   * Anything else reads as wrong to anyone who played it, so these are exact
+   * hex values rather than the nearest Tailwind shade.
+   */
+  const NUMBER_COLOR: Record<number, string> = {
+    1: "#0000ff", // blue
+    2: "#008000", // green
+    3: "#ff0000", // red
+    4: "#000080", // navy
+    5: "#800000", // maroon
+    6: "#008080", // teal
+    7: "#000000", // black
+    8: "#808080", // grey
   }
+
+  const getCellColor = (count: number) => NUMBER_COLOR[count] ?? "#000000"
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -481,17 +510,27 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                   e.preventDefault()
                   toggleFlag(rowIndex, colIndex)
                 }}
+                onMouseDown={(e) => {
+                  // Chording: both buttons on a satisfied number clears its
+                  // neighbours. buttons is a bitmask, 3 means left and right.
+                  if (e.buttons === 3) {
+                    e.preventDefault()
+                    chord(rowIndex, colIndex)
+                  }
+                }}
               >
                 {cell.isRevealed ? (
                   cell.isMine ? (
                     <span className="text-black text-xl">💣</span>
                   ) : (
-                    <span className={`${getCellColor(cell.neighborMines)} font-bold`}>
+                    <span className="font-bold" style={{ color: getCellColor(cell.neighborMines) }}>
                       {cell.neighborMines > 0 ? cell.neighborMines : ""}
                     </span>
                   )
                 ) : cell.isFlagged ? (
                   <span className="text-red-600">🚩</span>
+                ) : cell.isQuestioned ? (
+                  <span className="font-bold text-black">?</span>
                 ) : (
                   ""
                 )}

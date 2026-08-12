@@ -444,6 +444,24 @@ export default function Tetris({ onReturn }: TetrisProps) {
   // Render board
   const renderBoard = () => {
     const boardWithPiece = [...board.map((row) => [...row])]
+    // Cells the current piece would occupy if dropped now, drawn as an outline
+    // so you can see where it lands without counting rows.
+    const ghost = new Set<string>()
+
+    if (!gameOver && !paused) {
+      let drop = currentPiece.position.y
+      while (!checkCollision(currentPiece, { x: currentPiece.position.x, y: drop + 1 })) drop++
+      if (drop !== currentPiece.position.y) {
+        currentPiece.shape.forEach((row, y) => {
+          row.forEach((cell, x) => {
+            if (!cell) return
+            const gy = drop + y
+            const gx = currentPiece.position.x + x
+            if (gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) ghost.add(`${gy}-${gx}`)
+          })
+        })
+      }
+    }
 
     // Add current piece to board
     if (!gameOver) {
@@ -475,18 +493,26 @@ export default function Tetris({ onReturn }: TetrisProps) {
           }}
         >
           {boardWithPiece.map((row, y) =>
-            row.map((cell, x) => (
-              <div
-                key={`${y}-${x}`}
-                style={{
-                  backgroundColor: cell || "#111",
-                  border: cell ? "1px solid rgba(255, 255, 255, 0.3)" : "1px solid rgba(0, 0, 0, 0.3)",
-                  boxShadow: cell
-                    ? "inset 2px 2px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px rgba(0, 0, 0, 0.4)"
-                    : "none",
-                }}
-              />
-            )),
+            row.map((cell, x) => {
+              const isGhost = !cell && ghost.has(`${y}-${x}`)
+              return (
+                <div
+                  key={`${y}-${x}`}
+                  data-ghost={isGhost || undefined}
+                  style={{
+                    backgroundColor: cell || "#111",
+                    border: cell
+                      ? "1px solid rgba(255, 255, 255, 0.3)"
+                      : isGhost
+                        ? `1px solid ${currentPiece.color}`
+                        : "1px solid rgba(0, 0, 0, 0.3)",
+                    boxShadow: cell
+                      ? "inset 2px 2px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px rgba(0, 0, 0, 0.4)"
+                      : "none",
+                  }}
+                />
+              )
+            }),
           )}
         </div>
 

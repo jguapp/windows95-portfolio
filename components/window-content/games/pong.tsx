@@ -57,6 +57,8 @@ export default function Pong({ onReturn }: PongProps) {
   // Game state references for animation loop
   const playerPosRef = useRef(0)
   const computerPosRef = useRef(0)
+  /** Rally length, so the ball speeds up the longer a point runs. */
+  const rallyRef = useRef(0)
   const ballPosRef = useRef({ x: 0, y: 0 })
   const ballSpeedRef = useRef({ x: 0, y: 0 })
   const pausedRef = useRef(paused)
@@ -223,8 +225,10 @@ export default function Pong({ onReturn }: PongProps) {
         const hitPos = (ballPosRef.current.y - playerPosRef.current) / PADDLE_HEIGHT
         const angle = ((hitPos - 0.5) * Math.PI) / 3 // -30 to 30 degrees
 
-        ballSpeedRef.current.x = Math.cos(angle) * 6
-        ballSpeedRef.current.y = Math.sin(angle) * 6
+        rallyRef.current++
+        const speed = Math.min(6 + rallyRef.current * 0.25, 11)
+        ballSpeedRef.current.x = Math.cos(angle) * speed
+        ballSpeedRef.current.y = Math.sin(angle) * speed
       }
 
       // Computer paddle
@@ -243,11 +247,15 @@ export default function Pong({ onReturn }: PongProps) {
         const hitPos = (ballPosRef.current.y - computerPosRef.current) / PADDLE_HEIGHT
         const angle = ((hitPos - 0.5) * Math.PI) / 3 // -30 to 30 degrees
 
-        ballSpeedRef.current.x = -Math.cos(angle) * 6
-        ballSpeedRef.current.y = Math.sin(angle) * 6
+        rallyRef.current++
+        const speed = Math.min(6 + rallyRef.current * 0.25, 11)
+        ballSpeedRef.current.x = -Math.cos(angle) * speed
+        ballSpeedRef.current.y = Math.sin(angle) * speed
       }
 
-      // Ball out of bounds - scoring
+      // Ball out of bounds - scoring. A new point starts a fresh rally.
+      if (ballPosRef.current.x < 0 || ballPosRef.current.x > canvas.width) rallyRef.current = 0
+
       if (ballPosRef.current.x < 0) {
         // Play score sound
         if (scoreSound && soundEnabled) {
