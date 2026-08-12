@@ -11,6 +11,12 @@ interface TaskbarProps {
   onToggleStartMenu: () => void
 }
 
+/** Quick Launch entries, in the order Windows put them: shell first. */
+const QUICK_LAUNCH = [
+  { id: "explorer", label: "Windows Explorer", icon: "/images/win95/explorer-16.png" },
+  { id: "msdos", label: "MS-DOS Prompt", icon: "/images/win95/msdos-16.png" },
+]
+
 export default function Taskbar({
   openWindows,
   activeWindow,
@@ -63,6 +69,26 @@ export default function Taskbar({
           alt="Start"
           className="h-6"
         />
+      </div>
+
+      {/* Quick Launch. Not in the August 1995 release: it arrived with the
+          Internet Explorer 4 Desktop Update in 1997 and shipped by default in
+          Windows 98. A Windows 95 machine with IE4 installed had exactly this. */}
+      <div id="quick-launch" className="flex items-center gap-[2px] px-1">
+        <div className="mr-1 h-[22px] w-[3px] border-l border-l-[#808080] border-r border-r-white" />
+        {QUICK_LAUNCH.map((q) => (
+          <button
+            key={q.id}
+            type="button"
+            title={q.label}
+            aria-label={q.label}
+            onClick={() => onWindowSelect(q.id)}
+            className="flex h-[22px] w-[22px] items-center justify-center border-2 border-transparent hover:border-t-white hover:border-l-white hover:border-r-[#404040] hover:border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+          >
+            <img src={q.icon} alt="" className="h-4 w-4" style={{ imageRendering: "pixelated" }} />
+          </button>
+        ))}
+        <div className="ml-1 h-[22px] w-[3px] border-l border-l-[#808080] border-r border-r-white" />
       </div>
 
       <div

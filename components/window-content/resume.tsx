@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { CloseIcon } from "@/components/win95-controls"
+import { CloseIcon, MaximizeIcon, MinimizeIcon } from "@/components/win95-controls"
 
 // Dialog components
 const SaveDialog = ({
@@ -933,42 +933,34 @@ export default function Resume() {
         </div>
         <div className="controls flex gap-[5px]">
           <button
-            className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[10px] text-center font-bold leading-3 p-0 hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+            className="w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
+            aria-label="Minimize"
             onClick={(e) => {
               e.stopPropagation()
-              const event = new CustomEvent("windowAction", { detail: { action: "minimize", id: "resume" } })
-              window.dispatchEvent(event)
+              window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "minimize", id: "resume" } }))
             }}
           >
-            _
+            <MinimizeIcon />
           </button>
           <button
-            className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[10px] text-center font-bold leading-3 p-0 hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+            className="w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
+            aria-label="Maximize"
             onClick={(e) => {
               e.stopPropagation()
-              console.log("Maximize button clicked in resume")
-              // Use a more direct approach to dispatch the event
-              window.dispatchEvent(
-                new CustomEvent("windowAction", {
-                  detail: {
-                    action: "maximize",
-                    id: "resume",
-                  },
-                }),
-              )
+              window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "maximize", id: "resume" } }))
             }}
           >
-            □
+            <MaximizeIcon />
           </button>
           <button
-            className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[10px] text-center font-bold leading-3 p-0 hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+            className="w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
+            aria-label="Close"
             onClick={(e) => {
               e.stopPropagation()
-              const event = new CustomEvent("windowAction", { detail: { action: "close", id: "resume" } })
-              window.dispatchEvent(event)
+              window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "resume" } }))
             }}
           >
-            X
+            <CloseIcon />
           </button>
         </div>
       </div>
