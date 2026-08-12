@@ -7,6 +7,7 @@ import StartMenu from "@/components/start-menu"
 import Window from "@/components/window"
 import WelcomePopup from "@/components/welcome-popup"
 import BootSequence from "@/components/boot-sequence"
+import CloseProgram from "@/components/close-program"
 import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
 import FontChecker from "@/components/font-checker"
@@ -18,6 +19,9 @@ export default function Home() {
   const [showStartMenu, setShowStartMenu] = useState(false)
   const [showWelcomePopup, setShowWelcomePopup] = useState(true)
   const [isBooting, setIsBooting] = useState(true)
+  // Ending Explorer from Close Program takes the taskbar away, as it did in 1995.
+  const [explorerRunning, setExplorerRunning] = useState(true)
+  const [isShutDown, setIsShutDown] = useState(false)
   const [bootSound, setBootSound] = useState<HTMLAudioElement | null>(null)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
 
@@ -286,6 +290,18 @@ export default function Home() {
   }, [])
 
   // If still booting, show boot sequence
+  if (isShutDown) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-black">
+        <p className="text-center text-[#e8a33d]" style={{ fontFamily: '"MS Sans Serif", sans-serif', fontSize: 22 }}>
+          It&apos;s now safe to turn off
+          <br />
+          your computer.
+        </p>
+      </div>
+    )
+  }
+
   if (isBooting) {
     return <BootSequence onBootComplete={handleBootComplete} />
   }
@@ -323,6 +339,7 @@ export default function Home() {
         />
       )}
 
+      {explorerRunning && (
       <Taskbar
         openWindows={openWindows}
         activeWindow={activeWindow}
@@ -330,8 +347,25 @@ export default function Home() {
         onWindowSelect={handleOpenWindow}
         onToggleStartMenu={toggleStartMenu}
       />
+      )}
 
       {showWelcomePopup && <WelcomePopup onClose={closeWelcomePopup} />}
+
+      <CloseProgram
+        openWindows={openWindows}
+        explorerRunning={explorerRunning}
+        onEndTask={handleCloseWindow}
+        onKillExplorer={() => setExplorerRunning(false)}
+        onShutDown={() => setIsShutDown(true)}
+        onReboot={() => {
+          setOpenWindows([])
+          setMinimizedWindows([])
+          setActiveWindow(null)
+          setExplorerRunning(true)
+          setShowWelcomePopup(true)
+          setIsBooting(true)
+        }}
+      />
 
       {/* Konami Code Detector */}
       <KonamiCodeDetector onCodeEntered={handleKonamiCodeEntered} />
