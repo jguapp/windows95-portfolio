@@ -3,6 +3,7 @@
 import React from "react"
 
 import { useState, useRef, useEffect } from "react"
+import { CloseIcon } from "@/components/win95-controls"
 
 // Dialog components
 const SaveDialog = ({
@@ -25,7 +26,7 @@ const SaveDialog = ({
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -87,7 +88,7 @@ const OpenDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -159,7 +160,7 @@ const PrintDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -237,7 +238,7 @@ const SpellCheckDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -315,7 +316,7 @@ const InsertTableDialog = ({
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -409,7 +410,7 @@ const ColorPickerDialog = ({
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 
@@ -460,7 +461,7 @@ const HelpDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center text-black"
             onClick={onClose}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
 

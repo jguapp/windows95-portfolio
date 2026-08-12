@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { CloseIcon } from "@/components/win95-controls"
 
 // Tetromino shapes
 const TETROMINOES = {
@@ -637,7 +638,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black"
             onClick={() => setShowHelp(false)}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
         <div className="p-4">
@@ -726,7 +727,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black"
             onClick={() => setShowHighScores(false)}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
         <div className="p-4">
@@ -774,7 +775,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black"
             onClick={() => setGameOver(false)}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
         <div className="p-4">
@@ -1008,7 +1009,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black"
             onClick={() => onReturn()}
           >
-            ✕
+            <CloseIcon />
           </button>
         </div>
       </div>

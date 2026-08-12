@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { galleryImages, eventCategories } from "./gallery-data"
+import { CloseIcon } from "@/components/win95-controls"
 
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -290,7 +291,7 @@ export default function Gallery() {
                 className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] flex items-center justify-center text-black"
                 onClick={() => setShowHelp(false)}
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
             <div className="p-4">

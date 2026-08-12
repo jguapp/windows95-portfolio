@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { CloseIcon } from "@/components/win95-controls"
 
 interface MinesweeperProps {
   onReturn: () => void
@@ -662,7 +663,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 onClick={() => setShowHighScores(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
             <div className="text-black text-sm">
@@ -696,7 +697,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 onClick={() => setShowNameInput(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
             <p className="text-black text-sm mb-4">Enter your name (3 characters):</p>
@@ -730,7 +731,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 onClick={() => setShowSettings(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
             <div className="text-black text-sm space-y-4">
@@ -781,7 +782,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 onClick={() => setShowConfirmation(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
             <p className="text-black text-sm mb-4">
