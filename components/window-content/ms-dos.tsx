@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { type FsNode, canonical, displayPath, listDir, parsePath, resolve } from "@/lib/filesystem"
 
 /**
  * MS-DOS Prompt.
@@ -9,62 +10,11 @@ import { useCallback, useEffect, useRef, useState } from "react"
  * history on the arrow keys. Unknown commands produce the authentic
  * "Bad command or file name".
  *
- * The filesystem-backed commands (dir, cd, type, tree) read a small in-memory
- * tree defined here. When the real C:\ drive lands in #13 this should switch to
- * that instead of carrying its own copy.
+ * dir, cd, type and tree read the shared virtual C:\ drive from
+ * lib/filesystem, the same tree Explorer shows, so both describe one machine.
  */
 
-type Node =
-  | { kind: "dir"; children: Record<string, Node> }
-  | { kind: "file"; size: number; body: string; opens?: string }
-
-const dir = (children: Record<string, Node>): Node => ({ kind: "dir", children })
-const file = (body: string, opens?: string): Node => ({
-  kind: "file",
-  size: body.length,
-  body,
-  opens,
-})
-
-const FS: Node = dir({
-  WINDOWS: dir({
-    MEDIA: dir({}),
-    "WIN.INI": file("[windows]\r\nrun=\r\nload=\r\n"),
-  }),
-  "MY DOCUMENTS": dir({
-    "RESUME.DOC": file("Opens in Microsoft Word 95. Type: START RESUME", "resume"),
-    "README.TXT": file(
-      "This desktop is a Next.js application.\r\nEvery window is real: drag them, resize them, play the games.\r\n",
-      "notepad",
-    ),
-  }),
-  "PROGRAM FILES": dir({
-    GAMES: dir({
-      "CHESS.EXE": file("", "games"),
-      "SOL.EXE": file("", "games"),
-      "TETRIS.EXE": file("", "games"),
-    }),
-  }),
-  "AUTOEXEC.BAT": file("@ECHO OFF\r\nPROMPT $P$G\r\nPATH C:\\WINDOWS\r\n"),
-  "CONFIG.SYS": file("DEVICE=C:\\WINDOWS\\HIMEM.SYS\r\nFILES=60\r\nBUFFERS=30\r\n"),
-})
-
-const BANNER = [
-  "Microsoft(R) Windows 95",
-  "   (C)Copyright Microsoft Corp 1981-1996.",
-  "",
-]
-
-function resolve(path: string[]): Node | null {
-  let node: Node = FS
-  for (const part of path) {
-    if (node.kind !== "dir") return null
-    const next = node.children[part]
-    if (!next) return null
-    node = next
-  }
-  return node
-}
+const BANNER = ["Microsoft(R) Windows 95", "   (C)Copyright Microsoft Corp 1981-1996.", ""]
 
 function pad(s: string, n: number) {
   return s.length >= n ? s : s + " ".repeat(n - s.length)
@@ -77,7 +27,7 @@ function padLeft(s: string, n: number) {
 export default function MsDos() {
   const [lines, setLines] = useState<string[]>([...BANNER])
   const [input, setInput] = useState("")
-  const [cwd, setCwd] = useState<string[]>(["WINDOWS"])
+  const [cwd, setCwd] = useState<string[]>(["Windows"])
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [busy, setBusy] = useState(false)
@@ -85,7 +35,7 @@ export default function MsDos() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const prompt = `C:\\${cwd.join("\\")}>`
+  const prompt = `${displayPath(cwd)}>`
 
   const write = useCallback((...out: string[]) => setLines((prev) => [...prev, ...out]), [])
 
@@ -127,13 +77,13 @@ export default function MsDos() {
           return
 
         case "DIR": {
-          const node = resolve(cwd)
-          if (!node || node.kind !== "dir") {
+          const here = resolve(cwd)
+          if (!here || here.kind !== "dir") {
             write("Invalid directory", "")
             return
           }
-          const entries = Object.entries(node.children)
-          write("", ` Directory of C:\\${cwd.join("\\")}`, "")
+          const entries = listDir(cwd)
+          write("", ` Directory of ${displayPath(cwd)}`, "")
           write(`${pad(".", 14)}<DIR>`, `${pad("..", 14)}<DIR>`)
           let files = 0
           let bytes = 0
@@ -162,15 +112,14 @@ export default function MsDos() {
             write("")
             return
           }
-          const target = arg.toUpperCase().replace(/^C:\\/, "").split("\\").filter(Boolean)
-          const absolute = arg.toUpperCase().startsWith("C:\\") || arg.startsWith("\\")
-          const next = absolute ? target : [...cwd, ...target]
+          const next = parsePath(arg, cwd)
           const node = resolve(next)
           if (!node || node.kind !== "dir") {
             write("Invalid directory", "")
             return
           }
-          setCwd(next)
+          // Canonical casing, so `cd my documents` prints My Documents.
+          setCwd(canonical(next) ?? next)
           write("")
           return
         }
@@ -180,7 +129,7 @@ export default function MsDos() {
             write("Required parameter missing", "")
             return
           }
-          const node = resolve([...cwd, arg.toUpperCase()])
+          const node = resolve(parsePath(arg, cwd))
           if (!node) {
             write("File not found", "")
             return
@@ -189,12 +138,13 @@ export default function MsDos() {
             write("Access denied", "")
             return
           }
-          write(...node.body.split(/\r?\n/), "")
+          // Binaries have no text body; DOS printed garbage, we print nothing.
+          write(...(node.body ?? "").split(/\r?\n/), "")
           return
         }
 
         case "TREE": {
-          const walk = (node: Node, prefix: string) => {
+          const walk = (node: FsNode, prefix: string) => {
             if (node.kind !== "dir") return
             const names = Object.keys(node.children)
             names.forEach((name, i) => {
@@ -204,7 +154,7 @@ export default function MsDos() {
               if (child.kind === "dir") walk(child, `${prefix}${last ? "    " : "|   "}`)
             })
           }
-          write(`C:\\${cwd.join("\\")}`)
+          write(displayPath(cwd))
           const node = resolve(cwd)
           if (node) walk(node, "")
           write("")
@@ -221,7 +171,13 @@ export default function MsDos() {
             CONTACT: "contact",
             GALLERY: "gallery",
           }
-          const id = map[arg.toUpperCase().replace(/\.(EXE|DOC|TXT)$/, "")]
+          // A bare name matches the table; anything else is looked up on disk,
+          // so START C:\WINDOWS\COMMAND.COM works too.
+          let id = map[arg.toUpperCase().replace(/\.(EXE|DOC|TXT|COM|URL|LNK)$/, "")]
+          if (!id) {
+            const node = resolve(parsePath(arg, cwd))
+            if (node && node.kind === "file" && node.opens) id = node.opens
+          }
           if (!id) {
             write("Bad command or file name", "")
             return

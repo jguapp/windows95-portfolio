@@ -7,6 +7,7 @@
  */
 const TITLES: Record<string, string> = {
   msdos: "MS-DOS Prompt",
+  explorer: "Exploring - C:\\",
   notepad: "Readme.txt - Notepad",
   calculator: "Calculator",
   spotify: "Windows Media Player",
@@ -19,6 +20,7 @@ const TITLES: Record<string, string> = {
 const TASKBAR_TITLES: Record<string, string> = {
   notepad: "Readme.txt - Notepad",
   resume: "Resume",
+  explorer: "Exploring - C:",
 }
 
 export function windowTitle(id: string): string {

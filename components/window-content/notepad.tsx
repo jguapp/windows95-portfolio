@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { README_TEXT } from "@/lib/filesystem"
 
 /**
  * Windows 95 Notepad.
@@ -11,24 +12,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
  * group, and Find Next / Cancel.
  */
 
-const DEFAULT_TEXT = `Welcome to my portfolio.
-
-This whole desktop is a Next.js application: every window, the Start menu,
-the drag-and-drop, the games. Nothing here is a screenshot.
-
-Things worth opening:
-
-  Resume      opens in Microsoft Word 95
-  My Projects opens YouTube, circa 2005
-  Contact Me  opens Outlook Express
-  Games       Chess, Solitaire, Tetris, Minesweeper and Pong
-  Paint       it draws, and it saves
-
-Try the Konami code on the desktop.
-
-- Joel
-`
-
 function stamp(): string {
   const d = new Date()
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
@@ -37,7 +20,7 @@ function stamp(): string {
 }
 
 export default function Notepad() {
-  const [text, setText] = useState(DEFAULT_TEXT)
+  const [text, setText] = useState(README_TEXT)
   const [wordWrap, setWordWrap] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [findOpen, setFindOpen] = useState(false)

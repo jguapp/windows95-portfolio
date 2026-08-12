@@ -48,6 +48,7 @@ export default function Taskbar({
     calculator: "/images/win95/calculator-32.png",
     notepad: "/images/win95/notepad-32.png",
     msdos: "/images/win95/msdos-32.png",
+    explorer: "/images/win95/explorer-32.png",
   }
 
   return (
