@@ -6,23 +6,24 @@ import Pong from "./games/pong"
 import Solitaire from "./games/solitaire"
 import Chess from "./games/chess"
 import Tetris from "./games/tetris"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris"
 
 export default function Games() {
   const [currentGame, setCurrentGame] = useState<GameType>("launcher")
-  const [audioEnabled, setAudioEnabled] = useState(false)
-  const [selectSound, setSelectSound] = useState<HTMLAudioElement | null>(null)
-  const [hoverSound, setHoverSound] = useState<HTMLAudioElement | null>(null)
-  const [bgMusic, setBgMusic] = useState<HTMLAudioElement | null>(null)
+  const [audioEnabled, setAudioEnabled] = useState(true)
+  const [selectSound, setSelectSound] = useState<SynthAudio | null>(null)
+  const [hoverSound, setHoverSound] = useState<SynthAudio | null>(null)
+  const [bgMusic, setBgMusic] = useState<SynthAudio | null>(null)
   const [hoveredGame, setHoveredGame] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"all" | "arcade" | "board" | "puzzle">("all")
 
   // Initialize sounds
   useEffect(() => {
-    const select = new Audio("/sounds/select.mp3")
-    const hover = new Audio("/sounds/hover.mp3")
-    const music = new Audio("/sounds/arcade-music.mp3")
+    const select = createSound("/sounds/select.mp3")
+    const hover = createSound("/sounds/hover.mp3")
+    const music = createSound("/sounds/arcade-music.mp3")
 
     select.volume = 0.3
     hover.volume = 0.1

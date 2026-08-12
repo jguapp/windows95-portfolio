@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 interface PokemonBattleProps {
   onClose: () => void
@@ -734,32 +735,32 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [showPokemonSelection, setShowPokemonSelection] = useState<boolean>(false)
 
   // Sound states remain the same
-  const [battleMusic, setBattleMusic] = useState<HTMLAudioElement | null>(null)
-  const [attackSound, setAttackSound] = useState<HTMLAudioElement | null>(null)
-  const [victorySound, setVictorySound] = useState<HTMLAudioElement | null>(null)
-  const [defeatSound, setDefeatSound] = useState<HTMLAudioElement | null>(null)
-  const [menuSound, setMenuSound] = useState<HTMLAudioElement | null>(null)
-  const [faintSound, setFaintSound] = useState<HTMLAudioElement | null>(null)
+  const [battleMusic, setBattleMusic] = useState<SynthAudio | null>(null)
+  const [attackSound, setAttackSound] = useState<SynthAudio | null>(null)
+  const [victorySound, setVictorySound] = useState<SynthAudio | null>(null)
+  const [defeatSound, setDefeatSound] = useState<SynthAudio | null>(null)
+  const [menuSound, setMenuSound] = useState<SynthAudio | null>(null)
+  const [faintSound, setFaintSound] = useState<SynthAudio | null>(null)
 
   // Reference to the battle container for keyboard focus
   const battleContainerRef = useRef<HTMLDivElement>(null)
 
   // Initialize sounds (same as before)
   useEffect(() => {
-    const battle = new Audio("/sounds/pokemon-battle.mp3")
+    const battle = createSound("/sounds/pokemon-battle.mp3")
     battle.loop = true
     battle.volume = 0.3
 
-    const attack = new Audio("/sounds/pokemon-hit.mp3")
+    const attack = createSound("/sounds/pokemon-hit.mp3")
     attack.volume = 0.4
 
-    const victory = new Audio("/sounds/pokemon-victory.mp3")
+    const victory = createSound("/sounds/pokemon-victory.mp3")
     victory.volume = 0.4
 
-    const defeat = new Audio("/sounds/pokemon-defeat.mp3")
+    const defeat = createSound("/sounds/pokemon-defeat.mp3")
     defeat.volume = 0.4
 
-    const menu = new Audio("/sounds/pokemon-menu.mp3")
+    const menu = createSound("/sounds/pokemon-menu.mp3")
     menu.volume = 0.4
 
     // For the fainting sound, we'll use a simple beep for now

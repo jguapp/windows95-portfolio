@@ -11,6 +11,7 @@ import CloseProgram from "@/components/close-program"
 import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
 import FontChecker from "@/components/font-checker"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -22,14 +23,13 @@ export default function Home() {
   // Ending Explorer from Close Program takes the taskbar away, as it did in 1995.
   const [explorerRunning, setExplorerRunning] = useState(true)
   const [isShutDown, setIsShutDown] = useState(false)
-  const [bootSound, setBootSound] = useState<HTMLAudioElement | null>(null)
+  const [bootSound, setBootSound] = useState<SynthAudio | null>(null)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
 
   // Initialize boot sound
   useEffect(() => {
-    const audio = new Audio("/sounds/win95-startup.mp3")
-    audio.preload = "auto"
-    setBootSound(audio)
+    // Synthesised, so there is nothing to preload.
+    setBootSound(createSound("/sounds/win95-startup.mp3"))
 
     return () => {
       if (bootSound) {

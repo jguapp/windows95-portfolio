@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { CloseIcon } from "@/components/win95-controls"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 interface MinesweeperProps {
   onReturn: () => void
@@ -30,10 +31,10 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   const [flagsPlaced, setFlagsPlaced] = useState(0)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const [firstClick, setFirstClick] = useState(true)
-  const [bombSound, setBombSound] = useState<HTMLAudioElement | null>(null)
-  const [flagSound, setFlagSound] = useState<HTMLAudioElement | null>(null)
-  const [winSound, setWinSound] = useState<HTMLAudioElement | null>(null)
-  const [clickSound, setClickSound] = useState<HTMLAudioElement | null>(null)
+  const [bombSound, setBombSound] = useState<SynthAudio | null>(null)
+  const [flagSound, setFlagSound] = useState<SynthAudio | null>(null)
+  const [winSound, setWinSound] = useState<SynthAudio | null>(null)
+  const [clickSound, setClickSound] = useState<SynthAudio | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [difficulty, setDifficulty] = useState<Difficulty>("easy")
   const [showHelp, setShowHelp] = useState(false)
@@ -50,10 +51,10 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
 
   // Initialize sounds
   useEffect(() => {
-    const bomb = new Audio("/sounds/explosion.mp3")
-    const flag = new Audio("/sounds/flag.mp3")
-    const win = new Audio("/sounds/victory.mp3")
-    const click = new Audio("/sounds/click.mp3")
+    const bomb = createSound("/sounds/explosion.mp3")
+    const flag = createSound("/sounds/flag.mp3")
+    const win = createSound("/sounds/victory.mp3")
+    const click = createSound("/sounds/click.mp3")
 
     bomb.volume = 0.3
     flag.volume = 0.2

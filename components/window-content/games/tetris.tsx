@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { CloseIcon } from "@/components/win95-controls"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 // Tetromino shapes
 const TETROMINOES = {
@@ -116,18 +117,18 @@ export default function Tetris({ onReturn }: TetrisProps) {
     { name: "PLAYER", score: 3500 },
     { name: "TETRIS", score: 2000 },
   ])
-  const [audioEnabled, setAudioEnabled] = useState(false)
+  const [audioEnabled, setAudioEnabled] = useState(true)
   const [gameStarted, setGameStarted] = useState(false)
   const [showMenu, setShowMenu] = useState<string | null>(null)
 
   // Audio refs
-  const moveSound = useRef<HTMLAudioElement | null>(null)
-  const rotateSound = useRef<HTMLAudioElement | null>(null)
-  const dropSound = useRef<HTMLAudioElement | null>(null)
-  const clearSound = useRef<HTMLAudioElement | null>(null)
-  const gameOverSound = useRef<HTMLAudioElement | null>(null)
-  const levelUpSound = useRef<HTMLAudioElement | null>(null)
-  const bgMusic = useRef<HTMLAudioElement | null>(null)
+  const moveSound = useRef<SynthAudio | null>(null)
+  const rotateSound = useRef<SynthAudio | null>(null)
+  const dropSound = useRef<SynthAudio | null>(null)
+  const clearSound = useRef<SynthAudio | null>(null)
+  const gameOverSound = useRef<SynthAudio | null>(null)
+  const levelUpSound = useRef<SynthAudio | null>(null)
+  const bgMusic = useRef<SynthAudio | null>(null)
 
   // Game loop ref
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null)
@@ -135,13 +136,13 @@ export default function Tetris({ onReturn }: TetrisProps) {
   // Initialize audio
   useEffect(() => {
     if (typeof window !== "undefined") {
-      moveSound.current = new Audio("/sounds/tetris/move.mp3")
-      rotateSound.current = new Audio("/sounds/tetris/rotate.mp3")
-      dropSound.current = new Audio("/sounds/tetris/drop.mp3")
-      clearSound.current = new Audio("/sounds/tetris/clear.mp3")
-      gameOverSound.current = new Audio("/sounds/tetris/gameover.mp3")
-      levelUpSound.current = new Audio("/sounds/tetris/levelup.mp3")
-      bgMusic.current = new Audio("/sounds/tetris/theme.mp3")
+      moveSound.current = createSound("/sounds/tetris/move.mp3")
+      rotateSound.current = createSound("/sounds/tetris/rotate.mp3")
+      dropSound.current = createSound("/sounds/tetris/drop.mp3")
+      clearSound.current = createSound("/sounds/tetris/clear.mp3")
+      gameOverSound.current = createSound("/sounds/tetris/gameover.mp3")
+      levelUpSound.current = createSound("/sounds/tetris/levelup.mp3")
+      bgMusic.current = createSound("/sounds/tetris/theme.mp3")
 
       // Set volume
       if (moveSound.current) moveSound.current.volume = 0.3
@@ -179,7 +180,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
   // Play sound effect
   const playSound = useCallback(
-    (sound: React.MutableRefObject<HTMLAudioElement | null>) => {
+    (sound: React.MutableRefObject<SynthAudio | null>) => {
       if (audioEnabled && sound.current) {
         sound.current.currentTime = 0
         sound.current.play().catch((err) => console.log("Audio playback failed:", err))

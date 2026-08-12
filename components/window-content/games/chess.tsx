@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 interface ChessProps {
   onReturn: () => void
@@ -68,9 +69,9 @@ export default function Chess({ onReturn }: ChessProps) {
   const [isStalemate, setIsStalemate] = useState<boolean>(false)
   const [showPromotionDialog, setShowPromotionDialog] = useState<boolean>(false)
   const [promotionPosition, setPromotionPosition] = useState<Position | null>(null)
-  const [moveSound, setMoveSound] = useState<HTMLAudioElement | null>(null)
-  const [captureSound, setCaptureSound] = useState<HTMLAudioElement | null>(null)
-  const [checkSound, setCheckSound] = useState<HTMLAudioElement | null>(null)
+  const [moveSound, setMoveSound] = useState<SynthAudio | null>(null)
+  const [captureSound, setCaptureSound] = useState<SynthAudio | null>(null)
+  const [checkSound, setCheckSound] = useState<SynthAudio | null>(null)
   const [showMenu, setShowMenu] = useState<boolean>(false)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const boardRef = useRef<HTMLDivElement>(null)
@@ -132,9 +133,9 @@ export default function Chess({ onReturn }: ChessProps) {
 
   // Initialize sounds
   useEffect(() => {
-    setMoveSound(new Audio("/sounds/chess-move.mp3"))
-    setCaptureSound(new Audio("/sounds/chess-capture.mp3"))
-    setCheckSound(new Audio("/sounds/chess-check.mp3"))
+    setMoveSound(createSound("/sounds/chess-move.mp3"))
+    setCaptureSound(createSound("/sounds/chess-capture.mp3"))
+    setCheckSound(createSound("/sounds/chess-check.mp3"))
   }, [])
 
   // Initialize the board

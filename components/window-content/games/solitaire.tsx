@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 interface SolitaireProps {
   onReturn: () => void
@@ -45,9 +46,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   const [showGameMenu, setShowGameMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [showHelpMenu, setShowHelpMenu] = useState(false)
-  const [dealSound, setDealSound] = useState<HTMLAudioElement | null>(null)
-  const [flipSound, setFlipSound] = useState<HTMLAudioElement | null>(null)
-  const [winSound, setWinSound] = useState<HTMLAudioElement | null>(null)
+  const [dealSound, setDealSound] = useState<SynthAudio | null>(null)
+  const [flipSound, setFlipSound] = useState<SynthAudio | null>(null)
+  const [winSound, setWinSound] = useState<SynthAudio | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [showHelp, setShowHelp] = useState(false)
   const [showHighScores, setShowHighScores] = useState(false)
@@ -65,9 +66,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
   // Initialize sounds
   useEffect(() => {
-    const deal = new Audio("/sounds/card-deal.mp3")
-    const flip = new Audio("/sounds/card-flip.mp3")
-    const win = new Audio("/sounds/victory.mp3")
+    const deal = createSound("/sounds/card-deal.mp3")
+    const flip = createSound("/sounds/card-flip.mp3")
+    const win = createSound("/sounds/victory.mp3")
 
     deal.volume = 0.2
     flip.volume = 0.2

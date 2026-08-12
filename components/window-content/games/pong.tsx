@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
+import { createSound, type SynthAudio } from "@/lib/sound"
 
 interface PongProps {
   onReturn: () => void
@@ -26,9 +27,9 @@ export default function Pong({ onReturn }: PongProps) {
   const [score, setScore] = useState({ player: 0, computer: 0 })
   const [gameOver, setGameOver] = useState(false)
   const [winner, setWinner] = useState<"player" | "computer" | null>(null)
-  const [paddleSound, setPaddleSound] = useState<HTMLAudioElement | null>(null)
-  const [scoreSound, setScoreSound] = useState<HTMLAudioElement | null>(null)
-  const [gameOverSound, setGameOverSound] = useState<HTMLAudioElement | null>(null)
+  const [paddleSound, setPaddleSound] = useState<SynthAudio | null>(null)
+  const [scoreSound, setScoreSound] = useState<SynthAudio | null>(null)
+  const [gameOverSound, setGameOverSound] = useState<SynthAudio | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
   const [showHelp, setShowHelp] = useState(false)
@@ -64,9 +65,9 @@ export default function Pong({ onReturn }: PongProps) {
 
   // Initialize sounds
   useEffect(() => {
-    const paddle = new Audio("/sounds/paddle.mp3")
-    const score = new Audio("/sounds/score.mp3")
-    const gameOver = new Audio("/sounds/gameover.mp3")
+    const paddle = createSound("/sounds/paddle.mp3")
+    const score = createSound("/sounds/score.mp3")
+    const gameOver = createSound("/sounds/gameover.mp3")
 
     paddle.volume = 0.2
     score.volume = 0.3
