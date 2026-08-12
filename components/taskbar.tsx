@@ -49,6 +49,7 @@ export default function Taskbar({
     notepad: "/images/win95/notepad-32.png",
     msdos: "/images/win95/msdos-32.png",
     explorer: "/images/win95/explorer-32.png",
+    "recycle-bin": "/images/win95/recycle-empty-32.png",
   }
 
   return (

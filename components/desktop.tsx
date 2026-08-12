@@ -6,6 +6,7 @@ import DesktopItem from "./desktop-item"
 import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
 import BlueScreenOfDeath from "./blue-screen-of-death"
+import { getItems, isEmpty, recycle, subscribe, type RecycledItem } from "@/lib/recycle-bin"
 
 // Add IconPosition type export
 export interface IconPosition {
@@ -77,6 +78,12 @@ const DEFAULT_ICONS: DesktopItemData[] = [
     icon: "/images/win95/calculator-desktop.png",
     type: "application",
   },
+  {
+    id: "recycle-bin",
+    label: "Recycle Bin",
+    icon: "/images/win95/recycle-empty-desktop.png",
+    type: "application",
+  },
 ]
 
 export default function Desktop({ onOpenWindow }: DesktopProps) {
@@ -135,6 +142,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     defaultPositions["games"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 5 }
     defaultPositions["paint"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 6 }
     defaultPositions["calculator"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 7 }
+    defaultPositions["recycle-bin"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 8 }
 
     return defaultPositions
   }, [])
@@ -513,7 +521,11 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Delete the selected icon
   const handleDelete = () => {
     if (contextMenu.iconId) {
-      // Remove the icon from the desktop
+      // Move it to the Recycle Bin rather than destroying it, keeping its
+      // position so Restore can put it back in the same spot.
+      const doomed = icons.find((icon) => icon.id === contextMenu.iconId)
+      if (doomed && doomed.id !== "recycle-bin") recycle(doomed, iconPositions)
+
       setIcons((prev) => prev.filter((icon) => icon.id !== contextMenu.iconId))
 
       // Remove the icon's position
@@ -530,6 +542,34 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     }
     closeContextMenu()
   }
+
+  // The bin's artwork tracks whether it holds anything.
+  const [binEmpty, setBinEmpty] = useState(true)
+  useEffect(() => subscribe(() => setBinEmpty(isEmpty())), [])
+
+  useEffect(() => {
+    setIcons((prev) =>
+      prev.map((icon) =>
+        icon.id === "recycle-bin"
+          ? {
+              ...icon,
+              icon: binEmpty ? "/images/win95/recycle-empty-desktop.png" : "/images/win95/recycle-full-desktop.png",
+            }
+          : icon,
+      ),
+    )
+  }, [binEmpty])
+
+  // Restoring from the bin puts the icon back where it was.
+  useEffect(() => {
+    const onRestore = (event: Event) => {
+      const { item, position } = (event as CustomEvent<RecycledItem>).detail
+      setIcons((prev) => (prev.some((i) => i.id === item.id) ? prev : [...prev, item]))
+      if (position) setIconPositions((prev) => ({ ...prev, [item.id]: position }))
+    }
+    window.addEventListener("recycleRestore", onRestore)
+    return () => window.removeEventListener("recycleRestore", onRestore)
+  }, [])
 
   // Check if all icons are deleted and trigger BSOD
   useEffect(() => {

@@ -14,6 +14,7 @@ import Calculator from "./window-content/calculator"
 import Notepad from "./window-content/notepad"
 import MsDos from "./window-content/ms-dos"
 import Explorer from "./window-content/explorer"
+import RecycleBinWindow from "./window-content/recycle-bin"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowTitle } from "@/lib/window-titles"
 
@@ -48,6 +49,7 @@ const MIN_SIZE: Record<string, Size> = {
   notepad: { width: 400, height: 300 },
   msdos: { width: 420, height: 280 },
   explorer: { width: 520, height: 340 },
+  "recycle-bin": { width: 420, height: 260 },
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
@@ -55,6 +57,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   notepad: { width: 620, height: 480 },
   msdos: { width: 660, height: 420 },
   explorer: { width: 720, height: 460 },
+  "recycle-bin": { width: 560, height: 340 },
   resume: { width: 800, height: 620 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
@@ -134,6 +137,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <MsDos />
       case "explorer":
         return <Explorer />
+      case "recycle-bin":
+        return <RecycleBinWindow />
       default:
         return <div>Content not available</div>
     }

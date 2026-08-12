@@ -8,6 +8,7 @@
 const TITLES: Record<string, string> = {
   msdos: "MS-DOS Prompt",
   explorer: "Exploring - C:\\",
+  "recycle-bin": "Recycle Bin",
   notepad: "Readme.txt - Notepad",
   calculator: "Calculator",
   spotify: "Windows Media Player",
