@@ -1,405 +1,264 @@
 "use client"
 
-import React from "react"
+import { useState } from "react"
+
+/**
+ * The About Me window, as theFacebook looked in 2004.
+ *
+ * The palette is the whole trick: #3B5998 for the header and every section
+ * bar, #D8DFEA borders, #F7F7F7 panels, white content. Small Verdana, tight
+ * line height, hard 1px borders, nothing rounded, nothing animated.
+ *
+ * The type scale is set through .page-2005 because globals.css applies
+ * font-size with !important to p, span and div, which inline styles cannot
+ * beat. See the note in that stylesheet.
+ */
+
+const BLUE = "#3B5998"
+const BORDER = "#D8DFEA"
+
+function SectionBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: BLUE, color: "#fff", fontWeight: "bold", padding: "2px 6px" }}>{children}</div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <tr>
+      <td style={{ verticalAlign: "top", padding: "2px 8px 2px 0", color: "#000", whiteSpace: "nowrap" }}>{label}</td>
+      <td style={{ verticalAlign: "top", padding: "2px 0", color: BLUE }}>{children}</td>
+    </tr>
+  )
+}
+
+const NAV = ["home", "search", "global", "social net", "invite", "faq", "logout"]
+
+const SIDEBAR = [
+  "My Profile [edit]",
+  "My Friends",
+  "My Groups",
+  "My Parties",
+  "My Messages",
+  "My Account",
+  "My Privacy",
+]
+
+const FRIENDS = [
+  { name: "Bloomberg Tech Lab", img: "/images/gallery/bloomberg-visit.jpg" },
+  { name: "ColorStack", img: "/images/gallery/codepath-group1.jpeg" },
+  { name: "NSBE", img: "/images/gallery/nsbe-group1.jpeg" },
+  { name: "Protiviti", img: "/images/gallery/protiviti-group.jpeg" },
+  { name: "Women in Tech", img: "/images/gallery/women-tech-group.jpeg" },
+  { name: "CodePath", img: "/images/gallery/codepath-group2.jpeg" },
+]
 
 export default function AboutMe() {
+  const [poked, setPoked] = useState(false)
+
   return (
-    <div className="bg-[#D8DFEA] text-black h-full overflow-auto">
-      {/* TheFacebook header with integrated navigation */}
-      <div className="w-full bg-[#3B5998]">
-        <div className="relative h-[105px]">
-          {/* Main header background with image */}
-          <div className="absolute inset-0">
-            <img
-              src="/images/blob/screenshot-2025-05-08-at-12-01-06-pm.png"
-              alt="TheFacebook Header"
-              className="w-full h-full object-cover object-center"
-            />
+    <div
+      className="page-2005 h-full w-full overflow-auto"
+      style={{ fontFamily: "Verdana, Geneva, sans-serif", background: "#fff", color: "#000" }}
+    >
+      {/* Header */}
+      <div style={{ background: BLUE, padding: "6px 10px" }}>
+        <span className="t15" style={{ color: "#fff", fontWeight: "bold", letterSpacing: -0.5 }}>
+          [ thefacebook
+        </span>
+      </div>
+      <div style={{ background: "#F7F7F7", borderBottom: `1px solid ${BORDER}`, padding: "3px 10px" }}>
+        {NAV.map((n) => (
+          <a key={n} href="#" className="t11" style={{ color: BLUE, marginRight: 12, textDecoration: "none" }}>
+            {n}
+          </a>
+        ))}
+      </div>
+
+      <div className="flex gap-3 p-3" style={{ alignItems: "flex-start" }}>
+        {/* Left column */}
+        <div style={{ width: 150, flexShrink: 0 }}>
+          <div style={{ border: `1px solid ${BORDER}`, marginBottom: 10 }}>
+            <div style={{ background: "#F7F7F7", padding: 6 }}>
+              <div className="t11" style={{ marginBottom: 3, fontWeight: "bold" }}>
+                quick search
+              </div>
+              <div className="flex gap-1">
+                <input
+                  type="text"
+                  aria-label="Quick search"
+                  className="t11"
+                  style={{ width: "100%", border: "1px solid #BDC7D8", padding: "1px 2px" }}
+                />
+                <button
+                  type="button"
+                  className="t11"
+                  style={{ background: BLUE, color: "#fff", padding: "1px 6px", border: "none" }}
+                >
+                  go
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Navigation links directly on top of the header */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-40 space-x-6 text-white text-sm">
-            <a href="#" className="hover:underline">
-              home
-            </a>
-            <a href="#" className="hover:underline">
-              search
-            </a>
-            <a href="#" className="hover:underline">
-              global
-            </a>
-            <a href="#" className="hover:underline">
-              social net
-            </a>
-            <a href="#" className="hover:underline">
-              invite
-            </a>
-            <a href="#" className="hover:underline">
-              faq
-            </a>
-            <a href="#" className="hover:underline">
-              logout
-            </a>
+          <div style={{ border: `1px solid ${BORDER}` }}>
+            {SIDEBAR.map((s) => (
+              <a
+                key={s}
+                href="#"
+                className="t11"
+                style={{
+                  display: "block",
+                  color: BLUE,
+                  textDecoration: "none",
+                  padding: "3px 6px",
+                  borderBottom: `1px solid ${BORDER}`,
+                }}
+              >
+                {s}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Main column */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ border: `1px solid ${BORDER}`, marginBottom: 10 }}>
+            <SectionBar>Joel Vasquez&#39;s Profile</SectionBar>
+
+            <div className="flex gap-3" style={{ padding: 8 }}>
+              {/* Picture */}
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ border: `1px solid ${BORDER}` }}>
+                  <div className="t11" style={{ background: "#F7F7F7", padding: "2px 4px", fontWeight: "bold" }}>
+                    Picture
+                  </div>
+                  <img
+                    src="/images/blob/profile-picture.jpeg"
+                    alt="Joel Vasquez"
+                    style={{ width: 130, height: 160, objectFit: "cover", display: "block", padding: 4 }}
+                  />
+                </div>
+
+                <div style={{ border: `1px solid ${BORDER}`, marginTop: 8 }}>
+                  <a
+                    href="#"
+                    className="t11"
+                    style={{ display: "block", color: BLUE, padding: "3px 5px", borderBottom: `1px solid ${BORDER}` }}
+                  >
+                    Send Joel a Message
+                  </a>
+                  <button
+                    type="button"
+                    className="t11"
+                    onClick={() => setPoked(true)}
+                    style={{ display: "block", width: "100%", textAlign: "left", color: BLUE, padding: "3px 5px" }}
+                  >
+                    {poked ? "You poked Joel!" : "Poke Him!"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Information */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ border: `1px solid ${BORDER}` }}>
+                  <div className="t11" style={{ background: "#F7F7F7", padding: "2px 4px", fontWeight: "bold" }}>
+                    Information
+                  </div>
+                  <table className="t11" style={{ width: "100%", padding: 6, borderCollapse: "collapse" }}>
+                    <tbody>
+                      <tr>
+                        <td colSpan={2} style={{ fontWeight: "bold", paddingTop: 4 }}>
+                          Account Info:
+                        </td>
+                      </tr>
+                      <Field label="Name:">Joel Vasquez</Field>
+                      <Field label="Member Since:">August 24, 1995</Field>
+                      <Field label="Last Update:">August 12, 2026</Field>
+
+                      <tr>
+                        <td colSpan={2} style={{ fontWeight: "bold", paddingTop: 8 }}>
+                          Basic Info:
+                        </td>
+                      </tr>
+                      <Field label="School:">Baruch College &#39;27</Field>
+                      <Field label="Status:">Undergrad</Field>
+                      <Field label="Concentration:">Computer Science, Mathematics minor</Field>
+                      <Field label="Residence:">New York, NY</Field>
+
+                      <tr>
+                        <td colSpan={2} style={{ fontWeight: "bold", paddingTop: 8 }}>
+                          Contact Info:
+                        </td>
+                      </tr>
+                      <Field label="Email:">
+                        <a href="mailto:jfvasq1@gmail.com" style={{ color: BLUE }}>
+                          jfvasq1@gmail.com
+                        </a>
+                      </Field>
+                      <Field label="Website:">
+                        <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={{ color: BLUE }}>
+                          github.com/jguapp
+                        </a>
+                      </Field>
+                      <Field label="LinkedIn:">
+                        <a
+                          href="https://linkedin.com/in/jvasquezcs"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: BLUE }}
+                        >
+                          linkedin.com/in/jvasquezcs
+                        </a>
+                      </Field>
+
+                      <tr>
+                        <td colSpan={2} style={{ fontWeight: "bold", paddingTop: 8 }}>
+                          Personal Info:
+                        </td>
+                      </tr>
+                      <Field label="Looking For:">
+                        Software engineering internships and new-grad roles, backend or infrastructure
+                      </Field>
+                      <Field label="Interests:">
+                        Distributed systems, Kubernetes, developer tooling, retro computing
+                      </Field>
+                      <Field label="Favorite Tools:">Go, TypeScript, PostgreSQL, Redis, Docker</Field>
+                      <Field label="About Me:">
+                        Computer Science student focused on backend and infrastructure engineering. Currently a
+                        Software Engineer Intern at Liberty Mutual, building Kubernetes right-sizing tooling. Before
+                        that, AI agents at the Robert Wood Johnson Foundation and data pipelines at CUNY.
+                      </Field>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Friends */}
+          <div style={{ border: `1px solid ${BORDER}` }}>
+            <SectionBar>Friends at Baruch College</SectionBar>
+            <div className="flex flex-wrap gap-3" style={{ padding: 8 }}>
+              {FRIENDS.map((f) => (
+                <div key={f.name} style={{ width: 74, textAlign: "center" }}>
+                  <img
+                    src={f.img}
+                    alt={f.name}
+                    style={{ width: 68, height: 68, objectFit: "cover", border: `1px solid ${BORDER}` }}
+                  />
+                  <a href="#" className="t10" style={{ color: BLUE, display: "block", marginTop: 2 }}>
+                    {f.name}
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex p-4 gap-4 h-[calc(100%-75px)] min-h-[calc(100vh-75px)]">
-        {/* Left Sidebar */}
-        <div className="w-48 flex flex-col gap-4 h-full relative">
-          {/* Combined Quick Search and Advertisement Box */}
-          <div className="flex flex-col">
-            {/* Quick Search Box */}
-            <div className="bg-white p-3 border border-[#B7B7B7] border-b-0">
-              <div className="border border-dashed border-[#538ADC] p-2 mb-3">
-                <div>
-                  <input type="text" placeholder="" className="px-2 py-1 text-xs w-full border border-[#B7B7B7]" />
-                </div>
-                <div className="text-xs text-black mt-1 flex items-center">
-                  <span>quick search</span>
-                  <button className="bg-[#42a4f5] text-white px-2 py-0.5 text-xs ml-2 w-12">go</button>
-                </div>
-              </div>
-              <ul className="text-[#42b3f5] text-sm space-y-1 border border-dashed border-[#538ADC] p-2">
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Profile [ edit ]
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Friends
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Groups
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Parties
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Messages
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Account
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:underline">
-                    My Privacy
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Advertisement Space - McDonald's 90s Ad */}
-            <div
-              className="bg-white border border-[#B7B7B7] flex flex-col flex-grow h-full overflow-hidden"
-              style={{ minHeight: "calc(100vh - 290px)" }}
-            >
-              <div className="flex-1 flex items-stretch h-full">
-                <div className="w-full h-full flex flex-col justify-center bg-white">
-                  <img
-                    src="/images/blob/mcdonalds-ad.jpeg"
-                    alt="McDonald's 90s Advertisement"
-                    className="w-[200px] h-[492px] max-h-full"
-                    style={{ objectPosition: "center" }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content - Wrapped in a border with header */}
-        <div className="flex-1">
-          <div className="border border-[#B7B7B7] bg-white">
-            {/* Main Profile Header */}
-            <div className="flex w-full">
-              <div className="bg-[#3B5998] text-white px-2 py-1 text-sm font-bold flex-1">
-                Joel Vasquez&apos;s Profile
-              </div>
-              <div className="bg-[#3B5998] text-white px-2 py-1 text-sm font-bold flex-1 text-right">
-                Baruch College
-              </div>
-            </div>
-
-            {/* Profile Content */}
-            <div className="p-4 flex gap-4">
-              {/* Left Column */}
-              <div className="w-[300px] space-y-4">
-                {/* Picture Section */}
-                <div className="bg-white border border-[#B7B7B7]">
-                  <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Picture</div>
-                  <div className="p-3 flex justify-center">
-                    <img
-                      src="/images/blob/profile-picture.jpeg"
-                      alt="Profile"
-                      className="w-[120px] h-[150px] object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-0 -ml-2">
-                  <button className="w-full bg-white border border-[#538ADC] px-3 py-1 text-[#42b3f5] text-sm hover:underline text-left">
-                    Send Joel a Message
-                  </button>
-                  <button className="w-full bg-white border border-[#538ADC] px-3 py-1 text-[#42b3f5] text-sm hover:underline text-left">
-                    Poke Him!
-                  </button>
-                </div>
-
-                {/* Connection */}
-                <div className="bg-white border border-[#B7B7B7]">
-                  <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Connection</div>
-                  <div className="p-3 text-sm text-center">You are viewing Joel&apos;s profile.</div>
-                </div>
-
-                {/* Mutual Friends */}
-                <div className="bg-white border border-[#B7B7B7]">
-                  <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Mutual Friends</div>
-                  <div className="p-3 text-sm">
-                    You have <span className="text-[#42b3f5]">16 friends</span> in common.
-                  </div>
-                </div>
-
-                {/* Friends */}
-                <div className="bg-white border border-[#B7B7B7]">
-                  <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Friends at Baruch College</div>
-                  <div className="p-3">
-                    <div className="grid grid-cols-3 gap-2">
-                      {/* Friend Grid - First Row */}
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/profile-picture.jpeg"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Finn
-                        </a>
-                      </div>
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/0a3bb1327b9e5f47b8793c63542219da.jpeg"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Lelouch
-                        </a>
-                      </div>
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/plau5p3a-400x400.jpeg"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Cloud
-                        </a>
-                      </div>
-                      {/* Friend Grid - Second Row */}
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/d0547869a59f49cdcb23cf042d125d52.jpeg"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Pancham
-                        </a>
-                      </div>
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/6jgfqdqw0dkb1.png"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Aigis
-                        </a>
-                      </div>
-                      <div className="text-center">
-                        <img
-                          src="/images/blob/a75a12a66a148b903918388091c9bdcd.jpeg"
-                          alt="Friend"
-                          className="w-16 h-16 object-cover mx-auto mb-1"
-                        />
-                        <a href="#" className="text-black text-xs hover:underline">
-                          Vader
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Information */}
-              <div className="flex-1">
-                <div className="bg-white border border-[#B7B7B7] w-full h-[719px] overflow-auto">
-                  <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Information</div>
-                  <div className="p-4">
-                    <div className="space-y-2">
-                      {/* Account Info */}
-                      <div>
-                        <h5 className="font-bold mb-0.5 text-sm">Account Info:</h5>
-                        <table className="text-sm">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4">Name:</td>
-                              <td>Joel Vasquez</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Member Since:</td>
-                              <td>February 4, 2004</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Last Update:</td>
-                              <td>February 25, 2026</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Basic Info */}
-                      <div>
-                        <h5 className="font-bold mb-0.5 text-sm">Basic Info:</h5>
-                        <table className="text-sm">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4">School:</td>
-                              <td className="text-[#42b3f5]">Baruch College '26</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Status:</td>
-                              <td>Student</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Sex:</td>
-                              <td className="text-[#42b3f5]">Male</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Residence:</td>
-                              <td className="text-[#42b3f5]">New York, NY</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Birthday:</td>
-                              <td>May 21st</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Contact Info */}
-                      <div>
-                        <h5 className="font-bold mb-0.5 text-sm">Contact Info:</h5>
-                        <table className="text-sm">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4">Email:</td>
-                              <td className="text-[#42b3f5]">jfvasq1@gmail.com</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Screename:</td>
-                              <td className="text-[#42b3f5]">jguapp</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4">Websites:</td>
-                              <td className="text-[#42b3f5] break-words">
-                                https://github.com/jguapp
-                                <br />
-                                https://www.linkedin.com/in/jvasquezcs/
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Personal Info */}
-                      <div>
-                        <h5 className="font-bold mb-0.5 text-sm">Personal Info:</h5>
-                        <table className="text-sm w-full">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">Looking For:</td>
-                              <td className="text-[#42b3f5]">Networking, Internship Opportunities</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">Interested In:</td>
-                              <td className="text-[#42b3f5]">Machine Learning, Data Science, Web Development</td>
-                            </tr>
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">Interests:</td>
-                              <td className="text-[#42b3f5] break-words">
-                                Reading, Writing, Open Source, Basketball, Legos, Watching Movies, Guitar, Gaming, Math,
-                                Coding, Working Out, Sleeping
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Favorite Music */}
-                      <div>
-                        <table className="text-sm w-full">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">Favorite Music:</td>
-                              <td className="text-[#42b3f5] break-words">
-                                The Strokes, Arctic Monkeys, Radiohead, Mac Miller, Kendrick Lamar, Bob Dylan, Marvin
-                                Gaye, Faye Webster, Stevie Wonder, Queen, Michael Jackson, Billy Joel, Tame Impala
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Favorite Movies */}
-                      <div>
-                        <table className="text-sm w-full">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">Favorite Movies:</td>
-                              <td className="text-[#42b3f5] break-words">
-                                Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Pitch Perfect, Spiderman
-                                2, Good Will Hunting, Star Wars
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* About Me */}
-                      <div>
-                        <table className="text-sm w-full">
-                          <tbody className="leading-tight">
-                            <tr>
-                              <td className="pr-4 align-top w-1/4">About Me:</td>
-                              <td>
-                                Hi there! I&apos;m Joel, a Computer Science student at Baruch College with a passion for
-                                machine learning, data engineering, and web development. I&apos;m currently working as a
-                                Data Engineer at CUNY Institute for Demographic Research while pursuing my degree.
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="t10" style={{ borderTop: `1px solid ${BORDER}`, padding: "6px 10px", color: "#666" }}>
+        a Mark Zuckerberg production &nbsp;|&nbsp; Thefacebook &#169; 2004
       </div>
     </div>
   )
