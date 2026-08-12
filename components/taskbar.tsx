@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { taskbarTitle } from "@/lib/window-titles"
 
 interface TaskbarProps {
   openWindows: string[]
@@ -44,11 +45,9 @@ export default function Taskbar({
     gallery: "/images/desktop-icons/gallery.png",
     games: "/images/desktop-icons/games.png",
     paint: "/images/desktop-icons/paint.png",
-  }
-
-  // Map window IDs to display names
-  const displayNameMap: Record<string, string> = {
-    // No special display names needed after removing spotify
+    calculator: "/images/win95/calculator-32.png",
+    notepad: "/images/win95/notepad-32.png",
+    msdos: "/images/win95/msdos-32.png",
   }
 
   return (
@@ -86,7 +85,7 @@ export default function Taskbar({
                 className="w-8 h-8 -ml-0.5"
                 style={{ imageRendering: "pixelated" }}
               />
-              <span className="capitalize ml-0">{displayNameMap[id] || id.replace(/-/g, " ")}</span>
+              <span className="ml-0">{taskbarTitle(id)}</span>
             </div>
           )
         })}

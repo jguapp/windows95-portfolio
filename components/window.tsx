@@ -12,7 +12,9 @@ import Games from "./window-content/games"
 import Paint from "./window-content/paint"
 import Calculator from "./window-content/calculator"
 import Notepad from "./window-content/notepad"
+import MsDos from "./window-content/ms-dos"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
+import { windowTitle } from "@/lib/window-titles"
 
 // Shared by the three title-bar controls: a 16px Win95 button with the glyph
 // centred. flex centring replaces the old line-height trick, which could not
@@ -43,11 +45,13 @@ const MIN_SIZE: Record<string, Size> = {
   gallery: { width: 520, height: 380 },
   calculator: { width: 300, height: 260 },
   notepad: { width: 400, height: 300 },
+  msdos: { width: 420, height: 280 },
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
   calculator: { width: 320, height: 280 },
   notepad: { width: 620, height: 480 },
+  msdos: { width: 660, height: 420 },
   resume: { width: 800, height: 620 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
@@ -123,6 +127,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <Calculator />
       case "notepad":
         return <Notepad />
+      case "msdos":
+        return <MsDos />
       default:
         return <div>Content not available</div>
     }
@@ -319,16 +325,7 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
           onMouseDown={startDrag}
         >
           <h1 className="text-sm m-0 p-[0_5px]">
-            {id === "spotify"
-              ? "Windows Media Player"
-              : id === "notepad"
-                ? "Readme.txt - Notepad"
-                : id === "calculator"
-                  ? "Calculator"
-                  : id
-                  .split("-")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ")}
+{windowTitle(id)}
           </h1>
           <div className="controls flex gap-[5px]">
             <button

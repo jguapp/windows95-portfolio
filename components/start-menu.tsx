@@ -96,6 +96,12 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <span className="text-sm">Paint</span>
                     </div>
                   </li>
+                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("msdos")}>
+                    <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
+                      <img src="/images/win95/msdos-32.png" alt="MS-DOS Prompt" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
+                      <span className="text-sm">MS-DOS Prompt</span>
+                    </div>
+                  </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("notepad")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
                       <img src="/images/win95/notepad-32.png" alt="Notepad" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
