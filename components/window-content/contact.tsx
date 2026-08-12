@@ -13,7 +13,7 @@ export default function Contact() {
   const [confirmationMessage, setConfirmationMessage] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showTip, setShowTip] = useState(true)
+  const [showTip] = useState(true)
   const [tipIndex, setTipIndex] = useState(0)
   const formRef = useRef<HTMLFormElement>(null)
   const [selectedEmail, setSelectedEmail] = useState<number | null>(null)
@@ -276,9 +276,7 @@ TechMentor.org`,
 
   const handleInboxMessageClick = (messageId: number) => {
     setSelectedEmail(messageId)
-    // Mark the message as read
-    const updatedMessages = inboxMessages.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg))
-    // In a real app, we would update the messages state here
+    // Marking the message read would go here once inbox state is mutable.
   }
 
   const unreadCount = inboxMessages.filter((msg) => !msg.read).length

@@ -114,7 +114,6 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Constants for icon positioning
   const ICON_SPACING_Y = 100 // Vertical spacing between icons
   const FIRST_COLUMN_X = 5 // X position for first column (shifted further left from 15 to 5)
-  const SECOND_COLUMN_X = 105 // X position for second column (shifted further left from 115 to 105)
   const FIRST_ROW_Y = 15 // Y position for first row (shifted up from 20 to 15)
 
   // Initialize icon positions - this defines the default positions
@@ -924,7 +923,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     }
   }
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = () => {
     if (selectionBox.isSelecting) {
       // Calculate the selection rectangle
       const selectionRect = {

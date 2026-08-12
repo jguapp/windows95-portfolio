@@ -111,7 +111,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
   const [speed, setSpeed] = useState(INITIAL_SPEED)
   const [showHelp, setShowHelp] = useState(false)
   const [showHighScores, setShowHighScores] = useState(false)
-  const [highScores, setHighScores] = useState<{ name: string; score: number }[]>([
+  const [highScores] = useState<{ name: string; score: number }[]>([
     { name: "WIN95", score: 5000 },
     { name: "PLAYER", score: 3500 },
     { name: "TETRIS", score: 2000 },

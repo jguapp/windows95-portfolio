@@ -8,7 +8,6 @@ interface TaskbarProps {
   minimizedWindows: string[]
   onWindowSelect: (id: string) => void
   onToggleStartMenu: () => void
-  showStartMenu: boolean
 }
 
 export default function Taskbar({
@@ -17,7 +16,6 @@ export default function Taskbar({
   minimizedWindows,
   onWindowSelect,
   onToggleStartMenu,
-  showStartMenu,
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
 

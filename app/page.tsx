@@ -80,16 +80,11 @@ export default function Home() {
 
   // Handle maximizing a window
   const handleMaximizeWindow = (id: string) => {
-    console.log("handleMaximizeWindow called for:", id)
     // Set the window as active when maximized
     setActiveWindow(id)
 
     // Dispatch a direct event to maximize the window
-    const event = new CustomEvent("windowAction", {
-      detail: { action: "maximize", id },
-    })
-    console.log("Dispatching maximize event for:", id)
-    window.dispatchEvent(event)
+    window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "maximize", id } }))
   }
 
   // Toggle start menu
@@ -104,7 +99,6 @@ export default function Home() {
 
   // Handle Konami code entered
   const handleKonamiCodeEntered = useCallback(() => {
-    console.log("Konami code entered!")
     setShowPokemonBattle(true)
   }, [])
 
@@ -291,20 +285,6 @@ export default function Home() {
     }
   }, [])
 
-  // Add a direct event listener for debugging
-  useEffect(() => {
-    const debugListener = (event: Event) => {
-      const customEvent = event as CustomEvent
-      console.log("Window action event detected:", customEvent.detail)
-    }
-
-    window.addEventListener("windowAction", debugListener)
-
-    return () => {
-      window.removeEventListener("windowAction", debugListener)
-    }
-  }, [])
-
   // If still booting, show boot sequence
   if (isBooting) {
     return <BootSequence onBootComplete={handleBootComplete} />
@@ -329,7 +309,6 @@ export default function Home() {
             isMinimized={minimizedWindows.includes(id)}
             onClose={() => handleCloseWindow(id)}
             onMinimize={() => handleMinimizeWindow(id)}
-            onMaximize={() => handleMaximizeWindow(id)}
             onFocus={() => setActiveWindow(id)}
           />
         ))}
@@ -337,7 +316,6 @@ export default function Home() {
 
       {showStartMenu && (
         <StartMenu
-          onClose={() => setShowStartMenu(false)}
           onOpenWindow={(id) => {
             handleOpenWindow(id)
             setShowStartMenu(false)
@@ -351,7 +329,6 @@ export default function Home() {
         minimizedWindows={minimizedWindows}
         onWindowSelect={handleOpenWindow}
         onToggleStartMenu={toggleStartMenu}
-        showStartMenu={showStartMenu}
       />
 
       {showWelcomePopup && <WelcomePopup onClose={closeWelcomePopup} />}

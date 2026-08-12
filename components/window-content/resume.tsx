@@ -569,7 +569,7 @@ export default function Resume() {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
-  const [zoomLevel, setZoomLevel] = useState("100%")
+  const [zoomLevel] = useState("100%")
   const [undoStack, setUndoStack] = useState<string[]>([])
   const [redoStack, setRedoStack] = useState<string[]>([])
   const [clipboardContent, setClipboardContent] = useState<string | null>(null)
@@ -760,10 +760,6 @@ export default function Resume() {
     }
   }
 
-  const handleInsertExcel = () => {
-    alert("This would insert an Excel worksheet in a real Word 95 application.")
-  }
-
   const handleColumns = () => {
     alert("This would open the columns dialog in a real Word 95 application.")
   }
@@ -800,15 +796,6 @@ export default function Resume() {
 
   const handleBorders = () => {
     alert("This would open the borders dialog in a real Word 95 application.")
-  }
-
-  const handleZoomChange = (zoom: string) => {
-    setZoomLevel(zoom)
-    if (resumeRef.current) {
-      const zoomValue = Number.parseInt(zoom.replace("%", "")) / 100
-      resumeRef.current.style.transform = `scale(${zoomValue})`
-      resumeRef.current.style.transformOrigin = "top center"
-    }
   }
 
   const handleMenuClick = (menuName: string, event: React.MouseEvent) => {
@@ -1261,7 +1248,7 @@ export default function Resume() {
         <select
           className="w-32 h-6 bg-white border border-[#808080] shadow-[inset_1px_1px_#404040] px-1 text-[11px]"
           value="Normal"
-          onChange={(e) => {
+          onChange={() => {
             // This would apply different predefined styles in a real Word app
             alert("This would apply a style in a real Word 95 application.")
           }}

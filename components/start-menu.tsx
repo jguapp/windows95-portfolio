@@ -3,13 +3,11 @@
 import { useState } from "react"
 
 interface StartMenuProps {
-  onClose: () => void
   onOpenWindow: (id: string) => void
 }
 
-export default function StartMenu({ onClose, onOpenWindow }: StartMenuProps) {
+export default function StartMenu({ onOpenWindow }: StartMenuProps) {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
-  const [activeNestedSubmenu, setActiveNestedSubmenu] = useState<string | null>(null)
 
   const handleShutDown = () => {
     // Close the website
@@ -22,16 +20,10 @@ export default function StartMenu({ onClose, onOpenWindow }: StartMenuProps) {
 
   const handleMouseEnter = (menu: string) => {
     setActiveSubmenu(menu)
-    setActiveNestedSubmenu(null)
-  }
-
-  const handleNestedMouseEnter = (menu: string) => {
-    setActiveNestedSubmenu(menu)
   }
 
   const handleMouseLeave = () => {
     setActiveSubmenu(null)
-    setActiveNestedSubmenu(null)
   }
 
   return (

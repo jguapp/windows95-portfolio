@@ -124,8 +124,6 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
   useEffect(() => {
     // Apply color scheme changes
     const applyColorScheme = () => {
-      const root = document.documentElement
-
       // Default Windows Standard colors
       let desktopColor = "#008080" // Teal
       let windowColor = "#c0c0c0" // Silver

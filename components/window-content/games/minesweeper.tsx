@@ -397,42 +397,6 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     }
   }
 
-  // Game menu options
-  const gameMenuOptions = [
-    {
-      label: "NEW GAME",
-      action: initializeGrid,
-    },
-    {
-      label: "HIGH SCORES",
-      action: () => setShowHighScores(true),
-    },
-    {
-      label: "EXIT",
-      action: onReturn,
-    },
-  ]
-
-  // Options menu options
-  const optionsMenuOptions = [
-    {
-      label: `SOUND: ${soundEnabled ? "ON" : "OFF"}`,
-      action: toggleSound,
-    },
-    {
-      label: "SETTINGS",
-      action: () => setShowSettings(true),
-    },
-  ]
-
-  // Help menu options
-  const helpMenuOptions = [
-    {
-      label: "HOW TO PLAY",
-      action: () => setShowHelp(true),
-    },
-  ]
-
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

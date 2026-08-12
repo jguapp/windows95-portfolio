@@ -47,7 +47,7 @@ export default function Paint() {
   const [isMovingSelection, setIsMovingSelection] = useState<boolean>(false)
   const [textInput, setTextInput] = useState<string>("")
   const [textPosition, setTextPosition] = useState<Point | null>(null)
-  const [textFont, setTextFont] = useState<string>("12px Arial")
+  const [textFont] = useState<string>("12px Arial")
   const [showTextInput, setShowTextInput] = useState<boolean>(false)
   const [curvePoints, setCurvePoints] = useState<CurvePoint[]>([null, null, null])
   const [curveStage, setCurveStage] = useState<number>(0)

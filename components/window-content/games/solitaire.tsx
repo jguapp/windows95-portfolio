@@ -42,7 +42,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   const [moves, setMoves] = useState(0)
   const [score, setScore] = useState(0)
   const [gameWon, setGameWon] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
   const [showGameMenu, setShowGameMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [showHelpMenu, setShowHelpMenu] = useState(false)

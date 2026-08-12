@@ -732,7 +732,6 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [battleText, setBattleText] = useState<string>(`A wild ${enemyTeam[0]?.name || "POKEMON"} appeared!`)
   const [showMoves, setShowMoves] = useState<boolean>(false)
   const [showPokemonSelection, setShowPokemonSelection] = useState<boolean>(false)
-  const [selectedMove, setSelectedMove] = useState<Move | null>(null)
 
   // Sound states remain the same
   const [battleMusic, setBattleMusic] = useState<HTMLAudioElement | null>(null)
@@ -1453,11 +1452,6 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     }
   }, [handleKeyDown])
 
-  // Format Pokemon types for display
-  const formatPokemonTypes = (types: PokemonType[]): string => {
-    return types.map((type) => type.charAt(0).toUpperCase() + type.slice(1)).join("/")
-  }
-
   // Render the battle screen using a portal to ensure it's on top of everything
   return createPortal(
     <div
@@ -2080,35 +2074,3 @@ function getMoveEffect(type: PokemonType): string {
   }
 }
 
-/* Add CSS for the fainting animation */
-import { createGlobalStyle } from "styled-components"
-
-const GlobalStyle = createGlobalStyle`
-  @keyframes faint {
-    0% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(50px);
-      opacity: 0;
-    }
-  }
-  
-  .animate-faint {
-    animation: faint 1s ease-in-out forwards;
-  }
-
-  @keyframes freeze {
-    0%, 100% {
-      opacity: 0.7;
-    }
-    50% {
-      opacity: 0.9;
-    }
-  }
-
-  .animate-freeze {
-    animation: freeze 0.8s ease-in-out infinite;
-  }
-`

@@ -24,13 +24,12 @@ interface WindowProps {
   isMinimized: boolean
   onClose: () => void
   onMinimize: () => void
-  onMaximize: () => void
   onFocus: () => void
 }
 
-export default function Window({ id, isActive, isMinimized, onClose, onMinimize, onMaximize, onFocus }: WindowProps) {
+export default function Window({ id, isActive, isMinimized, onClose, onMinimize, onFocus }: WindowProps) {
   const [position, setPosition] = useState({ x: 100 + Math.random() * 50, y: 100 + Math.random() * 50 })
-  const [size, setSize] = useState({ width: 650, height: 500 })
+  const [size] = useState({ width: 650, height: 500 })
   const [isMaximized, setIsMaximized] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -109,21 +108,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
     }
   }, [isDragging, dragOffset, size.width, size.height])
 
-  // Direct maximize function
-  const maximizeWindow = () => {
-    setIsMaximized(true)
-    onMaximize()
-  }
-
-  // Direct restore function
-  const restoreWindow = () => {
-    setIsMaximized(false)
-    onMaximize()
-  }
-
   // Toggle maximize state
   const toggleMaximize = () => {
-    console.log("Toggle maximize called, current state:", isMaximized)
     setIsMaximized(!isMaximized)
   }
 
@@ -131,10 +117,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
   useEffect(() => {
     const handleWindowAction = (event: CustomEvent) => {
       const { action, id: windowId } = event.detail
-      console.log("Window action received:", action, windowId, id)
 
       if (windowId === id && action === "maximize") {
-        console.log("Maximizing window:", id)
         setIsMaximized((prev) => !prev)
       }
     }

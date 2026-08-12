@@ -1019,11 +1019,6 @@ export default function Chess({ onReturn }: ChessProps) {
     }
   }
 
-  // Close the context menu
-  const closeMenu = () => {
-    setShowMenu(false)
-  }
-
   // Handle menu item click
   const handleMenuItemClick = (action: string) => {
     switch (action) {
