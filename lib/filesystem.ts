@@ -55,7 +55,7 @@ Try the Konami code on the desktop.
 - Joel
 `
 
-export const ROOT: FsDir = d({
+const INITIAL: FsDir = d({
   "My Documents": d({
     "Resume.doc": f({ opens: "resume", size: 28160, modified: "08/12/26 09:14" }),
     "Readme.txt": f({ opens: "notepad", body: README_TEXT, modified: "08/12/26 09:20" }),
@@ -93,9 +93,75 @@ export const ROOT: FsDir = d({
   "Config.sys": f({ body: "DEVICE=C:\\WINDOWS\\HIMEM.SYS\nFILES=60\nBUFFERS=30\n", modified: "08/24/95 12:00" }),
 })
 
+/**
+ * The live drive.
+ *
+ * Notepad can save, so the tree has to be mutable. Readers go through
+ * getRoot() and anything that renders it subscribes, so Explorer updates the
+ * moment a file is written rather than showing a stale listing.
+ */
+let root: FsDir = INITIAL
+const listeners = new Set<() => void>()
+
+export function getRoot(): FsDir {
+  return root
+}
+
+export function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+function notify() {
+  root = { ...root }
+  for (const l of listeners) l()
+}
+
+/** Create or overwrite a text file, creating parent folders as needed. */
+export function writeFile(path: string[], body: string): boolean {
+  if (!path.length) return false
+  const dirPath = path.slice(0, -1)
+  const name = path[path.length - 1]
+  const parent = resolve(dirPath)
+  if (!parent || parent.kind !== "dir") return false
+
+  const existingKey = Object.keys(parent.children).find((k) => k.toLowerCase() === name.toLowerCase())
+  const key = existingKey ?? name
+  const prev = existingKey ? parent.children[existingKey] : undefined
+  const now = new Date()
+  const stamp = `${now.getMonth() + 1}/${now.getDate()}/${String(now.getFullYear()).slice(2)} ${now
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
+
+  parent.children[key] = {
+    kind: "file",
+    body,
+    size: body.length,
+    modified: stamp,
+    opens: prev && prev.kind === "file" ? prev.opens : "notepad",
+  }
+  notify()
+  return true
+}
+
+/** Every text file on the drive, for Notepad's Open dialog. */
+export function textFiles(): { path: string[]; name: string }[] {
+  const out: { path: string[]; name: string }[] = []
+  const walk = (node: FsNode, path: string[]) => {
+    if (node.kind !== "dir") return
+    for (const [name, child] of Object.entries(node.children)) {
+      if (child.kind === "dir") walk(child, [...path, name])
+      else if (typeof child.body === "string") out.push({ path: [...path, name], name })
+    }
+  }
+  walk(root, [])
+  return out
+}
+
 /** Case-insensitive lookup, since DOS and Explorer both ignore case. */
-export function resolve(path: string[], root: FsDir = ROOT): FsNode | null {
-  let node: FsNode = root
+export function resolve(path: string[], from: FsDir = root): FsNode | null {
+  let node: FsNode = from
   for (const part of path) {
     if (node.kind !== "dir") return null
     const children: Record<string, FsNode> = node.children
@@ -107,9 +173,9 @@ export function resolve(path: string[], root: FsDir = ROOT): FsNode | null {
 }
 
 /** The canonical casing for a path, so `cd my documents` prints My Documents. */
-export function canonical(path: string[], root: FsDir = ROOT): string[] | null {
+export function canonical(path: string[], from: FsDir = root): string[] | null {
   const out: string[] = []
-  let node: FsNode = root
+  let node: FsNode = from
   for (const part of path) {
     if (node.kind !== "dir") return null
     const children: Record<string, FsNode> = node.children
@@ -121,8 +187,8 @@ export function canonical(path: string[], root: FsDir = ROOT): string[] | null {
   return out
 }
 
-export function listDir(path: string[], root: FsDir = ROOT): [string, FsNode][] {
-  const node = resolve(path, root)
+export function listDir(path: string[], from: FsDir = root): [string, FsNode][] {
+  const node = resolve(path, from)
   if (!node || node.kind !== "dir") return []
   // Directories first, then files, each alphabetically, as Explorer sorted.
   return Object.entries(node.children).sort(([an, a], [bn, b]) => {

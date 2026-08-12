@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { README_TEXT } from "@/lib/filesystem"
+import { README_TEXT, displayPath, parsePath, resolve, textFiles, writeFile } from "@/lib/filesystem"
 
 /**
  * Windows 95 Notepad.
@@ -29,6 +29,10 @@ export default function Notepad() {
   const [direction, setDirection] = useState<"up" | "down">("down")
   const [notFound, setNotFound] = useState(false)
   const [fileName, setFileName] = useState("Readme.txt")
+  const [path, setPath] = useState<string[]>(["My Documents", "Readme.txt"])
+  const [dialog, setDialog] = useState<null | "open" | "saveAs">(null)
+  const [saveAsName, setSaveAsName] = useState("Untitled.txt")
+  const [toast, setToast] = useState<string | null>(null)
 
   const areaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -95,9 +99,20 @@ export default function Notepad() {
           setFileName("Untitled")
         },
       },
-      { label: "Open...", action: () => alert("Open is not wired to the file system yet.") },
-      { label: "Save", action: () => alert(`Saved ${fileName}.`) },
-      { label: "Save As...", action: () => alert("Save As is not wired to the file system yet.") },
+      { label: "Open...", action: () => setDialog("open") },
+      {
+        label: "Save",
+        action: () => {
+          if (writeFile(path, text)) setToast(`Saved ${displayPath(path)}`)
+        },
+      },
+      {
+        label: "Save As...",
+        action: () => {
+          setSaveAsName(fileName)
+          setDialog("saveAs")
+        },
+      },
       { label: "Page Setup...", action: () => {}, separator: true },
       { label: "Print", action: () => window.print() },
       { label: "Exit", action: () => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "notepad" } })), separator: true },
@@ -192,6 +207,107 @@ export default function Notepad() {
           Ln {lineCol.ln}, Col {lineCol.col}
         </span>
       </div>
+
+      {toast && (
+        <div
+          className="absolute bottom-6 left-2 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-2 py-1 text-xs"
+          onAnimationEnd={() => setToast(null)}
+        >
+          {toast}
+          <button type="button" className="ml-3 underline" onClick={() => setToast(null)}>
+            OK
+          </button>
+        </div>
+      )}
+
+      {/* Open dialog, listing every text file on the drive */}
+      {dialog === "open" && (
+        <div className="absolute inset-0 z-50 flex items-start justify-center pt-8">
+          <div className="w-[340px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]">
+            <div className="bg-[#000080] px-2 py-[3px] text-xs font-bold text-white">Open</div>
+            <div className="p-3">
+              <div className="mb-2 h-[150px] overflow-auto border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white">
+                {textFiles().map((f) => (
+                  <button
+                    key={f.path.join("/")}
+                    type="button"
+                    className="block w-full px-2 py-[1px] text-left text-xs hover:bg-[#000080] hover:text-white"
+                    onClick={() => {
+                      const node = resolve(f.path)
+                      if (node && node.kind === "file") {
+                        setText(node.body ?? "")
+                        setFileName(f.name)
+                        setPath(f.path)
+                      }
+                      setDialog(null)
+                    }}
+                  >
+                    {displayPath(f.path)}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setDialog(null)}
+                  className="h-[23px] min-w-[75px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-xs active:border-t-[#404040] active:border-l-[#404040]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save As dialog */}
+      {dialog === "saveAs" && (
+        <div className="absolute inset-0 z-50 flex items-start justify-center pt-8">
+          <div className="w-[340px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]">
+            <div className="bg-[#000080] px-2 py-[3px] text-xs font-bold text-white">Save As</div>
+            <form
+              className="p-3"
+              onSubmit={(e) => {
+                e.preventDefault()
+                const target = parsePath(saveAsName, ["My Documents"])
+                if (writeFile(target, text)) {
+                  setPath(target)
+                  setFileName(target[target.length - 1])
+                  setToast(`Saved ${displayPath(target)}`)
+                }
+                setDialog(null)
+              }}
+            >
+              <label className="mb-1 block text-xs" htmlFor="saveas">
+                File name:
+              </label>
+              <input
+                id="saveas"
+                type="text"
+                value={saveAsName}
+                onChange={(e) => setSaveAsName(e.target.value)}
+                className="mb-3 w-full border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 text-xs outline-none"
+              />
+              <p className="mb-3 text-xs text-[#404040]">Saved into C:\My Documents unless a path is given.</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="submit"
+                  className="h-[23px] min-w-[75px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-xs active:border-t-[#404040] active:border-l-[#404040]"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDialog(null)}
+                  className="h-[23px] min-w-[75px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-xs active:border-t-[#404040] active:border-l-[#404040]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Find dialog */}
       {findOpen && (

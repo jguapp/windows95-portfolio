@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { type FsDir, type FsNode, ROOT, displayPath, iconFor, listDir } from "@/lib/filesystem"
+import { useMemo, useState, useSyncExternalStore } from "react"
+import { type FsDir, type FsNode, displayPath, getRoot, iconFor, listDir, subscribe } from "@/lib/filesystem"
 
 /**
  * Windows Explorer over the virtual C:\ drive.
@@ -100,7 +100,10 @@ export default function Explorer() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set([""]))
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
-  const entries = useMemo(() => listDir(cwd), [cwd])
+  // Re-reads when the drive changes, so a file saved in Notepad appears here
+  // without needing the window reopened.
+  const root = useSyncExternalStore(subscribe, getRoot, getRoot)
+  const entries = useMemo(() => listDir(cwd, root), [cwd, root])
 
   const navigate = (path: string[]) => {
     setCwd(path)
@@ -241,7 +244,7 @@ export default function Explorer() {
         <div className="w-[190px] shrink-0 overflow-auto border-r border-[#808080] bg-white p-1">
           <TreeNode
             name="C:\\"
-            node={ROOT as FsDir}
+            node={root as FsDir}
             path={[]}
             cwd={cwd}
             expanded={expanded}
