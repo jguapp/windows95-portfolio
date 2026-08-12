@@ -11,6 +11,7 @@ import Gallery from "./window-content/gallery"
 import Games from "./window-content/games"
 import Paint from "./window-content/paint"
 import Calculator from "./window-content/calculator"
+import Notepad from "./window-content/notepad"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 
 // Shared by the three title-bar controls: a 16px Win95 button with the glyph
@@ -41,10 +42,12 @@ const MIN_SIZE: Record<string, Size> = {
   contact: { width: 560, height: 400 },
   gallery: { width: 520, height: 380 },
   calculator: { width: 300, height: 260 },
+  notepad: { width: 400, height: 300 },
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
   calculator: { width: 320, height: 280 },
+  notepad: { width: 620, height: 480 },
   resume: { width: 800, height: 620 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
@@ -118,6 +121,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <Paint />
       case "calculator":
         return <Calculator />
+      case "notepad":
+        return <Notepad />
       default:
         return <div>Content not available</div>
     }
@@ -316,7 +321,11 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
           <h1 className="text-sm m-0 p-[0_5px]">
             {id === "spotify"
               ? "Windows Media Player"
-              : id
+              : id === "notepad"
+                ? "Readme.txt - Notepad"
+                : id === "calculator"
+                  ? "Calculator"
+                  : id
                   .split("-")
                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(" ")}
