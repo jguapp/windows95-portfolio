@@ -10,6 +10,13 @@ import Contact from "./window-content/contact"
 import Gallery from "./window-content/gallery"
 import Games from "./window-content/games"
 import Paint from "./window-content/paint"
+import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
+
+// Shared by the three title-bar controls: a 16px Win95 button with the glyph
+// centred. flex centring replaces the old line-height trick, which could not
+// hold the glyph in place once globals.css forced the font size to 1.2rem.
+const controlButtonClass =
+  "w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
 
 interface WindowProps {
   id: string
@@ -175,31 +182,34 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
           </h1>
           <div className="controls flex gap-[5px]">
             <button
-              className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[10px] text-center font-bold leading-3 p-0 hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+              className={controlButtonClass}
+              aria-label="Minimize"
               onClick={(e) => {
                 e.stopPropagation()
                 onMinimize()
               }}
             >
-              −
+              <MinimizeIcon />
             </button>
             <button
-              className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[10px] text-center font-bold leading-3 p-0 hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+              className={controlButtonClass}
+              aria-label={isMaximized ? "Restore" : "Maximize"}
               onClick={(e) => {
                 e.stopPropagation()
                 toggleMaximize()
               }}
             >
-              □
+              <MaximizeIcon />
             </button>
             <button
-              className="w-4 h-4 bg-[#c0c0c0] border-[#ffffff] shadow-[inset_1px_1px_#808080,inset_-1px_-1px_#000000] cursor-pointer text-black text-[4px] text-center font-normal leading-[16px] p-0 flex items-center justify-center hover:bg-[#000080] hover:text-white hover:shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#808080]"
+              className={controlButtonClass}
+              aria-label="Close"
               onClick={(e) => {
                 e.stopPropagation()
                 onClose()
               }}
             >
-              X
+              <CloseIcon />
             </button>
           </div>
         </div>

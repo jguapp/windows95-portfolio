@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
+import { CloseIcon } from "./win95-controls"
 
 interface WelcomePopupProps {
   onClose: () => void
@@ -117,10 +118,11 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           >
             <span className="text-xs">Welcome</span>
             <button
-              className="w-4 h-4 bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] cursor-pointer text-[10px] text-black flex items-center justify-center"
+              className="w-4 h-4 shrink-0 bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] cursor-pointer text-black flex items-center justify-center"
+              aria-label="Close"
               onClick={onClose}
             >
-              <span className="font-bold">x</span>
+              <CloseIcon />
             </button>
           </div>
 
@@ -221,10 +223,11 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           >
             <span className="text-xs">What's New</span>
             <button
-              className="w-4 h-4 bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] cursor-pointer text-[10px] text-black flex items-center justify-center"
+              className="w-4 h-4 shrink-0 bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] cursor-pointer text-black flex items-center justify-center"
+              aria-label="Close What's New"
               onClick={toggleWhatsNew}
             >
-              <span className="font-bold">x</span>
+              <CloseIcon />
             </button>
           </div>
 
