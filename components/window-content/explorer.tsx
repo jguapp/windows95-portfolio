@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { type FsDir, type FsNode, ROOT, displayPath, iconFor, listDir, resolve } from "@/lib/filesystem"
+import { type FsDir, type FsNode, ROOT, displayPath, iconFor, listDir } from "@/lib/filesystem"
 
 /**
  * Windows Explorer over the virtual C:\ drive.
