@@ -335,7 +335,15 @@ export default function Home() {
         ))}
       </div>
 
-      {showStartMenu && <StartMenu onClose={() => setShowStartMenu(false)} />}
+      {showStartMenu && (
+        <StartMenu
+          onClose={() => setShowStartMenu(false)}
+          onOpenWindow={(id) => {
+            handleOpenWindow(id)
+            setShowStartMenu(false)
+          }}
+        />
+      )}
 
       <Taskbar
         openWindows={openWindows}

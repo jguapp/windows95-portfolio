@@ -174,12 +174,14 @@ export default function Games() {
       <div className="flex-1 p-4 overflow-auto">
         {/* Category tabs */}
         <div className="mb-4 flex border-b border-[#808080]">
-          {[
-            { id: "all", label: "All Games" },
-            { id: "arcade", label: "Arcade" },
-            { id: "board", label: "Board Games" },
-            { id: "puzzle", label: "Puzzle" },
-          ].map((tab) => (
+          {(
+            [
+              { id: "all", label: "All Games" },
+              { id: "arcade", label: "Arcade" },
+              { id: "board", label: "Board Games" },
+              { id: "puzzle", label: "Puzzle" },
+            ] as const
+          ).map((tab) => (
             <button
               key={tab.id}
               className={`px-4 py-1 mr-1 ${
@@ -188,7 +190,7 @@ export default function Games() {
                   : "bg-[#d4d0c8] border border-[#808080]"
               }`}
               onClick={() => {
-                setActiveTab(tab.id as any)
+                setActiveTab(tab.id)
                 playSelectSound()
               }}
               onMouseEnter={playHoverSound}

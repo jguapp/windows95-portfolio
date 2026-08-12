@@ -94,7 +94,6 @@ export default function Paint() {
             tempCtx.fillRect(0, 0, canvas.width, canvas.height)
 
             // Draw the last state scaled to the new canvas size
-            const img = new Image()
             const lastStateCanvas = document.createElement("canvas")
             lastStateCanvas.width = lastState.width
             lastStateCanvas.height = lastState.height

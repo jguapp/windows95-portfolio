@@ -534,7 +534,8 @@ const MenuDropdown = ({
 }: {
   isOpen: boolean
   onClose: () => void
-  items: { label: string; action?: () => void; divider?: boolean; disabled?: boolean }[]
+  // Divider entries carry no label.
+  items: { label?: string; action?: () => void; divider?: boolean; disabled?: boolean }[]
   position: { top: number; left: number }
 }) => {
   if (!isOpen) return null
@@ -588,7 +589,7 @@ export default function Resume() {
   const [isItalic, setIsItalic] = useState(false)
   const [isUnderline, setIsUnderline] = useState(false)
   const [textColor, setTextColor] = useState("#000000")
-  const [textAlign, setTextAlign] = useState("left")
+  const [textAlign, setTextAlign] = useState<React.CSSProperties["textAlign"]>("left")
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [openDialogOpen, setOpenDialogOpen] = useState(false)
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
@@ -636,7 +637,7 @@ export default function Resume() {
   useEffect(() => {
     if (resumeRef.current) {
       // Apply font family and size to all content
-      const elements = resumeRef.current.querySelectorAll('[contenteditable="true"]')
+      const elements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
       elements.forEach((el) => {
         el.style.fontFamily = fontFamily
         el.style.fontSize = `${fontSize}px`
@@ -806,7 +807,7 @@ export default function Resume() {
     document.execCommand("foreColor", false, color)
   }
 
-  const handleAlignment = (align: string) => {
+  const handleAlignment = (align: "left" | "center" | "right" | "justify") => {
     setTextAlign(align)
     document.execCommand(`justify${align.charAt(0).toUpperCase() + align.slice(1)}`, false, "")
   }
@@ -1313,7 +1314,7 @@ export default function Resume() {
             } else {
               // If no selection, apply to editable elements for future typing
               if (resumeRef.current) {
-                const editableElements = resumeRef.current.querySelectorAll('[contenteditable="true"]')
+                const editableElements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
                 editableElements.forEach((el) => {
                   el.style.fontFamily = e.target.value
                 })
@@ -1373,7 +1374,7 @@ export default function Resume() {
             } else {
               // If no selection, apply to editable elements for future typing
               if (resumeRef.current) {
-                const editableElements = resumeRef.current.querySelectorAll('[contenteditable="true"]')
+                const editableElements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
                 editableElements.forEach((el) => {
                   el.style.fontSize = `${newSize}px`
                 })

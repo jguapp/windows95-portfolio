@@ -1072,7 +1072,8 @@ export default function Chess({ onReturn }: ChessProps) {
           for (const move of validMoves) {
             // Create a new board with the move applied
             const newBoard = [...board.map((row) => [...row])]
-            const movingPiece = newBoard[row][col]
+            // Same square as the `piece &&` guard above, so this is non-null.
+            const movingPiece = piece
             const capturedPiece = newBoard[move.row][move.col]
 
             // Make the move

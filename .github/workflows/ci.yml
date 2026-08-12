@@ -21,18 +21,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # next.config.mjs sets ignoreBuildErrors, so `next build` alone will not
-      # surface type errors. This is the check that actually catches them.
-      #
-      # Advisory for now: there are ~37 pre-existing errors across the games,
-      # paint and resume components. Fix those, then drop continue-on-error and
-      # remove ignoreBuildErrors from next.config.mjs.
       - name: Typecheck
-        continue-on-error: true
         run: pnpm typecheck
 
       - name: Lint
-        continue-on-error: true
         run: pnpm lint
 
       - name: Build
@@ -53,9 +45,5 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Advisory, not blocking: Next.js 14.2.x is end-of-line and carries open
-      # high-severity advisories whose fixes only shipped in 15.5.x, so this
-      # would otherwise fail permanently. Make it blocking after upgrading.
       - name: Audit dependencies
-        continue-on-error: true
         run: pnpm audit --audit-level high
