@@ -470,6 +470,16 @@ TechMentor.org`,
               </div>
 
               <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1">
+                {/* Honeypot: hidden from real users, so a filled value means a bot. */}
+                <input
+                  type="text"
+                  name="company_website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute -left-[9999px] h-px w-px opacity-0"
+                />
+
                 <div className="flex items-center p-1 border-b border-[#808080]">
                   <label htmlFor="to" className="w-16 font-bold text-xs">
                     To:
