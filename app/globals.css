@@ -108,7 +108,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #008080 !important; /* Authentic Windows 95 teal */
-  font-size: 11px; /* MS Sans Serif 8pt, the Windows 95 shell size */
+  font-size: 16px; /* Increased from 12px to 14px */
   color: black;
   font-family: "MS Sans Serif", "VT323", monospace !important;
 }
@@ -330,38 +330,38 @@ body {
   line-height: 1.2;
 }
 
-/* Windows 95 type scale.
-   The shell used MS Sans Serif at 8pt, which is 11px, for menus, buttons,
-   labels, list items and status bars alike. Title bars were the same size in
-   bold. There was no larger "body" size; 11px is simply what the OS looked
-   like, so it is the base here and Tailwind's scale is mapped onto it.
-
-   This replaces four blanket !important rules that forced 16-19px onto every
-   p, span, div, button and input. Being !important they beat every Tailwind
-   size class in the project, which is why the title-bar glyphs once rendered
-   at 19.2px inside 16px buttons. */
+/* Increase font sizes throughout the application */
 .text-xs {
-  font-size: 11px;
+  font-size: 1.0rem !important; /* Larger than default */
 }
 
 .text-sm {
-  font-size: 11px;
+  font-size: 1.15rem !important; /* Larger than default */
 }
 
-.text-base {
-  font-size: 12px;
+p,
+span,
+div,
+button,
+input,
+textarea,
+select,
+option {
+  font-size: 1.2rem !important; /* Base font size for most elements */
 }
 
-.text-lg {
-  font-size: 13px;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 1.4em !important; /* Larger headings */
 }
 
-.text-xl {
-  font-size: 16px;
-}
-
+/* Increase menu text size */
 .menu-bar span {
-  font-size: 11px;
+  font-size: 15px !important; /* Increased from default */
 }
 
 /* 80s Arcade Styles */
@@ -1287,135 +1287,4 @@ body {
   src: url("https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3nVivM.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-/* ==========================================================================
-   Windows 95 shell chrome
-   Bevels, scrollbars, focus and selection, shared by every window.
-   ========================================================================== */
-
-:root {
-  --w95-face: #c0c0c0;
-  --w95-light: #ffffff;
-  --w95-hilight: #dfdfdf;
-  --w95-shadow: #808080;
-  --w95-dark: #000000;
-  --w95-navy: #000080;
-  --w95-teal: #008080;
-}
-
-/* Windows 95 borders are two pixels and always four colours. Raised for
-   buttons and panels, sunken for fields, wells and group boxes. */
-.w95-raised {
-  border: 2px solid;
-  border-color: var(--w95-light) var(--w95-dark) var(--w95-dark) var(--w95-light);
-  box-shadow: inset 1px 1px 0 var(--w95-hilight), inset -1px -1px 0 var(--w95-shadow);
-  background: var(--w95-face);
-}
-
-.w95-sunken {
-  border: 2px solid;
-  border-color: var(--w95-shadow) var(--w95-light) var(--w95-light) var(--w95-shadow);
-  box-shadow: inset 1px 1px 0 var(--w95-dark), inset -1px -1px 0 var(--w95-hilight);
-  background: #ffffff;
-}
-
-/* Pressed buttons invert the bevel and nudge their label down and right. */
-.w95-raised:active,
-.w95-raised[data-pressed="true"] {
-  border-color: var(--w95-dark) var(--w95-light) var(--w95-light) var(--w95-dark);
-  box-shadow: inset 1px 1px 0 var(--w95-shadow), inset -1px -1px 0 var(--w95-hilight);
-  padding-top: 1px;
-  padding-left: 1px;
-}
-
-/* Standard command button: 75x23 with the label centred. */
-.w95-button {
-  min-width: 75px;
-  height: 23px;
-  padding: 0 8px;
-  font-size: 11px;
-  color: #000;
-  background: var(--w95-face);
-  border: 2px solid;
-  border-color: var(--w95-light) var(--w95-dark) var(--w95-dark) var(--w95-light);
-  box-shadow: inset 1px 1px 0 var(--w95-hilight), inset -1px -1px 0 var(--w95-shadow);
-}
-
-.w95-button:active {
-  border-color: var(--w95-dark) var(--w95-light) var(--w95-light) var(--w95-dark);
-  box-shadow: inset 1px 1px 0 var(--w95-shadow), inset -1px -1px 0 var(--w95-hilight);
-  padding: 1px 7px 0 9px;
-}
-
-/* The default button carries an extra black outer ring. */
-.w95-button-default {
-  outline: 1px solid var(--w95-dark);
-  outline-offset: 0;
-}
-
-/* Keyboard focus draws a dotted rectangle inset one pixel, never a glow. */
-.w95-focusable:focus-visible {
-  outline: 1px dotted var(--w95-dark);
-  outline-offset: -4px;
-}
-
-/* Windows 95 scrollbars: 16px, dithered trough, raised thumb, square ends. */
-.w95-scroll::-webkit-scrollbar,
-.window-content::-webkit-scrollbar,
-.document::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
-}
-
-.w95-scroll::-webkit-scrollbar-track,
-.window-content::-webkit-scrollbar-track,
-.document::-webkit-scrollbar-track {
-  background-color: var(--w95-face);
-  background-image: linear-gradient(45deg, var(--w95-light) 25%, transparent 25%, transparent 75%, var(--w95-light) 75%),
-    linear-gradient(45deg, var(--w95-light) 25%, transparent 25%, transparent 75%, var(--w95-light) 75%);
-  background-size: 2px 2px;
-  background-position: 0 0, 1px 1px;
-}
-
-.w95-scroll::-webkit-scrollbar-thumb,
-.window-content::-webkit-scrollbar-thumb,
-.document::-webkit-scrollbar-thumb {
-  background: var(--w95-face);
-  border: 2px solid;
-  border-color: var(--w95-light) var(--w95-dark) var(--w95-dark) var(--w95-light);
-  box-shadow: inset 1px 1px 0 var(--w95-hilight), inset -1px -1px 0 var(--w95-shadow);
-}
-
-.w95-scroll::-webkit-scrollbar-corner,
-.window-content::-webkit-scrollbar-corner,
-.document::-webkit-scrollbar-corner {
-  background: var(--w95-face);
-}
-
-/* Selection is the shell's navy, not the browser's blue. */
-::selection {
-  background: var(--w95-navy);
-  color: #ffffff;
-}
-
-/* Selected list rows keep their colour whether or not the control has focus. */
-.w95-selected {
-  background: var(--w95-navy);
-  color: #ffffff;
-}
-
-/* A 1px groove, as used between menu items and in group boxes. */
-.w95-separator {
-  height: 2px;
-  border-top: 1px solid var(--w95-shadow);
-  border-bottom: 1px solid var(--w95-light);
-}
-
-/* Bitmap type should never be smoothed. */
-body,
-.w95-text {
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: unset;
-  font-smooth: never;
 }

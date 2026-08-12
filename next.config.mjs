@@ -51,8 +51,8 @@ const nextConfig = {
     // webpack's default xxhash64 runs through a WASM module whose buffer
     // handling crashes on Node 22+ once the input crosses a size threshold:
     // "TypeError: Cannot read properties of undefined (reading 'length')" from
-    // WasmHash._updateWithBuffer. Growing globals.css was enough to trigger it.
-    // Node's own sha256 avoids the WASM path entirely and costs little here.
+    // WasmHash._updateWithBuffer. Any sizeable addition to the project can
+    // reach it. Node's own sha256 avoids the WASM path and costs little here.
     config.output.hashFunction = "sha256"
     return config
   },
