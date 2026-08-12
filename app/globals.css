@@ -1288,3 +1288,52 @@ h6 {
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* ==========================================================================
+   Period web pages inside Windows windows
+
+   The Projects, About Me and Contact windows render web pages rather than
+   Windows chrome, so they need their own type scale. globals.css sets
+   font-size with !important on p, span, div, button, input, textarea, select
+   and option, which inline styles cannot beat. Descendants of .page-2005
+   therefore inherit from the container, and the handful of exceptions use the
+   utility classes below.
+   ========================================================================== */
+
+.page-2005,
+.page-2005 p,
+.page-2005 span,
+.page-2005 div,
+.page-2005 a,
+.page-2005 li,
+.page-2005 td,
+.page-2005 th,
+.page-2005 button,
+.page-2005 input,
+.page-2005 textarea,
+.page-2005 select,
+.page-2005 h1,
+.page-2005 h2,
+.page-2005 h3 {
+  font-size: inherit !important;
+}
+
+.page-2005 {
+  font-size: 12px !important;
+}
+
+.page-2005 .t10 {
+  font-size: 10px !important;
+}
+
+.page-2005 .t11 {
+  font-size: 11px !important;
+}
+
+.page-2005 .t13 {
+  font-size: 13px !important;
+}
+
+.page-2005 .t15 {
+  font-size: 15px !important;
+}
