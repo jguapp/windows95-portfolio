@@ -1,127 +1,115 @@
-# 🖥️ Windows 95 Portfolio
+<div align="center">
 
-A nostalgic, interactive portfolio website built to look and feel like Windows 95, complete with authentic UI elements, classic games, and retro aesthetics.
+<img src=".github/assets/banner.png" alt="Windows 95 Portfolio — Joel Vasquez, Backend & Infrastructure Engineer" width="100%" />
 
-![Windows 95 Portfolio](https://img.shields.io/badge/Windows-95-00A4EF?style=for-the-badge&logo=windows&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14.2.35-black?style=for-the-badge&logo=next.js)
-![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css)
+###
 
-## 🎮 Live Demo
+<a href="https://builtbyjoel.vercel.app/" target="_blank"><img src="https://img.shields.io/badge/Launch%20the%20Desktop-008080?style=for-the-badge&logo=windows95&logoColor=white" height="34" alt="launch the desktop" /></a>
 
-[**Experience the Windows 95 Portfolio**](https://builtbyjoel.vercel.app/)
+###
 
-## ✨ Features
+<a href="https://www.linkedin.com/in/jvasquezcs" target="_blank"><img src="https://img.shields.io/static/v1?message=LinkedIn&logo=linkedin&label=&color=0077B5&logoColor=white&labelColor=&style=for-the-badge" height="25" alt="linkedin logo" /></a> <a href="mailto:jfvasq1@gmail.com"><img src="https://img.shields.io/static/v1?message=Gmail&logo=gmail&label=&color=D14836&logoColor=white&labelColor=&style=for-the-badge" height="25" alt="gmail logo" /></a> <a href="https://github.com/jguapp" target="_blank"><img src="https://img.shields.io/badge/GitHub-%23121011.svg?style=for-the-badge&logo=github&logoColor=white" height="25" alt="github logo" /></a> <a href="https://calendly.com/jfvasq1/30min" target="_blank"><img src="https://img.shields.io/badge/Calendly-%23006BFF.svg?style=for-the-badge&logo=Calendly&logoColor=white" height="25" alt="calendly logo" /></a>
 
-### 🖥️ Authentic Windows 95 Experience
-- **Boot Sequence**: Realistic Windows 95 startup
-- **Desktop Interface**: Classic desktop with draggable icons and context menus
-- **Taskbar**: Functional taskbar with start menu and system tray
-- **Window Management**: Minimize, maximize, and close windows just like the real thing
+###
 
-### 🎯 Portfolio Sections
-- **About Me**: Personal information and background
-- **Resume**: Professional experience and skills
-- **Projects**: Showcase of development work
-- **Contact**: Contact form with email functionality
-- **Gallery**: Photo gallery with professional images
-- **Paint**: Functional MS Paint clone with drawing tools
+**A portfolio you don't scroll. You boot it.**
 
-### 🎮 Classic Games
-- **Chess**: Full-featured chess game with piece movement
-- **Minesweeper**: Classic minesweeper with multiple difficulty levels
-- **Pong**: Retro pong game with paddle controls
-- **Solitaire**: Windows Solitaire card game
-- **Tetris**: Classic tetris with falling blocks
-- **Pokemon Battle**: Hidden Pokemon battle game (Konami code: ↑↑↓↓←→←→BA)
+No hero section. No parallax. Just a teal desktop, a Start menu, and a résumé that opens in Microsoft Word 95.
 
-### 🔧 Technical Features
-- **Responsive Design**: Works on desktop and mobile devices
-- **Keyboard Shortcuts**: Classic Windows shortcuts
-- **Local Storage**: Saves user preferences and settings
-- **Blue Screen of Death**: Easter egg BSOD simulation
+<img src=".github/assets/desktop.png" alt="The Windows 95 desktop with the welcome screen" width="90%" />
 
-## 🎮 How to Use
+</div>
 
-### Basic Navigation
-- **Click icons** to open applications
-- **Right-click** for context menus
-- **Drag icons** to reposition them
-- **Use the Start menu** to access programs
-
-### Games
-- **Chess**: Click and drag pieces to move them
-- **Minesweeper**: Left-click to reveal, right-click to flag
-- **Pong**: Use arrow keys or mouse to control paddles
-- **Solitaire**: Drag cards to build sequences
-- **Tetris**: Use arrow keys to rotate and move blocks
-
-### Hidden Features
-- **Konami Code**: Press ↑↑↓↓←→←→BA to trigger Pokemon battle
-- **Blue Screen**: Available in system menu (easter egg)
-
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS with custom Windows 95 styles
-- **UI Components**: Radix UI primitives
-- **State Management**: React hooks and context
-- **Icons**: Lucide React + custom Windows 95 icons
-- **Storage**: Local Storage for persistence
-
-## 📁 Project Structure
-
-```
-windows95-portfolio/
-├── app/                    # Next.js app directory
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Main page component
-├── components/            # React components
-│   ├── desktop.tsx        # Desktop interface
-│   ├── taskbar.tsx        # Taskbar component
-│   ├── window.tsx         # Window wrapper
-│   ├── games/            # Game components
-│   └── window-content/   # Window content components
-├── public/               # Static assets
-│   ├── images/          # Images and icons
-│   └── fonts/           # Custom fonts
-├── lib/                 # Utility functions
-└── hooks/               # Custom React hooks
-```
-
-## 🚀 Running Locally
-
-```bash
-pnpm install
-cp .env.example .env.local   # add your Web3Forms key to enable the contact form
-pnpm dev
-```
-
-The site runs at `http://localhost:3000`. Everything except the contact form
-works without any environment variables.
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `WEB3FORMS_ACCESS_KEY` | Contact form only | Delivers contact form submissions. Get a free key at [web3forms.com](https://web3forms.com) and restrict it to your domain. |
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Windows 95 Design**: Inspired by Microsoft's classic operating system
-- **Icons**: Custom Windows 95-style icons
-- **Games**: Classic implementations of retro games
-- **Community**: Thanks to all contributors and supporters
-
----
+###
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Windows-95-00A4EF?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 95">
-  <img src="https://img.shields.io/badge/Next.js-14.2.35-black?style=for-the-badge&logo=next.js" alt="Next.js">
-  <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React">
+
+## The résumé opens in Word 95
+
+</div>
+
+Not a PDF embed. A working Word 95 window with a live menu bar, formatting toolbar, and an editable document. Change the font, resize the text, insert a table, run a spell check.
+
+<div align="center">
+<img src=".github/assets/resume.png" alt="The résumé rendered inside a Microsoft Word 95 window" width="90%" />
+</div>
+
+###
+
+<div align="center">
+
+## Five games, all playable
+
+</div>
+
+Chess with a real opponent. Minesweeper with three difficulties. Tetris, Solitaire, and Pong. Every one runs in its own draggable window, and every one keeps score.
+
+<div align="center">
+<img src=".github/assets/games.png" alt="The Games window listing Chess, Solitaire, Tetris, Minesweeper and Pong" width="90%" />
+</div>
+
+###
+
+<div align="center">
+
+## MS Paint, rebuilt
+
+</div>
+
+Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It draws, it undoes, and it saves what you make.
+
+<div align="center">
+<img src=".github/assets/paint.png" alt="The MS Paint clone with its toolbar and colour palette" width="90%" />
+</div>
+
+###
+
+<div align="center">
+
+## A gallery, and a profile straight out of 2004
+
+</div>
+
+<table align="center">
+<tr>
+<td width="50%"><img src=".github/assets/gallery.png" alt="The photo gallery window" /></td>
+<td width="50%"><img src=".github/assets/about.png" alt="The About Me window styled as theFacebook" /></td>
+</tr>
+</table>
+
+###
+
+<div align="center">
+
+## Things worth finding
+
+</div>
+
+<div align="center">
+
+| | |
+| --- | --- |
+| **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop |
+| **Blue Screen of Death** | it's in there, and it's faithful |
+| **Display Properties** | five wallpapers and working screen savers |
+| **Right-click** | the desktop, the icons, everywhere |
+
+</div>
+
+###
+
+<div align="center">
+
+## Built with
+
+![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+###
+
+<h3>Hire me, or just come play with the Start menu.</h3>
+
+<a href="https://builtbyjoel.vercel.app/" target="_blank"><img src="https://img.shields.io/badge/builtbyjoel.vercel.app-008080?style=for-the-badge&logo=googlechrome&logoColor=white" height="32" alt="live site" /></a>
+
+<sub>© Joel Vasquez · MIT Licensed</sub>
+
 </div>
