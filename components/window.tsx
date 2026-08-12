@@ -18,6 +18,58 @@ import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 const controlButtonClass =
   "w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
 
+type Point = { x: number; y: number }
+type Size = { width: number; height: number }
+type Rect = Point & Size
+
+/** Eight grips: four edges and four corners. */
+type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw"
+
+const EDGES: ResizeEdge[] = ["n", "s", "e", "w", "ne", "nw", "se", "sw"]
+
+const TASKBAR_HEIGHT = 34
+const DEFAULT_MIN: Size = { width: 320, height: 200 }
+
+/** The games and editors draw to fixed boards, so they get a floor that keeps
+ *  the board intact rather than letting the window crop it. */
+const MIN_SIZE: Record<string, Size> = {
+  games: { width: 560, height: 400 },
+  paint: { width: 560, height: 420 },
+  resume: { width: 640, height: 460 },
+  projects: { width: 620, height: 440 },
+  contact: { width: 560, height: 400 },
+  gallery: { width: 520, height: 380 },
+}
+
+const DEFAULT_SIZE: Record<string, Size> = {
+  resume: { width: 800, height: 620 },
+  projects: { width: 760, height: 580 },
+  paint: { width: 720, height: 560 },
+}
+
+const CURSOR: Record<ResizeEdge, string> = {
+  n: "ns-resize",
+  s: "ns-resize",
+  e: "ew-resize",
+  w: "ew-resize",
+  ne: "nesw-resize",
+  sw: "nesw-resize",
+  nw: "nwse-resize",
+  se: "nwse-resize",
+}
+
+/** Grip hit areas, 4px along each edge and 8px square at each corner. */
+const GRIP_STYLE: Record<ResizeEdge, React.CSSProperties> = {
+  n: { top: -2, left: 8, right: 8, height: 6 },
+  s: { bottom: -2, left: 8, right: 8, height: 6 },
+  w: { left: -2, top: 8, bottom: 8, width: 6 },
+  e: { right: -2, top: 8, bottom: 8, width: 6 },
+  nw: { top: -2, left: -2, width: 10, height: 10 },
+  ne: { top: -2, right: -2, width: 10, height: 10 },
+  sw: { bottom: -2, left: -2, width: 10, height: 10 },
+  se: { bottom: -2, right: -2, width: 10, height: 10 },
+}
+
 interface WindowProps {
   id: string
   isActive: boolean
@@ -29,12 +81,20 @@ interface WindowProps {
 
 export default function Window({ id, isActive, isMinimized, onClose, onMinimize, onFocus }: WindowProps) {
   const [position, setPosition] = useState({ x: 100 + Math.random() * 50, y: 100 + Math.random() * 50 })
-  const [size] = useState({ width: 650, height: 500 })
+  const [size, setSize] = useState<Size>(() => DEFAULT_SIZE[id] ?? { width: 650, height: 500 })
   const [isMaximized, setIsMaximized] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [resizeEdge, setResizeEdge] = useState<ResizeEdge | null>(null)
 
   const windowRef = useRef<HTMLDivElement>(null)
+  /** Captured on the way into maximise so Restore returns to the same rect. */
+  const restoreRect = useRef<Rect | null>(null)
+  /** Pointer and window rect at mousedown. A resize is computed from where the
+   *  drag began rather than accumulated frame to frame, so it cannot drift. */
+  const resizeStart = useRef<{ pointer: Point; rect: Rect } | null>(null)
+
+  const minSize = MIN_SIZE[id] ?? DEFAULT_MIN
 
   // Handle window content based on ID
   const renderContent = () => {
@@ -75,6 +135,86 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
     }
   }
 
+  // Start a resize from one of the eight grips.
+  const startResize = (edge: ResizeEdge) => (e: React.MouseEvent) => {
+    if (isMaximized) return
+    e.preventDefault()
+    e.stopPropagation()
+    onFocus()
+    resizeStart.current = {
+      pointer: { x: e.clientX, y: e.clientY },
+      rect: { ...position, ...size },
+    }
+    setResizeEdge(edge)
+  }
+
+  // Handle window resizing
+  useEffect(() => {
+    if (!resizeEdge) return
+
+    const onMove = (e: MouseEvent) => {
+      const start = resizeStart.current
+      if (!start) return
+
+      const { pointer, rect } = start
+      const dx = e.clientX - pointer.x
+      const dy = e.clientY - pointer.y
+      const maxHeight = window.innerHeight - TASKBAR_HEIGHT
+
+      let { x, y, width, height } = rect
+
+      // A north or west grip moves the origin as well as the size, so the
+      // opposite edge stays where it is.
+      if (resizeEdge.includes("e")) width = rect.width + dx
+      if (resizeEdge.includes("w")) {
+        width = rect.width - dx
+        x = rect.x + dx
+      }
+      if (resizeEdge.includes("s")) height = rect.height + dy
+      if (resizeEdge.includes("n")) {
+        height = rect.height - dy
+        y = rect.y + dy
+      }
+
+      // Clamp to the minimum, pinning the origin so the far edge holds still.
+      if (width < minSize.width) {
+        if (resizeEdge.includes("w")) x = rect.x + (rect.width - minSize.width)
+        width = minSize.width
+      }
+      if (height < minSize.height) {
+        if (resizeEdge.includes("n")) y = rect.y + (rect.height - minSize.height)
+        height = minSize.height
+      }
+
+      // Keep the window on screen and above the taskbar.
+      if (x < 0) {
+        width = Math.max(minSize.width, width + x)
+        x = 0
+      }
+      if (y < 0) {
+        height = Math.max(minSize.height, height + y)
+        y = 0
+      }
+      width = Math.max(minSize.width, Math.min(width, window.innerWidth - x))
+      height = Math.max(minSize.height, Math.min(height, maxHeight - y))
+
+      setSize({ width, height })
+      setPosition({ x, y })
+    }
+
+    const onUp = () => {
+      setResizeEdge(null)
+      resizeStart.current = null
+    }
+
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
+    return () => {
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+    }
+  }, [resizeEdge, minSize.width, minSize.height])
+
   // Handle window dragging
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -110,7 +250,19 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
 
   // Toggle maximize state
   const toggleMaximize = () => {
-    setIsMaximized(!isMaximized)
+    setIsMaximized((wasMaximized) => {
+      if (wasMaximized) {
+        // Restore to the rect the window had before it was maximised.
+        const saved = restoreRect.current
+        if (saved) {
+          setPosition({ x: saved.x, y: saved.y })
+          setSize({ width: saved.width, height: saved.height })
+        }
+      } else {
+        restoreRect.current = { ...position, ...size }
+      }
+      return !wasMaximized
+    })
   }
 
   // Listen for window action events
@@ -204,6 +356,17 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
       >
         {renderContent()}
       </div>
+
+      {/* Resize grips. Maximised windows are fixed, as in Windows 95. */}
+      {!isMaximized &&
+        EDGES.map((edge) => (
+          <div
+            key={edge}
+            aria-hidden="true"
+            onMouseDown={startResize(edge)}
+            style={{ position: "absolute", cursor: CURSOR[edge], zIndex: 10, ...GRIP_STYLE[edge] }}
+          />
+        ))}
     </div>
   )
 }
