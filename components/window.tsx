@@ -10,6 +10,7 @@ import Contact from "./window-content/contact"
 import Gallery from "./window-content/gallery"
 import Games from "./window-content/games"
 import Paint from "./window-content/paint"
+import Calculator from "./window-content/calculator"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 
 // Shared by the three title-bar controls: a 16px Win95 button with the glyph
@@ -39,9 +40,11 @@ const MIN_SIZE: Record<string, Size> = {
   projects: { width: 620, height: 440 },
   contact: { width: 560, height: 400 },
   gallery: { width: 520, height: 380 },
+  calculator: { width: 300, height: 260 },
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
+  calculator: { width: 320, height: 280 },
   resume: { width: 800, height: 620 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
@@ -113,6 +116,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <Games />
       case "paint":
         return <Paint />
+      case "calculator":
+        return <Calculator />
       default:
         return <div>Content not available</div>
     }

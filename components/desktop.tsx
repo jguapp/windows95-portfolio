@@ -71,6 +71,12 @@ const DEFAULT_ICONS: DesktopItemData[] = [
     icon: "/images/desktop-icons/paint.png", // Updated Paint icon
     type: "application",
   },
+  {
+    id: "calculator",
+    label: "Calculator",
+    icon: "/images/win95/calculator-desktop.png",
+    type: "application",
+  },
 ]
 
 export default function Desktop({ onOpenWindow }: DesktopProps) {
@@ -128,6 +134,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     defaultPositions["gallery"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 4 }
     defaultPositions["games"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 5 }
     defaultPositions["paint"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 6 }
+    defaultPositions["calculator"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 7 }
 
     return defaultPositions
   }, [])
@@ -151,9 +158,11 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       const savedPositions = localStorage.getItem("win95-icon-positions")
 
       if (savedPositions) {
-        // If we have saved positions, use them
+        // Saved positions predate any icon added since, so start from the
+        // defaults and let saved values override. Otherwise a new icon has no
+        // position and stacks on top of the first one.
         setIcons(DEFAULT_ICONS)
-        setIconPositions(JSON.parse(savedPositions))
+        setIconPositions({ ...initializeIconPositions(), ...JSON.parse(savedPositions) })
         setNextItemId(1)
       } else {
         // Otherwise reset to default icons and positions
@@ -272,7 +281,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       resetToDefaultIcons()
       setIsInitialized(true)
     }
-  }, [isInitialized, resetToDefaultIcons])
+  }, [isInitialized, resetToDefaultIcons, initializeIconPositions])
 
   const handleIconClick = (id: string) => {
     setSelectedIcon(id)
