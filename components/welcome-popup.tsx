@@ -143,9 +143,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                       <strong>Hi there...</strong>
                     </p>
                     <p className="mt-3">
-                      I'm Joel, a Computer Science student and aspiring Machine Learning Engineer. I'm also a huge fan
-                      of retro tech, so I decided to create this portfolio based on <strong>Windows 95!</strong>. Thank
-                      you for visiting, and enjoy the experience!
+                      I'm Joel, a Computer Science student focused on backend and infrastructure engineering —
+                      distributed systems, APIs, and Kubernetes tooling. I'm also a huge fan of retro tech, so I
+                      decided to create this portfolio based on <strong>Windows 95</strong>! Thank you for visiting,
+                      and enjoy the experience!
                     </p>
                   </div>
                 </div>
@@ -248,7 +249,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </ul>
           </div>
 
-          <div className="win95-footer flex justify-end items-center border-t border-t-[#808040] p-[10px] bg-[#c0c0c0]">
+          <div className="win95-footer flex justify-end items-center border-t border-t-[#808080] p-[10px] bg-[#c0c0c0]">
             <button
               className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
               onClick={toggleWhatsNew}
