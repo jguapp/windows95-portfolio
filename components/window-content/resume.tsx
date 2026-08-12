@@ -925,7 +925,7 @@ export default function Resume() {
       <div className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between text-xs w-full">
         <div className="flex items-center">
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/tumblr_f2c27a91f54419385ed432fef515e294_f510d5e9_540-iY50eOOB2pUgfjVFWc4SmarteRXT2r.png"
+            src="/images/blob/tumblr-f2c27a91f54419385ed432fef515e294-f510d5e9-540.png"
             alt="Word 95"
             className="w-4 h-4 mr-1"
           />
@@ -1053,7 +1053,7 @@ export default function Resume() {
           title="Open"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_open-CHIqGUQ4aQ5mErt2lq80XyfGibQo2u.png"
+            src="/images/blob/lc-open.png"
             alt="Open"
             className="w-4 h-4"
           />
@@ -1064,7 +1064,7 @@ export default function Resume() {
           title="Save"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_save-yfYPJ54E6ahel52K4NqpQaG39q7Mkg.png"
+            src="/images/blob/lc-save.png"
             alt="Save"
             className="w-4 h-4"
           />
@@ -1076,7 +1076,7 @@ export default function Resume() {
           title="Print"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_print-kWToX75IB1eUdCUbFibknTYSa6PLXl.png"
+            src="/images/blob/lc-print.png"
             alt="Print"
             className="w-4 h-4"
           />
@@ -1087,7 +1087,7 @@ export default function Resume() {
           title="Print Preview"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_printpreview-bp8aTTUCeXg0AGOnSiqQUNx9tnG398.png"
+            src="/images/blob/lc-printpreview.png"
             alt="Print Preview"
             className="w-4 h-4"
           />
@@ -1098,7 +1098,7 @@ export default function Resume() {
           title="Spell Check"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_spelling-OSIqYKty2R0URAdwCLTKy0EcmxANIM.png"
+            src="/images/blob/lc-spelling.png"
             alt="Spell Check"
             className="w-4 h-4"
           />
@@ -1111,7 +1111,7 @@ export default function Resume() {
           disabled={!selectedText}
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_cut-R7MmBjJcI3eJ3hvuXDN3atEYPmTLxv.png"
+            src="/images/blob/lc-cut.png"
             alt="Cut"
             className="w-4 h-4"
           />
@@ -1123,7 +1123,7 @@ export default function Resume() {
           disabled={!selectedText}
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_copy-EE3hf1v4OudPqGTN2drU4uAlHsivQv.png"
+            src="/images/blob/lc-copy.png"
             alt="Copy"
             className="w-4 h-4"
           />
@@ -1135,7 +1135,7 @@ export default function Resume() {
           disabled={!clipboardContent}
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_paste-AgNRiDUctLG8Pmpqk7F1Ezw7P6Dl3n.png"
+            src="/images/blob/lc-paste.png"
             alt="Paste"
             className="w-4 h-4"
           />
@@ -1146,7 +1146,7 @@ export default function Resume() {
           title="Format Painter"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_formatpaintbrush-HmjAgYA8HdHB71nhX9qhRxbrFHR87q.png"
+            src="/images/blob/lc-formatpaintbrush.png"
             alt="Format Painter"
             className="w-4 h-4"
           />
@@ -1160,7 +1160,7 @@ export default function Resume() {
             disabled={undoStack.length <= 1}
           >
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_undo-xvVLrKkw0CGASx8Z8K3L6WxOsJqIGk.png"
+              src="/images/blob/lc-undo.png"
               alt="Undo"
               className="w-4 h-4"
             />
@@ -1182,7 +1182,7 @@ export default function Resume() {
             disabled={redoStack.length === 0}
           >
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_redo-CNFRFCOLWnpmZLws1zYA8ybO6aytPv.png"
+              src="/images/blob/lc-redo.png"
               alt="Redo"
               className="w-4 h-4"
             />
@@ -1203,7 +1203,7 @@ export default function Resume() {
           title="Insert Table"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sc_inserttable-dpCYxbaLwrwh4cOsaoot9N4Fx1WJLC.png"
+            src="/images/blob/sc-inserttable.png"
             alt="Insert Table"
             className="w-4 h-4"
           />
@@ -1214,7 +1214,7 @@ export default function Resume() {
           title="Justify Text"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_alignblock-k41cmsnvIV4sMnGrGTHt4K4oIvYbBq.png"
+            src="/images/blob/lc-alignblock.png"
             alt="Justify Text"
             className="w-4 h-4"
           />
@@ -1225,7 +1225,7 @@ export default function Resume() {
           title="Drawing"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_insertdraw-rLxQyFsz9YgnaJsvDU4isoNqx301Rw.png"
+            src="/images/blob/lc-insertdraw.png"
             alt="Drawing"
             className="w-4 h-4"
           />
@@ -1236,7 +1236,7 @@ export default function Resume() {
           title="Control Codes"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_controlcodes-CnmZaoaIjaB0GxCOctnjE73jz3oHtL.png"
+            src="/images/blob/lc-controlcodes.png"
             alt="Control Codes"
             className="w-4 h-4"
           />
@@ -1360,7 +1360,7 @@ export default function Resume() {
           title="Bold"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_bold-t8yYeMAuIIvN8RB04H3VRyCvlA54Od.png"
+            src="/images/blob/lc-bold.png"
             alt="Bold"
             className="w-4 h-4"
           />
@@ -1376,7 +1376,7 @@ export default function Resume() {
           title="Italic"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_italic-1GDUNnhzWyoh0NgyWgpacWUjycuzke.png"
+            src="/images/blob/lc-italic.png"
             alt="Italic"
             className="w-4 h-4"
           />
@@ -1392,7 +1392,7 @@ export default function Resume() {
           title="Underline"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_underline-sXt3lqrvXyRNTk3JtYmyQMMp9bB1xO.png"
+            src="/images/blob/lc-underline.png"
             alt="Underline"
             className="w-4 h-4"
           />
@@ -1403,7 +1403,7 @@ export default function Resume() {
           title="Text Color"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/text%20color-gvsxk6HzYsIV7CgJlUQn3U7sgEjJBc.png"
+            src="/images/blob/text-color.png"
             alt="Text Color"
             className="w-4 h-4"
           />
@@ -1417,7 +1417,7 @@ export default function Resume() {
           title="Align Left"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_alignleft-SEZvT86YUbG1dpMeW9bClJ7bcFF6NM.png"
+            src="/images/blob/lc-alignleft.png"
             alt="Align Left"
             className="w-4 h-4"
           />
@@ -1430,7 +1430,7 @@ export default function Resume() {
           title="Align Center"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_alignhorizontalcenter-uTzxSuoOucjxFa0gYhhowcs60QdVD0.png"
+            src="/images/blob/lc-alignhorizontalcenter.png"
             alt="Align Center"
             className="w-4 h-4"
           />
@@ -1443,7 +1443,7 @@ export default function Resume() {
           title="Align Right"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_alignright-jlb8qGmy9hLOhZ3aLESd4YBz7EhiAn.png"
+            src="/images/blob/lc-alignright.png"
             alt="Align Right"
             className="w-4 h-4"
           />
@@ -1456,7 +1456,7 @@ export default function Resume() {
           title="Justify"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_alignblock-RAkTVGENJ9WwFCiG0SJUbeWDoXIOTa.png"
+            src="/images/blob/lc-alignblock.png"
             alt="Justify"
             className="w-4 h-4"
           />
@@ -1468,7 +1468,7 @@ export default function Resume() {
           title="Bullets"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_defaultbullet-9Nl2Mnx6wan4McEZ1ecBBcv73wjOYw.png"
+            src="/images/blob/lc-defaultbullet.png"
             alt="Bullets"
             className="w-4 h-4"
           />
@@ -1479,7 +1479,7 @@ export default function Resume() {
           title="Numbering"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_defaultnumbering-z4K9cBfWQbIJK8FhIBvAQ7A8z06157.png"
+            src="/images/blob/lc-defaultnumbering.png"
             alt="Numbering"
             className="w-4 h-4"
           />
@@ -1490,7 +1490,7 @@ export default function Resume() {
           title="Decrease Indent"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_decrementindent-21Cb8YlGvlDyOoWdkV1T5obPz8effI.png"
+            src="/images/blob/lc-decrementindent.png"
             alt="Decrease Indent"
             className="w-4 h-4"
           />
@@ -1501,7 +1501,7 @@ export default function Resume() {
           title="Increase Indent"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_incrementindent-eTVvBNnQCvflrdiePIt50k6aV8chtp.png"
+            src="/images/blob/lc-incrementindent.png"
             alt="Increase Indent"
             className="w-4 h-4"
           />
@@ -1512,7 +1512,7 @@ export default function Resume() {
           title="Columns"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_formatcolumns-QzZQeuBKk4XrK17NX0KbpA1oEtNzbh.png"
+            src="/images/blob/lc-formatcolumns.png"
             alt="Columns"
             className="w-4 h-4"
           />
@@ -1523,7 +1523,7 @@ export default function Resume() {
           title="Borders"
         >
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lc_setborderstyle-54X5u6FAXktA6BhHwSgUElBQPicb6F.png"
+            src="/images/blob/lc-setborderstyle.png"
             alt="Borders"
             className="w-4 h-4"
           />

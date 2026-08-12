@@ -746,20 +746,20 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   // Initialize sounds (same as before)
   useEffect(() => {
-    const battle = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokemon-battle.mp3")
+    const battle = new Audio("/sounds/pokemon-battle.mp3")
     battle.loop = true
     battle.volume = 0.3
 
-    const attack = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokemon-hit.mp3")
+    const attack = new Audio("/sounds/pokemon-hit.mp3")
     attack.volume = 0.4
 
-    const victory = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokemon-victory.mp3")
+    const victory = new Audio("/sounds/pokemon-victory.mp3")
     victory.volume = 0.4
 
-    const defeat = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokemon-defeat.mp3")
+    const defeat = new Audio("/sounds/pokemon-defeat.mp3")
     defeat.volume = 0.4
 
-    const menu = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokemon-menu.mp3")
+    const menu = new Audio("/sounds/pokemon-menu.mp3")
     menu.volume = 0.4
 
     // For the fainting sound, we'll use a simple beep for now

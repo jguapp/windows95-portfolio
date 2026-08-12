@@ -22,7 +22,7 @@ export default function BootSequence({ onBootComplete }: BootSequenceProps) {
       {/* Full screen image container */}
       <div className="absolute inset-0 w-full h-full">
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/windows%2095-mmqEeIl3qCWNCeO8bYCHtNmzr1CgtU.webp"
+          src="/images/blob/windows-95.webp"
           alt="Windows 95"
           className="w-full h-full object-cover"
         />

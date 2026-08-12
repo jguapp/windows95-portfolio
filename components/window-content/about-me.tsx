@@ -11,7 +11,7 @@ export default function AboutMe() {
           {/* Main header background with image */}
           <div className="absolute inset-0">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-05-08%20at%2012.01.06%E2%80%AFPM-9lLsGLf1afuQFfFORkGEuBYvKn6y6l.png"
+              src="/images/blob/screenshot-2025-05-08-at-12-01-06-pm.png"
               alt="TheFacebook Header"
               className="w-full h-full object-cover object-center"
             />
@@ -107,7 +107,7 @@ export default function AboutMe() {
               <div className="flex-1 flex items-stretch h-full">
                 <div className="w-full h-full flex flex-col justify-center bg-white">
                   <img
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/McDonald%27s%20Ad-usiQBhenVMAReqbLa6tCSOzrN0CTxr.jpeg"
+                    src="/images/blob/mcdonalds-ad.jpeg"
                     alt="McDonald's 90s Advertisement"
                     className="w-[200px] h-[492px] max-h-full"
                     style={{ objectPosition: "center" }}
@@ -140,7 +140,7 @@ export default function AboutMe() {
                   <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Picture</div>
                   <div className="p-3 flex justify-center">
                     <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Profile_Picture.JPG-uz5xQCY6mxXrGUPN6mEWfuoC04lhNe.jpeg"
+                      src="/images/blob/profile-picture.jpeg"
                       alt="Profile"
                       className="w-[120px] h-[150px] object-cover"
                     />
@@ -179,7 +179,7 @@ export default function AboutMe() {
                       {/* Friend Grid - First Row */}
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Profile_Picture.JPG-mWrSBYriKwflyN8P2JrqR3n5XuiZ2k.jpeg"
+                          src="/images/blob/profile-picture.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -189,7 +189,7 @@ export default function AboutMe() {
                       </div>
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/0a3bb1327b9e5f47b8793c63542219da.jpg-Hzl5gtV8H1Uqk2RUWY329kCIJ77nwq.jpeg"
+                          src="/images/blob/0a3bb1327b9e5f47b8793c63542219da.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -199,7 +199,7 @@ export default function AboutMe() {
                       </div>
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/PLau5P3a_400x400.jpg-aZqFsH46iXU908LNgD7FSdha2JYrK3.jpeg"
+                          src="/images/blob/plau5p3a-400x400.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -210,7 +210,7 @@ export default function AboutMe() {
                       {/* Friend Grid - Second Row */}
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/d0547869a59f49cdcb23cf042d125d52.jpg-lpKhXNQ6POblUSoy5S2QDVZwVAmWT4.jpeg"
+                          src="/images/blob/d0547869a59f49cdcb23cf042d125d52.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -220,7 +220,7 @@ export default function AboutMe() {
                       </div>
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6jgfqdqw0dkb1-2ktYcDWWJ014O8QFpsKPHv4CdEqhRD.png"
+                          src="/images/blob/6jgfqdqw0dkb1.png"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -230,7 +230,7 @@ export default function AboutMe() {
                       </div>
                       <div className="text-center">
                         <img
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/a75a12a66a148b903918388091c9bdcd.jpg-rtxgZ6AE28ee1AXIovr0OdzxUFPp2K.jpeg"
+                          src="/images/blob/a75a12a66a148b903918388091c9bdcd.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />

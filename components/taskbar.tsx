@@ -59,7 +59,7 @@ export default function Taskbar({
     >
       <div id="start-button" className="flex items-center cursor-pointer" onClick={onToggleStartMenu}>
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/start-button-mPPqvVzCJaYwL78t8Dw7suvpvIFOS1.png"
+          src="/images/blob/start.png"
           alt="Start"
           className="h-6"
         />
@@ -96,7 +96,7 @@ export default function Taskbar({
       <div id="right-section" className="flex items-center h-[34px] border-2 border-inset border-white">
         <div id="sound-button" className="flex items-center justify-center w-[36px] h-full bg-[#c0c0c0]">
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sound-icon-aCl39MutlaS3nQJaqBD1JIlmaryuSZ.png"
+            src="/images/blob/sound.png"
             alt="Sound Icon"
             className="w-[36px] h-[28px] object-contain"
           />

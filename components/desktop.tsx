@@ -192,27 +192,27 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
           {
             id: "windows-default",
             name: "Windows Default",
-            url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/windows%2095%20background-EtN4lj8sGXFbBJbSMibk3qJxBFnRWJ.webp",
+            url: "/images/wallpapers/teal.png",
           },
           {
             id: "clouds",
             name: "Clouds",
-            url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-NLb22l1U8vFoUMVGCXfCqBIQP7Rr66.jpg",
+            url: "/images/wallpapers/clouds.png",
           },
           {
             id: "bricks",
             name: "Bricks",
-            url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bricks-TqWVoSrfJtG6Jv9fTwC9Y5yA61rKnz.jpg",
+            url: "/images/wallpapers/bricks.png",
           },
           {
             id: "maze",
             name: "Maze",
-            url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/maze-pattern-bknlGZZjZLkAuKyqoGaOqiXrXDMp7P.jpg",
+            url: "/images/wallpapers/maze.png",
           },
           {
             id: "waves",
             name: "Waves",
-            url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/waves-pattern-E3LzDPmPa1zT3j1sHuZUEbkXn01GnJ.jpg",
+            url: "/images/wallpapers/waves.png",
           },
         ].find((bg) => bg.id === bgImage)
 
@@ -1057,7 +1057,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         onMouseUp={handleMouseUp}
         style={{
           backgroundColor: "var(--win95-desktop-color, #008080)",
-          backgroundImage: `url(https://hebbkx1anhila5yf.public.blob.vercel-storage.com/windows%2095%20background-EtN4lj8sGXFbBJbSMibk3qJxBFnRWJ.webp)`,
+          backgroundImage: `url(/images/wallpapers/teal.png)`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",

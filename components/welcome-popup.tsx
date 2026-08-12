@@ -133,7 +133,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               <div className="info-box flex-1 border border-inset border-[#808080] bg-[#ffffe0] p-[10px] text-black leading-[1.4]">
                 <div className="info-content flex items-start gap-[10px]">
                   <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Garfield-rCq2edeAzuoJGSl65hYADJ5LridXRv.png"
+                    src="/images/blob/garfield.png"
                     alt="Garfield icon"
                     width={64}
                     height={64}

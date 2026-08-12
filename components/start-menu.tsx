@@ -167,7 +167,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                   <li className="hover:bg-[#000080] hover:text-white">
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Controls%20Folder-wTwQW4YRtpeX6jhjksesrYjwRRDhLY.ico"
+                        src="/images/blob/controls-folder.ico"
                         alt="Control Panel"
                         className="mr-2 w-7 h-7"
                       />
@@ -177,7 +177,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                   <li className="hover:bg-[#000080] hover:text-white">
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Printers%20folder-qgrFOkbQ7exn1GTYmyzVPVs3ninTPZ.ico"
+                        src="/images/blob/printers-folder.ico"
                         alt="Printers"
                         className="mr-2 w-7 h-7"
                       />
@@ -187,7 +187,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                   <li className="hover:bg-[#000080] hover:text-white">
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Windows%20logo%20%28without%20text%29-fP8PnMnbCrHEsmYNxUXi6chpdZucsG.ico"
+                        src="/images/blob/windows-logo-without-text.ico"
                         alt="Windows Setup"
                         className="mr-2 w-7 h-7"
                       />
@@ -244,7 +244,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
               rel="noreferrer"
             >
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/linkedin-fsh0YDCuIuPndO9kIjMKWmSfAtK8jI.png"
+                src="/images/blob/linkedin.png"
                 alt="LinkedIn Icon"
                 className="mr-2 w-6 h-6"
               />
@@ -259,7 +259,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
               rel="noreferrer"
             >
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/github-cZT5gT46oBSpVLnyT8Hi2GkNR7AqZ4.png"
+                src="/images/blob/github.png"
                 alt="GitHub Icon"
                 className="mr-2 w-6 h-6"
               />

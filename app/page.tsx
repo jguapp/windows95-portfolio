@@ -27,7 +27,7 @@ export default function Home() {
 
   // Initialize boot sound
   useEffect(() => {
-    const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/win95-startup.mp3")
+    const audio = new Audio("/sounds/win95-startup.mp3")
     audio.preload = "auto"
     setBootSound(audio)
 

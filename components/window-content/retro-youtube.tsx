@@ -323,7 +323,7 @@ export default function RetroYoutube() {
       id: "portfolio",
       title: "Windows 95 Portfolio",
       thumbnail: "/images/demo-coming-soon.png",
-      videoUrl: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/win95-demo-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd.mp4",
+      videoUrl: "",
       description:
         "A nostalgic Windows 95-themed portfolio website built with React and Next.js. Features interactive windows, classic games, and retro UI elements.",
       views: 1254,
@@ -336,7 +336,7 @@ export default function RetroYoutube() {
       title: "Bloomberg Tech Lab Project",
       thumbnail: "/images/demo-coming-soon.png",
       videoUrl:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/weather-demo-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd.mp4",
+        "",
       description:
         "Fullstack web application developed during Bloomberg-hosted Tech Lab using React, Flask, and Redis. Improved response times by 30% through optimized API calls and Redis caching. Deployed in a containerized environment with Docker and Docker Compose.",
       views: 872,
@@ -349,7 +349,7 @@ export default function RetroYoutube() {
       title: "Sentiment Analysis Tool",
       thumbnail: "/images/demo-coming-soon.png",
       videoUrl:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sentiment-demo-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd.mp4",
+        "",
       description:
         "Machine learning model for sentiment analysis on movie reviews. Classifies text as positive, negative, or neutral with high accuracy.",
       views: 329,
@@ -361,7 +361,7 @@ export default function RetroYoutube() {
       id: "chess",
       title: "AI Chess Bot",
       thumbnail: "/images/demo-coming-soon.png",
-      videoUrl: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/chess-demo-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd.mp4",
+      videoUrl: "",
       description:
         "Chess engine using minimax algorithm with alpha-beta pruning. Features multiple difficulty levels and move suggestions.",
       views: 412,
@@ -374,7 +374,7 @@ export default function RetroYoutube() {
       title: "ORBIT - Productivity Universe",
       thumbnail: "/images/demo-coming-soon.png",
       videoUrl:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fitness-demo-Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd9Yd.mp4",
+        "",
       description:
         "Modern iOS productivity app combining focus timer functionality with task management in a beautiful space-themed interface. Features include Pomodoro-style timers, Eisenhower Matrix task organization, habit tracking, screen time analytics, and customizable themes with haptic feedback.",
       views: 587,
