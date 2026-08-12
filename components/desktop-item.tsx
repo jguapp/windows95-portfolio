@@ -227,10 +227,11 @@ export default function DesktopItem({
       }
     }
 
+    // Only "application" reaches here; the other three types returned above.
     if (isNew) {
       return {
         ...baseStyle,
-        maxWidth: type === "folder" || type === "text-document" || type === "shortcut" ? "45%" : "100%",
+        maxWidth: "100%",
         height: "auto",
       }
     }

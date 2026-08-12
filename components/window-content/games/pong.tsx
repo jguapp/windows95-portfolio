@@ -13,6 +13,12 @@ interface HighScore {
   score: number
 }
 
+interface MenuOption {
+  label: string
+  action: () => void
+  disabled?: boolean
+}
+
 export default function Pong({ onReturn }: PongProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [gameStarted, setGameStarted] = useState(false)
@@ -476,7 +482,7 @@ export default function Pong({ onReturn }: PongProps) {
   }, [])
 
   // Game menu options
-  const gameMenuOptions = [
+  const gameMenuOptions: MenuOption[] = [
     {
       label: "NEW GAME",
       action: initGame,
@@ -515,7 +521,7 @@ export default function Pong({ onReturn }: PongProps) {
   ]
 
   // Help menu options
-  const helpMenuOptions = [
+  const helpMenuOptions: MenuOption[] = [
     {
       label: "HOW TO PLAY",
       action: () => setShowHelp(true),

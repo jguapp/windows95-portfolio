@@ -74,7 +74,10 @@ const POINTS_PER_LINE = 100
 const LINES_PER_LEVEL = 10
 
 // Create empty board
-const createEmptyBoard = () => Array.from({ length: ROWS }, () => Array(COLS).fill(0))
+// A cell is 0 when empty, otherwise the colour of the settled piece.
+type Cell = 0 | string
+
+const createEmptyBoard = (): Cell[][] => Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0))
 
 // Random tetromino generator
 const randomTetromino = () => {
@@ -87,6 +90,8 @@ const randomTetromino = () => {
     position: { x: Math.floor(COLS / 2) - 1, y: 0 },
   }
 }
+
+type Piece = ReturnType<typeof randomTetromino>
 
 interface TetrisProps {
   onReturn: () => void
@@ -184,7 +189,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
   // Check collision
   const checkCollision = useCallback(
-    (piece: any, position: { x: number; y: number }) => {
+    (piece: Piece, position: { x: number; y: number }) => {
       for (let y = 0; y < piece.shape.length; y++) {
         for (let x = 0; x < piece.shape[y].length; x++) {
           // Skip empty cells
@@ -281,12 +286,12 @@ export default function Tetris({ onReturn }: TetrisProps) {
       const updatedBoard = newBoard.reduce((acc, row) => {
         if (row.every((cell) => cell)) {
           linesCleared++
-          acc.unshift(Array(COLS).fill(0))
+          acc.unshift(Array<Cell>(COLS).fill(0))
         } else {
           acc.push(row)
         }
         return acc
-      }, [] as any[][])
+      }, [] as Cell[][])
 
       // Update score and level
       if (linesCleared > 0) {

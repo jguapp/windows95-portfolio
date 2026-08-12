@@ -24,8 +24,9 @@ const EmailSchema = z.object({
   }),
 })
 
-function clientIp(): string {
-  const h = headers()
+async function clientIp(): Promise<string> {
+  // headers() is async as of Next 15.
+  const h = await headers()
   // Vercel sets x-forwarded-for; the first entry is the client.
   const forwarded = h.get("x-forwarded-for")
   if (forwarded) return forwarded.split(",")[0].trim()
@@ -40,7 +41,7 @@ export async function sendEmail(formData: FormData): Promise<{ success: boolean;
       return { success: true, message: "Message sent successfully! I'll get back to you soon." }
     }
 
-    const limit = rateLimit(`contact:${clientIp()}`, MAX_SUBMISSIONS, WINDOW_MS)
+    const limit = rateLimit(`contact:${await clientIp()}`, MAX_SUBMISSIONS, WINDOW_MS)
     if (!limit.allowed) {
       const minutes = Math.ceil(limit.retryAfterSeconds / 60)
       return {
