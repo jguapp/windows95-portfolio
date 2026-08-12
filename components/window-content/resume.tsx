@@ -345,40 +345,9 @@ const InsertTableDialog = ({
                   onChange={(e) => setColumns(Number(e.target.value))}
                   className="w-16 border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm"
                 />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
-              LEADERSHIP & PROFESSIONAL DEVELOPMENT
-            </h2>
-            <div className="mb-3" contentEditable suppressContentEditableWarning>
-              <div className="flex justify-between">
-                <p>
-                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
-                </p>
-                <p>January 2024 - Present</p>
               </div>
-              <ul className="list-disc pl-5">
-                <li>
-                  Expanded ColorStack Baruch Chapter from <strong>4</strong> founding members to over{" "}
-                  <strong>200</strong> active participants in two semesters, cultivating a diverse community of
-                  underrepresented students in tech.
-                </li>
-                <li>
-                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants, with{" "}
-                  <strong>80%</strong> reporting improved job readiness in web development, cloud computing, and
-                  database management.
-                </li>
-                <li>
-                  Established relationships with <strong>5+</strong> tech companies, including{" "}
-                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
-                  through office visits, networking events, and interview prep sessions.
-                </li>
-              </ul>
             </div>
           </div>
-        </div>
 
           <div className="flex justify-end gap-2">
             <button
@@ -1644,40 +1613,35 @@ export default function Resume() {
             </h2>
             <div contentEditable suppressContentEditableWarning>
               <p className="flex justify-between">
-                <strong>Baruch College, Weismann School of Arts and Sciences</strong>
+                <strong>Baruch College, Weissman School of Arts and Sciences</strong>
                 <span>New York, NY</span>
               </p>
               <p className="flex justify-between">
                 <em>Bachelor of Science in Computer Science, Minor in Mathematics</em>
-                <span>Expected December 2026</span>
+                <span>Expected May 2027</span>
               </p>
               <p>
                 <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
-                Computer Networking, Probability & Statistics, Systems Analysis & Design, Object-Oriented Programming,
-                Computer Architecture, Web Development
+                Computer Networking, Data Warehousing, Systems Analysis & Design, Object-Oriented Programming, Computer
+                Architecture, Web Development
               </p>
             </div>
           </div>
 
           <div className="mb-4">
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
-              TECHNICAL SKILLS AND CERTIFICATIONS
+              TECHNICAL SKILLS
             </h2>
             <div contentEditable suppressContentEditableWarning>
               <p>
-                <strong>Programming Languages:</strong> Python, R, SQL, C++, JavaScript, TypeScript, HTML/CSS
+                <strong>Programming Languages:</strong> Python, Go, C++, TypeScript, JavaScript, SQL, R, Bash
               </p>
               <p>
-                <strong>Frameworks and Libraries:</strong> Pandas, NumPy, Matplotlib, PyTorch, scikit-learn, TensorFlow,
-                MySQL, React, Flask, Redis
+                <strong>Frameworks/Libraries/Databases:</strong> Node.js, FastAPI, Fastify, Flask, PostgreSQL, Redis,
+                Prisma, MySQL, LangChain
               </p>
               <p>
-                <strong>Developer Tools:</strong> AWS (ES2, S3), Microsoft Azure, Git, MongoDB, Docker, Kubernetes,
-                PowerBI, Tableau, Linux
-              </p>
-              <p>
-                <strong>Certifications:</strong> CompTIA ITF+, CompTIA A+, CodePath Android Development, CodePath
-                iOS Development
+                <strong>Cloud & DevOps:</strong> AWS, Azure, GCP, Kubernetes, Docker, Datadog, Linux, Jenkins
               </p>
             </div>
           </div>
@@ -1690,28 +1654,31 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Agentic AI Developer</strong> | Python, LLMs, Agent Systems
+                  <strong>Software Engineer Intern</strong>
                 </p>
-                <p>November 2025 - Present</p>
+                <p>June 2026 - Present</p>
               </div>
               <div className="flex justify-between">
                 <p>
-                  <strong>Robert Wood Johnson Foundation</strong>
+                  <em>Liberty Mutual Insurance</em>
                 </p>
-                <p>New York, NY</p>
+                <p>Portsmouth, NH</p>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Designed and deployed <strong>8</strong> AI agents to automate investment research workflows, including
-                  financial statement analysis, memo drafting, and risk flag generation.
+                  Projected <strong>$53.3K</strong> in annual infrastructure savings by building a deterministic{" "}
+                  <strong>Kubernetes</strong> right-sizing engine that analyzes p95/p99 CPU and memory telemetry across{" "}
+                  <strong>50</strong> workloads and generates reviewable YAML patches.
                 </li>
                 <li>
-                  Built multi-step agent pipelines integrating LLM reasoning, financial data retrieval, and structured
-                  output validation to support portfolio evaluation decisions.
+                  Automated disaster recovery replication across <strong>877</strong> VMs, cutting configuration time{" "}
+                  <strong>95%</strong> from <strong>37 hours</strong> to <strong>2 hours</strong> and eliminating
+                  hundreds of manual operations.
                 </li>
                 <li>
-                  Implemented retrieval-augmented generation (RAG) systems to synthesize internal investment documents and
-                  external market data into structured investment summaries.
+                  Accelerated <strong>Azure Local</strong> backup failure detection <strong>40%</strong> by building{" "}
+                  <strong>Datadog</strong> monitors and alerting workflows, improving incident response and reducing
+                  time-to-detection.
                 </li>
               </ul>
             </div>
@@ -1719,29 +1686,31 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Data Scientist</strong> | Python, R
+                  <strong>Agentic AI Developer</strong>
                 </p>
-                <p>November 2023 - November 2025</p>
+                <p>November 2025 - May 2026</p>
               </div>
               <div className="flex justify-between">
                 <p>
-                  <strong>CUNY Institute for Demographic Research</strong>
+                  <em>Robert Wood Johnson Foundation</em>
                 </p>
                 <p>New York, NY</p>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Spearheaded critical data support on a research project for urban growth models, directly impacting
-                  policy and planning decisions for <strong>145</strong> countries representing <strong>80%</strong> of
-                  the world{"'"}s population.
+                  Recovered <strong>10 hours</strong> of analysis time per week for a <strong>15-person</strong>{" "}
+                  investment team by designing and deploying <strong>8 AI agents</strong> that automate financial
+                  statement analysis, memo drafting, and risk flag generation.
                 </li>
                 <li>
-                  Developed R and Python scripts to automate data cleaning processes, reducing preprocessing time and
-                  improving data quality for over <strong>1000</strong> files.
+                  Engineered multi-step agent pipelines combining LLM reasoning, financial data retrieval, and
+                  structured-output validation to streamline analysis across a <strong>$13B</strong> investment
+                  portfolio.
                 </li>
                 <li>
-                  Specialized in converting demographic data from <strong>145</strong> PDFs into structured Excel
-                  spreadsheets, enhancing data accessibility and reducing manual data entry time by <strong>75%</strong>.
+                  Developed <strong>retrieval-augmented generation (RAG)</strong> pipelines to search and synthesize
+                  thousands of internal investment documents across SharePoint and Bipsync into structured investment
+                  summaries for portfolio analysis.
                 </li>
               </ul>
             </div>
@@ -1749,30 +1718,30 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Front-End Developer</strong> | JavaScript, HTML, CSS
+                  <strong>Data Scientist</strong>
                 </p>
-                <p>February 2024 - May 2024</p>
+                <p>November 2023 - October 2025</p>
               </div>
               <div className="flex justify-between">
                 <p>
-                  <strong>Reach Into Cultural Heights</strong>
+                  <em>CUNY Institute for Demographic Research</em>
                 </p>
                 <p>New York, NY</p>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Designed and implemented a search bar on the company website, improving user navigation and
-                  accessibility by <strong>30%</strong>, as measured by user engagement metrics.
+                  Built and maintained Python and R data pipelines supporting urban growth models, informing policy and
+                  planning decisions across <strong>145</strong> countries representing <strong>80%</strong> of the
+                  world's population.
                 </li>
                 <li>
-                  Enhanced AI chatbot performance by integrating <strong>ChatGPT-4</strong> in place of{" "}
-                  <strong>GPT-2</strong>, improving response accuracy by <strong>50%</strong> as validated through A/B
-                  testing.
+                  Reduced manual data entry time by <strong>75%</strong> and improved data quality for research teams by
+                  developing R and Python scripts that automate data cleaning and demographic extraction across{" "}
+                  <strong>1,000+</strong> files.
                 </li>
                 <li>
-                  Led data analysis for a new digital after-school program, identifying <strong>4</strong> key user
-                  behavior patterns that drove an increase in platform engagement and <strong>70%</strong> improvement
-                  in user retention.
+                  Generated geospatial population heat maps for <strong>2,300+</strong> districts spanning{" "}
+                  <strong>50</strong> years, enabling subnational analysis of long-term population growth patterns.
                 </li>
               </ul>
             </div>
@@ -1780,32 +1749,38 @@ export default function Resume() {
 
           <div className="mb-4">
             <h2 className="font-bold border-b border-black mb-1" contentEditable suppressContentEditableWarning>
-              PERSONAL PROJECTS
+              PROJECTS
             </h2>
 
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Bloomberg Real-Time News Feed</strong> | Flask, Redis, React
+                  <strong>Booklet — Read-It-Later API & Sync Platform</strong> |{" "}
+                  <em>TypeScript, Node.js, PostgreSQL</em>
                 </p>
-                <a href="https://github.com/jguapp" className="text-blue-800 underline">
+                <a
+                  href="https://github.com/jguapp"
+                  className="text-blue-800 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   GitHub
                 </a>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Developed a fullstack web application using React, Flask, and Redis as part of a{" "}
-                  <strong>Bloomberg</strong>-hosted Tech Lab.
+                  Architected a <strong>Fastify/PostgreSQL</strong> backend with <strong>82 REST endpoints</strong> and a
+                  20-table Prisma schema, supporting web, mobile, and browser-extension clients through a unified{" "}
+                  <strong>API</strong>.
                 </li>
                 <li>
-                  Designed and deployed a scalable containerized environment with <strong>Docker</strong> and Docker
-                  Compose, reducing deployment setup time by <strong>40%</strong> and ensuring seamless integration
-                  between frontend and backend services.
+                  Increased concurrent inference throughput <strong>2.86x</strong> by implementing two-tier
+                  in-memory/Redis caching with in-flight request deduplication for a server-side ML inference pipeline.
                 </li>
                 <li>
-                  Built an interactive, real-time UI with React, implementing features like live news updates,
-                  increasing user engagement by <strong>25%</strong> while mastering <strong>CI/CD pipelines</strong>{" "}
-                  and automated testing.
+                  Cut inference cold-start time <strong>25%</strong> to <strong>8.9s</strong> and concurrent-request
+                  latency <strong>21%</strong> to <strong>14.8s</strong> by eliminating ONNX thread-pool oversubscription
+                  in a multi-process service running on 2 vCPUs.
                 </li>
               </ul>
             </div>
@@ -1813,27 +1788,30 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>IMDB Reviews Sentiment Classifier</strong> | Python, NumPy, TensorFlow
+                  <strong>Calligraphy — Distributed Task Queue System</strong> | <em>Docker, Grafana, gRPC</em>
                 </p>
-                <a href="https://github.com/jguapp" className="text-blue-800 underline">
+                <a
+                  href="https://github.com/jguapp"
+                  className="text-blue-800 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   GitHub
                 </a>
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Achieved <strong>82%</strong> test accuracy on IMDB sentiment classification by developing a custom
-                  deep learning model using stacked Bidirectional LSTMs, outperforming baseline logistic regression by
-                  over <strong>20%</strong>.
+                  Processed <strong>10,000+</strong> jobs through a distributed <strong>Go</strong> worker pool using
+                  goroutines, channels, and Redis-backed queues while maintaining <strong>99.04%+</strong> job completion
+                  reliability under load.
                 </li>
                 <li>
-                  Engineered an NLP pipeline to preprocess and classify <strong>500MB+</strong> of raw text data,
-                  optimizing sequence padding and tokenizer efficiency to reduce training time by <strong>30%</strong>{" "}
-                  while preserving high accuracy.
+                  Improved job throughput <strong>60%</strong> by implementing dynamic worker scaling, connection
+                  pooling, and concurrent job scheduling across <strong>7</strong> containerized worker instances.
                 </li>
                 <li>
-                  Improved sentiment comprehension and classification precision by <strong>15%</strong> using stacked{" "}
-                  <strong>Bidirectional LSTM</strong> layers, reducing false positives/negatives by <strong>20%</strong>{" "}
-                  through better context retention.
+                  Implemented fault-tolerant job execution with persistent job state, automatic retries with exponential
+                  backoff, dead-letter queues, and graceful worker recovery for failed and interrupted jobs.
                 </li>
               </ul>
             </div>
@@ -1846,25 +1824,25 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>ColorStack Baruch Chapter</strong> | Operations Chair
+                  <strong>ColorStack Baruch Chapter</strong> | <em>Operations Director</em>
                 </p>
                 <p>January 2024 - Present</p>
               </div>
               <ul className="list-disc pl-5">
                 <li>
                   Expanded ColorStack Baruch Chapter from <strong>4</strong> founding members to over{" "}
-                  <strong>200</strong> active participants in two semesters, cultivating a diverse community of
-                  underrepresented students in tech.
+                  <strong>300</strong> active participants by expanding technical programming, community events, and
+                  professional development.
                 </li>
                 <li>
-                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants, with{" "}
-                  <strong>80%</strong> reporting improved job readiness in web development, cloud computing, and
-                  database management.
+                  Organized <strong>10+</strong> hands-on coding workshops for <strong>70</strong> participants covering
+                  web development, cloud computing, and database management, with <strong>80%</strong> reporting improved
+                  job readiness.
                 </li>
                 <li>
-                  Established relationships with <strong>5+</strong> tech companies, including{" "}
-                  <strong>Bloomberg</strong> and <strong>Datadog</strong>, resulting in job and internship opportunities
-                  through office visits, networking events, and interview prep sessions.
+                  Fostered partnerships with <strong>5+</strong> tech companies, including <strong>Bloomberg</strong> and{" "}
+                  <strong>Datadog</strong>, creating opportunities for office visits, networking, and technical interview
+                  preparation.
                 </li>
               </ul>
             </div>
