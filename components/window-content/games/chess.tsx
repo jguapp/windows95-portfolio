@@ -37,6 +37,33 @@ interface MoveRecord {
   isPromotion?: boolean
   isCastle?: boolean
   isEnPassant?: boolean
+  /** "+" for check and "#" for mate, filled in once the move has been made. */
+  check?: "+" | "#"
+}
+
+/**
+ * Standard algebraic notation for a move.
+ *
+ * The move list read "P e2-e4", which is not how anyone writes chess. Pawns
+ * carry no letter, captures use x with the pawn's file in front, castling is
+ * O-O, and promotion is written =Q.
+ */
+function notation(move: MoveRecord): string {
+  const file = (col: number) => String.fromCharCode(97 + col)
+  const square = (pos: Position) => `${file(pos.col)}${8 - pos.row}`
+
+  if (move.isCastle || (move.piece.type === "king" && Math.abs(move.to.col - move.from.col) === 2)) {
+    return (move.to.col > move.from.col ? "O-O" : "O-O-O") + (move.check ?? "")
+  }
+
+  const LETTER: Partial<Record<PieceType, string>> = { knight: "N", bishop: "B", rook: "R", queen: "Q", king: "K" }
+  const piece = LETTER[move.piece.type] ?? ""
+  const takes = move.captured ? "x" : ""
+  // A capturing pawn is written by its file of origin: exd5, not xd5.
+  const origin = move.piece.type === "pawn" && move.captured ? file(move.from.col) : ""
+  const promotion = move.isPromotion ? "=Q" : ""
+
+  return `${piece}${origin}${takes}${square(move.to)}${promotion}${move.check ?? ""}`
 }
 
 // Board themes
@@ -79,6 +106,14 @@ export default function Chess({ onReturn }: ChessProps) {
   const [showStartScreen, setShowStartScreen] = useState<boolean>(true)
   const [isThinking, setIsThinking] = useState<boolean>(false)
   const [lastMove, setLastMove] = useState<{ from: Position; to: Position } | null>(null)
+  /**
+   * How the computer picks.
+   *
+   * Easy plays a legal move at random, which is beatable by anyone. Medium
+   * scores each move and takes the best. Hard does the same but then checks
+   * what the reply would cost it, so it stops hanging pieces.
+   */
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
 
   // Board themes
   const themes: BoardTheme[] = [
@@ -346,6 +381,12 @@ export default function Chess({ onReturn }: ChessProps) {
 
     if (isInCheck) {
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      // The move list needs to know, and it is only knowable now.
+      setMoveHistory((history) =>
+        history.length === 0
+          ? history
+          : [...history.slice(0, -1), { ...history[history.length - 1], check: hasValidMoves ? "+" : "#" }],
+      )
       announceMove({ ...moveKind, check: true, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsCheckmate(true)
@@ -444,6 +485,12 @@ export default function Chess({ onReturn }: ChessProps) {
 
     if (isInCheck) {
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      // The move list needs to know, and it is only knowable now.
+      setMoveHistory((history) =>
+        history.length === 0
+          ? history
+          : [...history.slice(0, -1), { ...history[history.length - 1], check: hasValidMoves ? "+" : "#" }],
+      )
       announceMove({ ...moveKind, check: true, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsCheckmate(true)
@@ -1127,17 +1174,43 @@ export default function Chess({ onReturn }: ChessProps) {
       }
     }
 
+    // Hard looks one reply ahead and subtracts whatever the opponent could
+    // take in return, which is the difference between a computer that grabs
+    // material and one that stops leaving pieces hanging.
+    if (difficulty === "hard") {
+      const values: Record<PieceType, number> = { pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100 }
+      for (const move of allMoves) {
+        const after = board.map((row) => [...row])
+        after[move.to.row][move.to.col] = after[move.from.row][move.from.col]
+        after[move.from.row][move.from.col] = null
+
+        let worst = 0
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const piece = after[r][c]
+            if (!piece || piece.color === botColor) continue
+            for (const reply of calculateValidMoves({ row: r, col: c }, after)) {
+              const target = after[reply.row][reply.col]
+              if (target && target.color === botColor) worst = Math.max(worst, values[target.type])
+            }
+          }
+        }
+        move.score -= worst * 0.9
+      }
+    }
+
     // Sort moves by score (highest first)
     allMoves.sort((a, b) => b.score - a.score)
 
     // Make the best move after a delay
     setTimeout(() => {
       if (allMoves.length > 0) {
-        const bestMove = allMoves[0]
-        movePiece(bestMove.from, bestMove.to)
+        // Easy takes any legal move; the others take the best one found.
+        const choice = difficulty === "easy" ? allMoves[Math.floor(Math.random() * allMoves.length)] : allMoves[0]
+        movePiece(choice.from, choice.to)
       }
       setIsThinking(false)
-    }, 500)
+    }, difficulty === "hard" ? 700 : 500)
   }
 
   // Render the start screen
@@ -1479,6 +1552,21 @@ export default function Chess({ onReturn }: ChessProps) {
                   Flip Board
                 </div>
                 <div className="border-t border-gray-400 my-1"></div>
+                {(["easy", "medium", "hard"] as const).map((level) => (
+                  <div
+                    key={level}
+                    data-difficulty={level}
+                    className="px-4 py-1 hover:bg-blue-800 hover:text-white cursor-pointer"
+                    onClick={() => {
+                      setDifficulty(level)
+                      setShowMenu(false)
+                    }}
+                  >
+                    <span className="mr-2">{difficulty === level ? "\u2713" : "\u00a0"}</span>
+                    {level === "easy" ? "Easy" : level === "medium" ? "Medium" : "Hard"}
+                  </div>
+                ))}
+                <div className="border-t border-gray-400 my-1"></div>
                 <div
                   className="px-4 py-1 hover:bg-blue-800 hover:text-white cursor-pointer"
                   onClick={() => handleMenuItemClick("exit")}
@@ -1554,27 +1642,17 @@ export default function Chess({ onReturn }: ChessProps) {
             {/* Move history */}
             <div className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-2 flex-1 overflow-auto">
               <div className="font-bold mb-2">Move History</div>
-              <div className="text-sm">
-                {moveHistory.map((move, index) => {
-                  const moveNumber = Math.floor(index / 2) + 1
-                  const isWhiteMove = index % 2 === 0
-                  const fromCoord = `${String.fromCharCode(97 + move.from.col)}${8 - move.from.row}`
-                  const toCoord = `${String.fromCharCode(97 + move.to.col)}${8 - move.to.row}`
-                  const pieceType = move.piece.type.charAt(0).toUpperCase()
-                  const captureSymbol = move.captured ? "x" : "-"
-
-                  return (
-                    <div key={index} className="mb-1">
-                      {isWhiteMove && `${moveNumber}. `}
-                      <span className={isWhiteMove ? "text-gray-800" : "text-gray-600"}>
-                        {pieceType} {fromCoord}
-                        {captureSymbol}
-                        {toCoord}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
+              <table data-moves className="w-full text-sm">
+                <tbody>
+                  {Array.from({ length: Math.ceil(moveHistory.length / 2) }, (_, i) => (
+                    <tr key={i}>
+                      <td className="w-8 pr-1 text-right align-top text-gray-600">{i + 1}.</td>
+                      <td className="pr-2 align-top">{notation(moveHistory[i * 2])}</td>
+                      <td className="align-top">{moveHistory[i * 2 + 1] ? notation(moveHistory[i * 2 + 1]) : ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Controls */}

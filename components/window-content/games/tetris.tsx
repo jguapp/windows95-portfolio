@@ -77,6 +77,14 @@ const POINTS_PER_LINE = 100
 const LINES_PER_LEVEL = 10
 /** How long completed rows blink before the stack collapses onto them. */
 const LINE_FLASH_MS = 330
+/**
+ * How long a piece may rest on the stack before it locks.
+ *
+ * Without this a piece locks the instant gravity finds it cannot fall, so a
+ * slide or rotation you were part-way through is simply lost. Half a second is
+ * enough to finish the input and not enough to stall.
+ */
+const LOCK_DELAY_MS = 500
 
 /** Reads the OS motion preference at the moment it matters. */
 function prefersReducedMotion(): boolean {
@@ -150,6 +158,8 @@ export default function Tetris({ onReturn }: TetrisProps) {
    * the piece landed.
    */
   const [clearingRows, setClearingRows] = useState<number[]>([])
+  /** When the piece first touched down, so the lock delay can be measured. */
+  const restingSinceRef = useRef<number | null>(null)
   /** When the last gravity step happened, for the sub-cell drop offset. */
   const lastStepRef = useRef(0)
   /** The layer holding the falling piece, moved directly rather than via state. */
@@ -312,6 +322,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
       const newPosition = { ...currentPiece.position, x: currentPiece.position.x + direction }
       if (!checkCollision(currentPiece, newPosition)) {
+        if (restingSinceRef.current !== null) restingSinceRef.current = performance.now()
         setCurrentPiece({ ...currentPiece, position: newPosition })
         playSound(moveSound)
       }
@@ -416,9 +427,21 @@ export default function Tetris({ onReturn }: TetrisProps) {
     const newPosition = { ...currentPiece.position, y: currentPiece.position.y + 1 }
     if (!checkCollision(currentPiece, newPosition)) {
       lastStepRef.current = performance.now()
+      restingSinceRef.current = null
       setCurrentPiece({ ...currentPiece, position: newPosition })
       return
     }
+
+    // The piece has landed. Hold it for the lock delay so a slide or rotation
+    // already under way still counts, and only lock once that has run out.
+    const now = performance.now()
+    if (restingSinceRef.current === null) {
+      restingSinceRef.current = now
+      return
+    }
+    if (now - restingSinceRef.current < LOCK_DELAY_MS) return
+
+    restingSinceRef.current = null
     lockPiece(currentPiece)
   }, [currentPiece, checkCollision, paused, gameOver, lockPiece])
 
@@ -441,6 +464,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
     // Two points a row for a hard drop against one for a soft drop, so
     // committing to a placement pays better than nudging it down.
     setScore((prev) => prev + (newY - currentPiece.position.y) * 2)
+    restingSinceRef.current = null
     lockPiece({ ...currentPiece, position: { ...currentPiece.position, y: newY } })
   }, [currentPiece, checkCollision, lockPiece, paused, gameOver])
 
