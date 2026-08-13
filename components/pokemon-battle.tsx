@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { sfx } from "@/lib/sound"
+import { cry, sfx } from "@/lib/sound"
 
 /**
  * Pokemon battle, Generation I.
@@ -45,76 +45,11 @@ const MOVE_STEP = 8
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-const DARKBYTE_FRONT = [
-  "............................",
-  "..........2222..............",
-  ".........233332.............",
-  "........23333332............",
-  ".......2333333332...........",
-  "......233332233332..........",
-  ".....23332......23332.......",
-  "....23332........23332......",
-  "....2332....33....2332......",
-  "....332....3333....332......",
-  "...2332...333333...2332.....",
-  "...2332..33300333..2332.....",
-  "...2332..33033033..2332.....",
-  "...23332.3303303323332......",
-  "....2333233003332 3332......",
-  "....2333323333332 3332......",
-  ".....233332333323 332.......",
-  "......23333233332332........",
-  ".......2333323332332........",
-  "........233332333332........",
-  ".........23332333332........",
-  "..........2332233332........",
-  "..........2332..2332........",
-  ".........2332....2332.......",
-  "........2332......2332......",
-  ".......2332........2332.....",
-  "......2332..........2332....",
-  ".....222..............222...",
-]
+import { FOE_TEAM, PLAYER_TEAM, SPECIES, type Move, type Species } from "./pokemon-roster"
 
-const VIRUSITE_BACK = [
-  "............................",
-  "............................",
-  "............................",
-  "..........222222............",
-  ".......2223333332222........",
-  ".....22333333333333322......",
-  "....2333333333333333332.....",
-  "...233333322222233333332....",
-  "..23333322........22333332..",
-  "..2333322..........2233332..",
-  "..233332............223332..",
-  "..233332.............23332..",
-  "..2333322...........223332..",
-  "..23333322.........2233332..",
-  "...23333322.......22333332..",
-  "....233333222...2223333332..",
-  ".....2333333322233333332....",
-  "......233333333333333322....",
-  ".......22333333333333222....",
-  ".........222333333222.......",
-  "...........2222222..........",
-  "..........2333333322........",
-  ".........233333333332.......",
-  "........23333333333332......",
-  "........233333333333332.....",
-  ".......2333333333333332.....",
-  "........22222222222222......",
-  "............................",
-]
-
-interface Move {
-  name: string
-  power: number
-  pp: number
-  maxPp: number
-}
-
+/** A creature in play: its species, plus the health and PP it has left. */
 interface Fighter {
+  species: Species
   name: string
   level: number
   hp: number
@@ -122,28 +57,17 @@ interface Fighter {
   moves: Move[]
 }
 
-const PLAYER_START: Fighter = {
-  name: "VIRUSITE",
-  level: 37,
-  hp: 118,
-  maxHp: 118,
-  moves: [
-    { name: "SEG FAULT", power: 34, pp: 15, maxPp: 15 },
-    { name: "FORK BOMB", power: 28, pp: 20, maxPp: 20 },
-    { name: "NULL PTR", power: 22, pp: 25, maxPp: 25 },
-    { name: "KERNELPANIC", power: 45, pp: 5, maxPp: 5 },
-  ],
-}
-
-const FOE_START: Fighter = {
-  name: "DARKBYTE",
-  level: 34,
-  hp: 104,
-  maxHp: 104,
-  moves: [
-    { name: "STACK SMASH", power: 30, pp: 10, maxPp: 10 },
-    { name: "RACE COND", power: 24, pp: 15, maxPp: 15 },
-  ],
+/** Rolls a species out into a fighter at full health. */
+function toFighter(key: string): Fighter {
+  const species = SPECIES[key]
+  return {
+    species,
+    name: species.name,
+    level: species.level,
+    hp: species.maxHp,
+    maxHp: species.maxHp,
+    moves: species.moves.map((m) => ({ ...m })),
+  }
 }
 
 /** Collapse a sprite grid into horizontal runs so it renders as few rects. */
@@ -225,17 +149,39 @@ function Label({ x, y, children, size = 8 }: { x: number; y: number; children: s
   )
 }
 
-type Phase = "menu" | "fight" | "message" | "over"
+type Phase = "menu" | "fight" | "switch" | "message" | "over"
 
 interface PokemonBattleProps {
   onClose: () => void
 }
 
 export default function PokemonBattle({ onClose }: PokemonBattleProps) {
-  const [player, setPlayer] = useState<Fighter>(PLAYER_START)
-  const [foe, setFoe] = useState<Fighter>(FOE_START)
+  /**
+   * Six a side, as a real battle is.
+   *
+   * Both teams are held in full so a fainted creature is replaced rather than
+   * ending the match, and so the PKMN menu can switch between the ones still
+   * standing.
+   */
+  const [team, setTeam] = useState<Fighter[]>(() => PLAYER_TEAM.map(toFighter))
+  const [foes, setFoes] = useState<Fighter[]>(() => FOE_TEAM.map(toFighter))
+  const [active, setActive] = useState(0)
+  const [foeActive, setFoeActive] = useState(0)
+
+  const player = team[active]
+  const foe = foes[foeActive]
+
+  const setPlayer = useCallback(
+    (update: (f: Fighter) => Fighter) => setTeam((t) => t.map((f, i) => (i === active ? update(f) : f))),
+    [active],
+  )
+  const setFoe = useCallback(
+    (update: (f: Fighter) => Fighter) => setFoes((t) => t.map((f, i) => (i === foeActive ? update(f) : f))),
+    [foeActive],
+  )
+
   const [phase, setPhase] = useState<Phase>("message")
-  const [message, setMessage] = useState(`Wild ${FOE_START.name} appeared!`)
+  const [message, setMessage] = useState(`Enemy ${SPECIES[FOE_TEAM[0]].name} sent out!`)
   const [cursor, setCursor] = useState(0)
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -246,8 +192,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   useEffect(() => {
     sfx.battleStart()
+    cry(SPECIES[FOE_TEAM[0]].cry)
     const opening = setTimeout(() => {
-      setMessage(`Go! ${PLAYER_START.name}!`)
+      setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
+      cry(SPECIES[PLAYER_TEAM[0]].cry)
       const ready = setTimeout(() => setPhase("menu"), 1100)
       timers.current.push(ready)
     }, 1300)
@@ -269,14 +217,28 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         const hp = Math.max(0, playerHp - dealt)
         setPlayer((p) => ({ ...p, hp }))
         after(700, () => {
-          if (hp === 0) {
-            setMessage(`${PLAYER_START.name} fainted!`)
-            sfx.lose()
-            setPhase("over")
-          } else {
+          if (hp !== 0) {
             setPhase("menu")
             setBusy(false)
+            return
           }
+
+          setMessage(`${player.name} fainted!`)
+          sfx.lose()
+          const next = team.findIndex((f, i) => i !== active && f.hp > 0)
+          if (next === -1) {
+            after(900, () => setPhase("over"))
+            return
+          }
+          after(1000, () => {
+            setActive(next)
+            setMessage(`Go! ${team[next].name}!`)
+            cry(team[next].species.cry)
+            after(900, () => {
+              setPhase("menu")
+              setBusy(false)
+            })
+          })
         })
       })
     },
@@ -302,17 +264,61 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         const hp = Math.max(0, foe.hp - dealt)
         setFoe((f) => ({ ...f, hp }))
         after(700, () => {
-          if (hp === 0) {
-            setMessage(`Enemy ${foe.name} fainted!`)
-            sfx.win()
-            setPhase("over")
-          } else {
+          if (hp !== 0) {
             foeTurn(player.hp)
+            return
           }
+
+          setMessage(`Enemy ${foe.name} fainted!`)
+          sfx.win()
+          const next = foes.findIndex((f, i) => i !== foeActive && f.hp > 0)
+          if (next === -1) {
+            after(900, () => {
+              setMessage("You won the battle!")
+              setPhase("over")
+            })
+            return
+          }
+          after(1000, () => {
+            setFoeActive(next)
+            setMessage(`Enemy sent out ${foes[next].name}!`)
+            cry(foes[next].species.cry)
+            after(900, () => {
+              setPhase("menu")
+              setBusy(false)
+            })
+          })
         })
       })
     },
     [after, busy, foe, foeTurn, player],
+  )
+
+  /**
+   * Bring another of the six out.
+   *
+   * The switch takes the turn, so the opponent gets a free hit, which is what
+   * stops it being a way to dodge every attack.
+   */
+  const switchTo = useCallback(
+    (index: number) => {
+      if (index === active) {
+        setMessage(`${team[index].name} is already out!`)
+        return
+      }
+      if (team[index].hp === 0) {
+        setMessage(`${team[index].name} has no energy left!`)
+        return
+      }
+
+      setBusy(true)
+      setPhase("message")
+      setActive(index)
+      setMessage(`Go! ${team[index].name}!`)
+      cry(team[index].species.cry)
+      after(1000, () => foeTurn(team[index].hp))
+    },
+    [active, after, foeTurn, team],
   )
 
   const run = useCallback(() => {
@@ -332,7 +338,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       }
       if (busy || phase === "message") return
 
-      const count = phase === "menu" ? 4 : player.moves.length
+      const count = phase === "menu" ? 4 : phase === "switch" ? team.length : player.moves.length
       if (e.key === "ArrowDown") setCursor((c) => (c + 1) % count)
       else if (e.key === "ArrowUp") setCursor((c) => (c - 1 + count) % count)
       else if (e.key === "Enter" || e.key.toLowerCase() === "z") {
@@ -340,13 +346,18 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           if (cursor === 0) {
             setPhase("fight")
             setCursor(0)
+          } else if (cursor === 1) {
+            setPhase("switch")
+            setCursor(active)
           } else if (cursor === 3) run()
           else setMessage("There's a time and place for everything!")
+        } else if (phase === "switch") {
+          switchTo(cursor)
         } else {
           performMove(cursor)
         }
       } else if (e.key.toLowerCase() === "x" || e.key === "Backspace") {
-        if (phase === "fight") {
+        if (phase === "fight" || phase === "switch") {
           setPhase("menu")
           setCursor(0)
         }
@@ -354,7 +365,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [busy, cursor, onClose, phase, player.moves.length, run, performMove])
+  }, [active, busy, cursor, onClose, phase, player.moves.length, run, performMove, switchTo, team.length])
 
   /** FIGHT and PKMN fill the left column, ITEM and RUN the right. */
   const MENU = [
@@ -382,8 +393,20 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         >
           <rect width={SCREEN_W} height={SCREEN_H} fill={P[0]} />
 
+          {/*
+            One ball per creature, filled while it is still standing. Gen I put
+            these beside each trainer's status box so you could see at a glance
+            how much of a team was left.
+          */}
+          {foes.map((f, i) => (
+            <rect key={`fb${i}`} x={8 + i * 5} y={40} width={3} height={3} fill={P[f.hp > 0 ? 3 : 1]} />
+          ))}
+          {team.map((f, i) => (
+            <rect key={`pb${i}`} x={112 + i * 5} y={99} width={3} height={3} fill={P[f.hp > 0 ? 3 : 1]} />
+          ))}
+
           {/* Opponent: front sprite upper right, status box upper left */}
-          <Sprite grid={DARKBYTE_FRONT} x={96} y={0} />
+          <Sprite grid={foe.species.sprite} x={96} y={0} />
           <Box x={4} y={12} w={86} h={26} />
           <Label x={9} y={23}>
             {foe.name}
@@ -397,7 +420,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           <HpBar x={32} y={28} ratio={foe.hp / foe.maxHp} />
 
           {/* Player: back sprite lower left, status box lower right */}
-          <Sprite grid={VIRUSITE_BACK} x={10} y={46} />
+          <Sprite grid={player.species.sprite} x={10} y={46} />
           <Box x={74} y={66} w={84} h={34} />
           <Label x={79} y={77}>
             {player.name}
@@ -459,6 +482,24 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <Label x={104} y={MOVE_TOP} size={7}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
+            </>
+          ) : phase === "switch" ? (
+            <>
+              {team.map((f, i) => (
+                <g key={f.name}>
+                  {cursor === i && (
+                    <Label x={4} y={MOVE_TOP + i * 6} size={5}>
+                      &#9654;
+                    </Label>
+                  )}
+                  <Label x={11} y={MOVE_TOP + i * 6} size={5}>
+                    {`${f.name}${i === active ? " *" : ""}`}
+                  </Label>
+                  <Label x={104} y={MOVE_TOP + i * 6} size={5}>
+                    {f.hp === 0 ? "FNT" : `${f.hp}/${f.maxHp}`}
+                  </Label>
+                </g>
+              ))}
             </>
           ) : (
             lines

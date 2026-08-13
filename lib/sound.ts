@@ -184,6 +184,36 @@ function knock(delay = 0, strength = 1) {
   body.stop(start + 0.12)
 }
 
+/**
+ * A creature's cry.
+ *
+ * Generation I cries were a pitch sweep with a burst of noise over it, and no
+ * two sounded alike, so each species supplies its own sweep, length, waveform
+ * and roughness rather than sharing one hit sound.
+ */
+export function cry(options: { from: number; to: number; duration: number; wave: Wave; grit: number }) {
+  const ac = audio()
+  if (!ac || muted || volume === 0) return
+
+  const start = ac.currentTime
+  const osc = ac.createOscillator()
+  const amp = ac.createGain()
+
+  osc.type = options.wave
+  osc.frequency.setValueAtTime(options.from, start)
+  osc.frequency.exponentialRampToValueAtTime(Math.max(30, options.to), start + options.duration)
+
+  amp.gain.setValueAtTime(0.0001, start)
+  amp.gain.exponentialRampToValueAtTime(Math.max(0.0002, level(0.06)), start + 0.02)
+  amp.gain.exponentialRampToValueAtTime(0.0001, start + options.duration)
+
+  osc.connect(amp).connect(ac.destination)
+  osc.start(start)
+  osc.stop(start + options.duration + 0.02)
+
+  if (options.grit > 0) noise(options.duration * 0.7, 0.05 * options.grit, 400 + options.from)
+}
+
 /** Named effects, so callers ask for a sound rather than a frequency. */
 export const sfx = {
   click: () => tone({ freq: 620, duration: 0.03, gain: 0.03 }),
