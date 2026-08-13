@@ -7,9 +7,11 @@ import Solitaire from "./games/solitaire"
 import Chess from "./games/chess"
 import Tetris from "./games/tetris"
 import FreeCell from "./games/freecell"
+import Hearts from "./games/hearts"
+import Reversi from "./games/reversi"
 import { createSound, type SynthAudio } from "@/lib/sound"
 
-type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris" | "freecell"
+type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris" | "freecell" | "hearts" | "reversi"
 
 export default function Games() {
   const [currentGame, setCurrentGame] = useState<GameType>("launcher")
@@ -126,6 +128,22 @@ export default function Games() {
       featured: true,
     },
     {
+      id: "hearts",
+      name: "Hearts",
+      description: "Four hands, and nobody wants the queen of spades",
+      image: "/images/win95/hearts-32.png",
+      category: "card",
+      featured: false,
+    },
+    {
+      id: "reversi",
+      name: "Reversi",
+      description: "Corner the board and turn it over",
+      image: "/images/win95/reversi-32.png",
+      category: "board",
+      featured: false,
+    },
+    {
       id: "pong",
       name: "Pong",
       description: "The original arcade classic",
@@ -153,6 +171,10 @@ export default function Games() {
         return <Tetris onReturn={returnToLauncher} />
       case "freecell":
         return <FreeCell onReturn={returnToLauncher} />
+      case "hearts":
+        return <Hearts onReturn={returnToLauncher} />
+      case "reversi":
+        return <Reversi onReturn={returnToLauncher} />
       default:
         return renderLauncher()
     }
