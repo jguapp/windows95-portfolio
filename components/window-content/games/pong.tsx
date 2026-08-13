@@ -483,11 +483,15 @@ export default function Pong({ onReturn }: PongProps) {
     )
 
     // Draw score
-    ctx.font = "24px 'Press Start 2P'"
+    // Pong put the score on the table itself, in big blocky digits either side
+    // of the centre line.
+    ctx.font = "48px 'Press Start 2P', monospace"
     ctx.textAlign = "center"
+    ctx.textBaseline = "top"
     ctx.fillStyle = "#ffffff"
-    ctx.fillText(score.player.toString(), canvas.width / 4, 30)
-    ctx.fillText(score.computer.toString(), (canvas.width / 4) * 3, 30)
+    ctx.fillText(score.player.toString(), canvas.width / 2 - 60, 16)
+    ctx.fillText(score.computer.toString(), canvas.width / 2 + 60, 16)
+    ctx.textBaseline = "alphabetic"
 
     // Draw game over message
     if (gameOverRef.current) {
@@ -781,16 +785,6 @@ export default function Pong({ onReturn }: PongProps) {
           buttons and swallowed the clicks. They sit in the flow now.
         */}
         <div className="flex flex-col gap-2">
-          {/* Score Display */}
-          <div className="flex justify-between px-4">
-            <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
-              <span className="text-sm font-bold">Player: {score.player}</span>
-            </div>
-            <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
-              <span className="text-sm font-bold">Computer: {score.computer}</span>
-            </div>
-          </div>
-
           {/* Game Canvas */}
           <div className="border-4 border-[#5a5a5a] border-r-white border-b-white">
             <canvas ref={canvasRef} className="bg-black" onMouseMove={handleMouseMove} />

@@ -26,7 +26,15 @@ import { cry, sfx } from "@/lib/sound"
  */
 
 /** The DMG palette, lightest to darkest. */
-const P = ["#9BBC0F", "#8BAC0F", "#306230", "#0F380F"] as const
+/**
+ * Four shades, black to white.
+ *
+ * Red and Blue were four tones and the hardware decided their colour: the
+ * original Game Boy tinted them green, the Pocket showed them as grey. The
+ * screenshots everyone remembers from the manuals and the guides are the grey
+ * ones, so that is what this uses.
+ */
+const P = ["#ffffff", "#a8a8a8", "#585858", "#000000"] as const
 
 const SCREEN_W = 160
 const SCREEN_H = 144
@@ -131,6 +139,21 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
         )}
     </>
   )
+}
+
+/** A flat disc for a fighter to stand on, drawn a row at a time. */
+function Platform({ cx, cy, rx, ry }: { cx: number; cy: number; rx: number; ry: number }) {
+  const rows = []
+  for (let i = -ry; i <= ry; i++) {
+    const half = Math.round(rx * Math.sqrt(Math.max(0, 1 - (i / ry) ** 2)))
+    if (half <= 0) continue
+    // The rim is a shade darker than the face, which is what gives it an edge.
+    const edge = Math.abs(i) >= ry - 1
+    rows.push(
+      <rect key={i} x={cx - half} y={cy + i} width={half * 2} height={1} fill={P[edge ? 2 : 1]} />,
+    )
+  }
+  return <g data-platform>{rows}</g>
 }
 
 function Label({ x, y, children, size = 8 }: { x: number; y: number; children: string; size?: number }) {
@@ -405,6 +428,17 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             <rect key={`pb${i}`} x={112 + i * 5} y={99} width={3} height={3} fill={P[f.hp > 0 ? 3 : 1]} />
           ))}
 
+          {/*
+            The ground each fighter stands on.
+
+            Red and Blue drew a flat ellipse under each: a light disc with a
+            darker rim, the opponent's small and high on the field and the
+            player's wider and low, which is most of what makes the two look
+            like they are standing at different distances rather than floating.
+          */}
+          <Platform cx={110} cy={44} rx={30} ry={6} />
+          <Platform cx={38} cy={98} rx={34} ry={8} />
+
           {/* Opponent: front sprite upper right, status box upper left */}
           <Sprite grid={foe.species.sprite} x={96} y={0} />
           <Box x={4} y={12} w={86} h={26} />
@@ -514,7 +548,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
         <p
           data-hint
-          style={{ color: "#8BAC0F", fontFamily: "monospace", fontSize: 12, marginTop: 10, textAlign: "center" }}
+          style={{ color: "#a8a8a8", fontFamily: "monospace", fontSize: 12, marginTop: 10, textAlign: "center" }}
         >
           &uarr; &darr; choose &nbsp;&middot;&nbsp; ENTER select &nbsp;&middot;&nbsp; X back &nbsp;&middot;&nbsp; ESC
           quit

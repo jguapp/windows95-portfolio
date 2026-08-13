@@ -23,6 +23,8 @@ export interface GuestbookEntry {
   message: string
   /** Optional, shown as a link only when it is a real http(s) URL. */
   site?: string
+  /** Optional PNG data URI from the little sketch pad, capped in size. */
+  drawing?: string
   /** ISO timestamp; the client formats it. */
   at: string
 }

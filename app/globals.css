@@ -1647,3 +1647,52 @@ h6 {
   outline: 1px dotted #000000;
   outline-offset: -4px;
 }
+
+/* --------------------------------------------------------------------------
+   Cursors
+
+   Windows 95 had its own pointers, and a modern machine's arrow looks nothing
+   like them: theirs was a hard-edged twelve-pixel outline, not a smooth vector
+   with a shadow. These are drawn a pixel at a time and carry their hotspot, so
+   the tip of the arrow is what points at things.
+
+   Every rule falls back to the system cursor, so an unsupported browser gets
+   something sensible rather than nothing.
+   -------------------------------------------------------------------------- */
+
+#desktop,
+#taskbar,
+#start-menu,
+.window,
+[data-messagebox] {
+  cursor: url("/images/cursors/arrow.png") 0 0, default;
+}
+
+/* The I-beam belongs wherever text is edited or selected. */
+#desktop input[type="text"],
+#desktop input[type="email"],
+#desktop input[type="search"],
+#desktop textarea,
+.window input[type="text"],
+.window input[type="email"],
+.window input[type="search"],
+.window textarea,
+[contenteditable="true"] {
+  cursor: url("/images/cursors/ibeam.png") 3 8, text;
+}
+
+/* Anything the shell is busy with. */
+.win95-wait,
+.win95-wait * {
+  cursor: url("/images/cursors/wait.png") 6 7, wait;
+}
+
+/* Buttons and menu items keep the arrow rather than switching to a hand: the
+   pointing hand did not arrive until Internet Explorer brought it. */
+#desktop button,
+#taskbar button,
+#start-menu li,
+.window button,
+[data-messagebox] button {
+  cursor: url("/images/cursors/arrow.png") 0 0, default;
+}

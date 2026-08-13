@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { getEntries, signGuestbook } from "@/actions/guestbook"
 import type { GuestbookEntry } from "@/lib/guestbook"
@@ -33,6 +33,10 @@ const FIELD =
 const BUTTON =
   "min-w-[80px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white disabled:text-[#808080]"
 
+/** The sketch pad, at the size the entries display it. */
+const PAD_W = 240
+const PAD_H = 120
+
 export default function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,6 +44,39 @@ export default function Guestbook() {
   const [status, setStatus] = useState("")
   const [ephemeral, setEphemeral] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const padRef = useRef<HTMLCanvasElement>(null)
+  const drawing = useRef(false)
+  /** Whether anything has been drawn, so an untouched pad is not submitted. */
+  const [hasDrawing, setHasDrawing] = useState(false)
+
+  /** White to start with, otherwise the PNG saves a transparent rectangle. */
+  const clearPad = useCallback(() => {
+    const canvas = padRef.current
+    const ctx = canvas?.getContext("2d")
+    if (!canvas || !ctx) return
+    ctx.fillStyle = "#ffffff"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    setHasDrawing(false)
+  }, [])
+
+  useEffect(() => clearPad(), [clearPad])
+
+  const padPoint = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = padRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const strokeTo = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!drawing.current) return
+    const ctx = padRef.current?.getContext("2d")
+    const point = padPoint(e)
+    if (!ctx || !point) return
+    ctx.lineTo(point.x, point.y)
+    ctx.stroke()
+    setHasDrawing(true)
+  }
 
   useEffect(() => {
     let live = true
@@ -63,11 +100,19 @@ export default function Guestbook() {
     setSubmitting(true)
     setStatus("")
     try {
-      const result = await signGuestbook(new FormData(e.currentTarget))
+      const data = new FormData(e.currentTarget)
+      // Only send a pad that has been drawn on; a blank one is 240x120 of white
+      // and there is no reason to store it.
+      if (hasDrawing && padRef.current) {
+        data.set("drawing", padRef.current.toDataURL("image/png"))
+      }
+
+      const result = await signGuestbook(data)
       setStatus(result.message)
       if (result.success) {
         if (result.entries) setEntries(result.entries)
         formRef.current?.reset()
+        clearPad()
       } else {
         // Not awaited: the box resolves when it is dismissed, and awaiting it
         // here kept the form disabled until then, so the visitor could not
@@ -107,6 +152,16 @@ export default function Guestbook() {
               </div>
               {/* Rendered as text, never as markup. */}
               <div className="whitespace-pre-wrap break-words">{entry.message}</div>
+              {entry.drawing && (
+                <img
+                  src={entry.drawing}
+                  alt={`A drawing by ${entry.name}`}
+                  data-entry-drawing
+                  width={PAD_W}
+                  height={PAD_H}
+                  className="my-1 border border-[#808080]"
+                />
+              )}
               {entry.site && (
                 <a
                   href={entry.site}
@@ -139,6 +194,45 @@ export default function Guestbook() {
           <span className="w-[52px] shrink-0 pt-1">Message:</span>
           <textarea name="message" maxLength={500} required rows={3} className={`${FIELD} resize-none`} data-message />
         </label>
+
+        {/* A place to draw, because a 1995 guestbook without one is only half of it. */}
+        <div className="mb-2 flex items-start gap-2">
+          <span className="w-[52px] shrink-0 pt-1">Doodle:</span>
+          <canvas
+            ref={padRef}
+            data-pad
+            width={PAD_W}
+            height={PAD_H}
+            className="cursor-crosshair border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white"
+            onMouseDown={(e) => {
+              const ctx = padRef.current?.getContext("2d")
+              const point = padPoint(e)
+              if (!ctx || !point) return
+              drawing.current = true
+              ctx.strokeStyle = "#000000"
+              ctx.lineWidth = 2
+              ctx.lineCap = "round"
+              ctx.lineJoin = "round"
+              ctx.beginPath()
+              ctx.moveTo(point.x, point.y)
+              // A single click should leave a dot, not nothing.
+              ctx.lineTo(point.x + 0.1, point.y)
+              ctx.stroke()
+              setHasDrawing(true)
+            }}
+            onMouseMove={strokeTo}
+            onMouseUp={() => (drawing.current = false)}
+            onMouseLeave={() => (drawing.current = false)}
+          />
+          <button
+            type="button"
+            data-clear-pad
+            onClick={clearPad}
+            className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-2 py-[2px] active:border-t-[#404040] active:border-l-[#404040]"
+          >
+            Clear
+          </button>
+        </div>
 
         {/* Honeypot: off-screen and not reachable by tab, so only a bot fills it. */}
         <input

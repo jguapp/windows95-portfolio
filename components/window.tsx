@@ -55,7 +55,7 @@ const MIN_SIZE: Record<string, Size> = {
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
-  guestbook: { width: 560, height: 520 },
+  guestbook: { width: 600, height: 640 },
   calculator: { width: 320, height: 280 },
   notepad: { width: 620, height: 480 },
   msdos: { width: 660, height: 420 },

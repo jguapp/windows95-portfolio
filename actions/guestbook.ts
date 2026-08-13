@@ -40,6 +40,20 @@ const EntrySchema = z.object({
     .refine((value) => !value || /^https?:\/\/\S+$/i.test(value), {
       message: "A homepage must start with http:// or https://",
     }),
+  /**
+   * The sketch, as a PNG data URI.
+   *
+   * Only PNG is accepted and only up to 48KB: this is a 240x120 doodle pad, so
+   * anything larger is not a drawing from it, and an unbounded string from the
+   * internet is exactly what you do not want going into shared storage.
+   */
+  drawing: z
+    .string()
+    .max(48_000, { message: "That drawing is too large" })
+    .optional()
+    .refine((value) => !value || /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value), {
+      message: "That drawing could not be read",
+    }),
 })
 
 async function clientIp(): Promise<string> {
@@ -81,6 +95,7 @@ export async function signGuestbook(
       name: formData.get("name"),
       message: formData.get("message"),
       site: (formData.get("site") as string) || undefined,
+      drawing: (formData.get("drawing") as string) || undefined,
     })
 
     if (!parsed.success) {
@@ -92,6 +107,7 @@ export async function signGuestbook(
       name: parsed.data.name,
       message: parsed.data.message,
       site: parsed.data.site,
+      drawing: parsed.data.drawing,
       at: new Date().toISOString(),
     }
 

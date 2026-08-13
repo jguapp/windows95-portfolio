@@ -142,8 +142,9 @@ export function messageBox(request: MessageBoxRequest): Promise<boolean> {
   })
 }
 
+/** 75x23 is the size the dialog editor produced, and every box used it. */
 const BUTTON =
-  "min-w-[75px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white focus:outline focus:outline-1 focus:outline-dotted focus:outline-black"
+  "flex h-[23px] w-[75px] items-center justify-center bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white focus:outline focus:outline-1 focus:outline-dotted focus:outline-black"
 
 /** Mounted once, near the root. Renders whichever box is at the front. */
 export function MessageBoxHost() {
@@ -202,12 +203,16 @@ export function MessageBoxHost() {
           <div className="flex-1 whitespace-pre-wrap pt-1">{current.text}</div>
         </div>
 
-        <div className="flex justify-center gap-2 pb-4">
-          <button type="button" autoFocus className={BUTTON} onClick={() => close(true)} data-ok>
-            OK
-          </button>
+        {/* Bottom right, OK before Cancel, eight pixels apart. */}
+        <div className="flex justify-end gap-2 px-4 pb-4">
+          {/* The default button wears a second border outside its bevel. */}
+          <span data-default className="border border-black p-[1px]">
+            <button type="button" autoFocus className={BUTTON} onClick={() => close(true)} data-ok>
+              OK
+            </button>
+          </span>
           {current.cancel && (
-            <button type="button" className={BUTTON} onClick={() => close(false)} data-cancel>
+            <button type="button" className={`${BUTTON} mt-[2px]`} onClick={() => close(false)} data-cancel>
               Cancel
             </button>
           )}
