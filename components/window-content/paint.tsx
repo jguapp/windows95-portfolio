@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { PALETTE, TOOLS, ToolGlyph } from "./paint-parts"
 import type React from "react"
 import Image from "next/image"
 import { messageBox } from "@/components/win95-dialog"
@@ -33,6 +34,8 @@ export default function Paint() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const textInputRef = useRef<HTMLTextAreaElement>(null)
   const [tool, setTool] = useState<Tool>("pencil")
+  /** Where the pointer is on the canvas, for the status bar. */
+  const [cursorPos, setCursorPos] = useState<Point | null>(null)
   const [color, setColor] = useState<Color>("#000000")
   const [backgroundColor, setBackgroundColor] = useState<Color>("#FFFFFF")
   const [lineWidth, setLineWidth] = useState<number>(1)
@@ -762,6 +765,17 @@ export default function Paint() {
 
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Read the position first: Paint reported the cursor whenever it was over
+    // the canvas, not only while the button was down.
+    const surface = canvasRef.current
+    if (surface) {
+      const bounds = surface.getBoundingClientRect()
+      setCursorPos({
+        x: Math.floor((e.clientX - bounds.left) / zoomLevel),
+        y: Math.floor((e.clientY - bounds.top) / zoomLevel),
+      })
+    }
+
     if (!isDrawing || !startPos) return
 
     const canvas = canvasRef.current
@@ -1010,6 +1024,8 @@ export default function Paint() {
 
   // Handle mouse leave
   const handleMouseLeave = () => {
+    // The status bar has nothing to report once the pointer is off the canvas.
+    setCursorPos(null)
     if (isDrawing) {
       setIsDrawing(false)
 
@@ -1168,283 +1184,131 @@ export default function Paint() {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* Left Toolbar */}
-        <div className="toolbar bg-[#c0c0c0] p-1 border-r border-[#808080] flex flex-col gap-1">
-          {/* Drawing Tools */}
-          <div className="grid grid-cols-2 gap-1">
-            {/* Free-form Select */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "freeform" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("freeform")}
-              title="Free-Form Select"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/images/paint/freeform.png"
-                  alt="Free-Form Select"
-                  width={32}
-                  height={32}
-                  className="pixelated"
-                />
-              </div>
-            </button>
+        {/*
+          Tool palette.
 
-            {/* Select */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "select" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("select")}
-              title="Select"
-            >
-              <div className="w-6 h-6 border border-dashed border-black"></div>
-            </button>
-
-            {/* Eraser */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "eraser" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("eraser")}
-              title="Eraser"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/eraser.png" alt="Eraser" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Fill */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "fill" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("fill")}
-              title="Fill"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/fill.png" alt="Fill" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Eyedropper */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "eyedropper" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("eyedropper")}
-              title="Pick Color"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/images/paint/eyedropper.png"
-                  alt="Pick Color"
-                  width={32}
-                  height={32}
-                  className="pixelated"
-                />
-              </div>
-            </button>
-
-            {/* Magnifier */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "magnifier" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("magnifier")}
-              title="Magnifier"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/magnifier.png" alt="Magnifier" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Pencil */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "pencil" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("pencil")}
-              title="Pencil"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/pencil.png" alt="Pencil" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Brush */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "brush" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("brush")}
-              title="Brush"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/brush.png" alt="Brush" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Airbrush */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "airbrush" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("airbrush")}
-              title="Airbrush"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/airbrush.png" alt="Airbrush" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Text */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "text" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("text")}
-              title="Text"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/text.png" alt="Text" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
+          Sixteen tools in a 2-wide grid, the selected one drawn pressed in, and
+          the options for that tool underneath: Paint showed a different panel
+          for each, and the panel is how you pick a brush size or decide whether
+          a shape is filled. It was seventy hand-written buttons before, each
+          repeating the same class string, which is why several of them disagreed
+          about what "selected" looked like.
+        */}
+        <div className="toolbar flex w-[58px] shrink-0 flex-col gap-1 border-r border-[#808080] bg-[#c0c0c0] p-1">
+          <div className="grid grid-cols-2 gap-[2px]" data-tools>
+            {TOOLS.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                title={entry.label}
+                aria-label={entry.label}
+                data-tool={entry.id}
+                data-selected={tool === entry.id ? "" : undefined}
+                onClick={() => handleToolSelect(entry.id)}
+                className="flex h-[25px] w-[25px] items-center justify-center bg-[#c0c0c0]"
+                style={{
+                  boxShadow:
+                    tool === entry.id
+                      ? "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff, inset 2px 2px 0 0 #000000"
+                      : "inset -1px -1px 0 0 #000000, inset 1px 1px 0 0 #ffffff, inset -2px -2px 0 0 #808080, inset 2px 2px 0 0 #dfdfdf",
+                }}
+              >
+                <ToolGlyph tool={entry.id} />
+              </button>
+            ))}
           </div>
 
-          {/* Shapes */}
-          <div className="grid grid-cols-2 gap-1 mt-1">
-            {/* Line */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "line" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("line")}
-              title="Line"
-            >
-              <div className="w-6 h-[1px] bg-black transform rotate-45"></div>
-            </button>
+          {/* Whatever the chosen tool needs */}
+          <div
+            data-tool-options
+            className="mt-1 flex min-h-[64px] flex-col items-center gap-1 p-1"
+            style={{ boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff" }}
+          >
+            {(tool === "brush" || tool === "airbrush" || tool === "eraser") &&
+              [1, 3, 5, 8].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  data-size={size}
+                  aria-label={`Size ${size}`}
+                  onClick={() => setLineWidth(size)}
+                  className="flex h-[14px] w-[44px] items-center justify-center"
+                  style={{ backgroundColor: lineWidth === size ? "#000080" : "transparent" }}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      width: size * 2 + 4,
+                      height: size * 2 + 4,
+                      borderRadius: tool === "eraser" ? 0 : "50%",
+                      backgroundColor: lineWidth === size ? "#ffffff" : "#000000",
+                    }}
+                  />
+                </button>
+              ))}
 
-            {/* Curve */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "curve" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("curve")}
-              title="Curve"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/curve.png" alt="Curve" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
+            {(tool === "line" || tool === "curve") &&
+              [1, 2, 3, 5, 8].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  data-size={size}
+                  aria-label={`Width ${size}`}
+                  onClick={() => setLineWidth(size)}
+                  className="flex h-[12px] w-[44px] items-center justify-center"
+                  style={{ backgroundColor: lineWidth === size ? "#000080" : "transparent" }}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      width: 34,
+                      height: size,
+                      backgroundColor: lineWidth === size ? "#ffffff" : "#000000",
+                    }}
+                  />
+                </button>
+              ))}
 
-            {/* Rectangle */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "rectangle" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("rectangle")}
-              title="Rectangle"
-            >
-              <div className="w-6 h-4 border border-black"></div>
-            </button>
+            {(tool === "rectangle" || tool === "circle" || tool === "roundedRect" || tool === "polygon") &&
+              (["transparent", "solid"] as const).map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  data-fill={style}
+                  aria-label={style === "solid" ? "Filled" : "Outline"}
+                  onClick={() => setFillStyle(style)}
+                  className="flex h-[18px] w-[44px] items-center justify-center"
+                  style={{ backgroundColor: fillStyle === style ? "#000080" : "transparent" }}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      width: 26,
+                      height: 12,
+                      border: "1px solid #000000",
+                      backgroundColor: style === "solid" ? "#000000" : "transparent",
+                    }}
+                  />
+                </button>
+              ))}
 
-            {/* Polygon */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0]  border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "polygon" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("polygon")}
-              title="Polygon"
-            >
-              <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-                <Image src="/images/paint/polygon.png" alt="Polygon" width={32} height={32} className="pixelated" />
-              </div>
-            </button>
-
-            {/* Ellipse */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "circle" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("circle")}
-              title="Ellipse"
-            >
-              <div className="w-6 h-4 rounded-full border border-black"></div>
-            </button>
-
-            {/* Rounded Rectangle */}
-            <button
-              className={`w-10 h-10 flex items-center justify-center bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                tool === "roundedRect" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-              }`}
-              onClick={() => handleToolSelect("roundedRect")}
-              title="Rounded Rectangle"
-            >
-              <div className="w-6 h-4 rounded-md border border-black"></div>
-            </button>
-          </div>
-
-          {/* Fill Style */}
-          <div className="mt-2 border-t border-[#808080] pt-2">
-            <div className="text-xs text-center mb-1">Fill Style</div>
-            <div className="flex flex-col gap-1">
-              <button
-                className={`w-full h-6 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                  fillStyle === "transparent"
-                    ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]"
-                    : ""
-                }`}
-                onClick={() => handleFillStyleSelect("transparent")}
-                title="No Fill"
-              >
-                <div className="w-4 h-4 border border-black mx-auto"></div>
-              </button>
-              <button
-                className={`w-full h-6 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                  fillStyle === "solid" ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-                }`}
-                onClick={() => handleFillStyleSelect("solid")}
-                title="Solid Fill"
-              >
-                <div className="w-4 h-4 bg-black mx-auto"></div>
-              </button>
-            </div>
-          </div>
-
-          {/* Line Width */}
-          <div className="mt-2 border-t border-[#808080] pt-2">
-            <div className="text-xs text-center mb-1">Line Width</div>
-            <div className="flex flex-col gap-1">
-              <button
-                className={`w-full h-6 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                  lineWidth === 1 ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-                }`}
-                onClick={() => handleLineWidthSelect(1)}
-                title="1px"
-              >
-                <div className="w-4 h-[1px] bg-black mx-auto"></div>
-              </button>
-              <button
-                className={`w-full h-6 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                  lineWidth === 3 ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-                }`}
-                onClick={() => handleLineWidthSelect(3)}
-                title="3px"
-              >
-                <div className="w-4 h-[3px] bg-black mx-auto"></div>
-              </button>
-              <button
-                className={`w-full h-6 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] ${
-                  lineWidth === 5 ? "bg-[#d0d0d0] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000]" : ""
-                }`}
-                onClick={() => handleLineWidthSelect(5)}
-                title="5px"
-              >
-                <div className="w-4 h-[5px] bg-black mx-auto"></div>
-              </button>
-            </div>
+            {tool === "magnifier" &&
+              [1, 2, 4, 8].map((step) => (
+                <button
+                  key={step}
+                  type="button"
+                  data-zoom={step}
+                  aria-label={`${step}x`}
+                  onClick={() => setZoomLevel(step)}
+                  className="h-[14px] w-[44px] text-[10px]"
+                  style={{
+                    backgroundColor: zoomLevel === step ? "#000080" : "transparent",
+                    color: zoomLevel === step ? "#ffffff" : "#000000",
+                  }}
+                >
+                  {step}x
+                </button>
+              ))}
           </div>
         </div>
 
@@ -1484,231 +1348,69 @@ export default function Paint() {
         </div>
       </div>
 
-      {/* Bottom Color Palette - Windows 95 Style */}
-      <div className="bg-[#c0c0c0] border-t border-[#808080] flex items-start p-1">
-        <div className="flex flex-col mr-1">
-          {/* Current Colors - Primary/Secondary */}
+      {/*
+        Colour palette.
+
+        Two rows of twenty-eight with the foreground and background pair to
+        their left, which is the Windows 95 arrangement. Left-click sets the
+        foreground, right-click the background, and the status bar shows where
+        the cursor is on the canvas.
+      */}
+      <div className="flex items-start gap-2 border-t border-white bg-[#c0c0c0] p-1">
+        <div className="relative h-[32px] w-[34px] shrink-0" data-current-colors>
           <div
-            className="w-8 h-8 border border-[#404040] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#808080]"
-            style={{ backgroundColor: color }}
-          ></div>
+            className="absolute left-0 top-0 h-[20px] w-[20px]"
+            style={{
+              backgroundColor: color,
+              boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff, inset 2px 2px 0 0 #000000",
+            }}
+            data-foreground
+          />
           <div
-            className="w-8 h-8 border border-[#404040] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#808080] mt-[1px]"
-            style={{ backgroundColor: backgroundColor }}
-          ></div>
+            className="absolute bottom-0 right-0 h-[20px] w-[20px]"
+            style={{
+              backgroundColor: backgroundColor,
+              boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff, inset 2px 2px 0 0 #000000",
+            }}
+            data-background
+          />
         </div>
 
-        <div className="flex flex-col border border-[#404040] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#808080]">
-          {/* First row - Basic colors */}
-          <div className="flex">
+        <div
+          data-palette
+          className="grid shrink-0 grid-flow-col grid-rows-2"
+          style={{ boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff" }}
+        >
+          {PALETTE.map((swatch) => (
             <button
-              className={`w-6 h-6 ${color === "#000000" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#000000" }}
-              onClick={() => handleColorSelect("#000000")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#000000")}
-              title="Black"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#808080" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#808080" }}
-              onClick={() => handleColorSelect("#808080")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#808080")}
-              title="Gray"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#800000" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#800000" }}
-              onClick={() => handleColorSelect("#800000")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#800000")}
-              title="Maroon"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#808000" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#808000" }}
-              onClick={() => handleColorSelect("#808000")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#808000")}
-              title="Olive"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#008000" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#008000" }}
-              onClick={() => handleColorSelect("#008000")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#008000")}
-              title="Green"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#008080" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#008080" }}
-              onClick={() => handleColorSelect("#008080")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#008080")}
-              title="Teal"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#000080" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#000080" }}
-              onClick={() => handleColorSelect("#000080")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#000080")}
-              title="Navy"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#800080" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#800080" }}
-              onClick={() => handleColorSelect("#800080")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#800080")}
-              title="Purple"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#808040" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#808040" }}
-              onClick={() => handleColorSelect("#808040")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#808040")}
-              title="Olive Green"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#004040" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#004040" }}
-              onClick={() => handleColorSelect("#004040")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#004040")}
-              title="Dark Teal"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#0000FF" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#0000FF" }}
-              onClick={() => handleColorSelect("#0000FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#0000FF")}
-              title="Blue"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#4040FF" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#4040FF" }}
-              onClick={() => handleColorSelect("#4040FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#4040FF")}
-              title="Blue-Purple"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#400040" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#400040" }}
-              onClick={() => handleColorSelect("#400040")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#400040")}
-              title="Dark Purple"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#804040" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#804040" }}
-              onClick={() => handleColorSelect("#804040")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#804040")}
-              title="Brown"
-            ></button>
-          </div>
-
-          {/* Second row - Light colors */}
-          <div className="flex">
-            <button
-              className={`w-6 h-6 ${color === "#FFFFFF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FFFFFF" }}
-              onClick={() => handleColorSelect("#FFFFFF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FFFFFF")}
-              title="White"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#C0C0C0" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#C0C0C0" }}
-              onClick={() => handleColorSelect("#C0C0C0")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#C0C0C0")}
-              title="Silver"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FF0000" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#FF0000" }}
-              onClick={() => handleColorSelect("#FF0000")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FF0000")}
-              title="Red"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FFFF00" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FFFF00" }}
-              onClick={() => handleColorSelect("#FFFF00")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FFFF00")}
-              title="Yellow"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#00FF00" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#00FF00" }}
-              onClick={() => handleColorSelect("#00FF00")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#00FF00")}
-              title="Lime"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#00FFFF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#00FFFF" }}
-              onClick={() => handleColorSelect("#00FFFF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#00FFFF")}
-              title="Cyan"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#0080FF" ? "border border-white" : ""}`}
-              style={{ backgroundColor: "#0080FF" }}
-              onClick={() => handleColorSelect("#0080FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#0080FF")}
-              title="Light Blue"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FF00FF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FF00FF" }}
-              onClick={() => handleColorSelect("#FF00FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FF00FF")}
-              title="Magenta"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FFFF80" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FFFF80" }}
-              onClick={() => handleColorSelect("#FFFF80")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FFFF80")}
-              title="Light Yellow"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#80FFFF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#80FFFF" }}
-              onClick={() => handleColorSelect("#80FFFF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#80FFFF")}
-              title="Light Cyan"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#80C0FF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#80C0FF" }}
-              onClick={() => handleColorSelect("#80C0FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#80C0FF")}
-              title="Sky Blue"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#C0C0FF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#C0C0FF" }}
-              onClick={() => handleColorSelect("#C0C0FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#C0C0FF")}
-              title="Lavender"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FFC0FF" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FFC0FF" }}
-              onClick={() => handleColorSelect("#FFC0FF")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FFC0FF")}
-              title="Pink"
-            ></button>
-            <button
-              className={`w-6 h-6 ${color === "#FFC0C0" ? "border border-black" : ""}`}
-              style={{ backgroundColor: "#FFC0C0" }}
-              onClick={() => handleColorSelect("#FFC0C0")}
-              onContextMenu={(e) => handleBackgroundColorSelect(e, "#FFC0C0")}
-              title="Light Red"
-            ></button>
-          </div>
+              key={swatch}
+              type="button"
+              title={swatch}
+              data-swatch={swatch}
+              className="h-[14px] w-[14px] border border-[#808080]"
+              style={{ backgroundColor: swatch }}
+              onClick={() => handleColorSelect(swatch)}
+              onContextMenu={(e) => handleBackgroundColorSelect(e, swatch)}
+            />
+          ))}
         </div>
-      </div>
 
-      {/* Status Bar */}
-      <div className="h-5 bg-[#c0c0c0] border-t border-[#808080] flex items-center text-xs px-2 justify-between">
-        <span>{`${tool.charAt(0).toUpperCase() + tool.slice(1)} tool selected`}</span>
-        <span>{`${isModified ? "●" : ""} ${fileName} - ${Math.round(zoomLevel * 100)}%`}</span>
+        <div className="flex flex-1 gap-2 self-end pb-[2px]">
+          <span
+            data-status
+            className="min-w-[120px] px-2"
+            style={{ boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff" }}
+          >
+            {cursorPos ? `${cursorPos.x},${cursorPos.y}` : ""}
+          </span>
+          <span
+            data-selection-size
+            className="min-w-[120px] px-2"
+            style={{ boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff" }}
+          >
+            {selectionArea ? `${Math.abs(selectionArea.width)} x ${Math.abs(selectionArea.height)}` : ""}
+          </span>
+        </div>
       </div>
     </div>
   )
