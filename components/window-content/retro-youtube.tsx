@@ -68,7 +68,7 @@ Built with Next.js and TypeScript. All the sound is synthesised with the Web Aud
     ratings: 58,
     tags: ["nextjs", "react", "typescript", "tailwind", "web-audio"],
     repo: "https://github.com/jguapp/windows95-portfolio",
-    live: "https://builtbyjoel.vercel.app",
+    live: "https://builtbyjoel.dev",
   },
   {
     id: "rmp",

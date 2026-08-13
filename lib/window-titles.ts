@@ -13,6 +13,7 @@ const TITLES: Record<string, string> = {
   calculator: "Calculator",
   spotify: "Windows Media Player",
   "about-me": "About Me",
+  guestbook: "Guestbook",
   projects: "My Projects",
   resume: "Resume - Microsoft Word",
 }
@@ -57,6 +58,7 @@ const ICONS: Record<string, string> = {
   msdos: "/images/win95/msdos-16.png",
   explorer: "/images/win95/explorer-16.png",
   "recycle-bin": "/images/win95/recycle-empty-16.png",
+  guestbook: "/images/win95/guestbook-16.png",
 }
 
 export function windowIcon(id: string): string | undefined {

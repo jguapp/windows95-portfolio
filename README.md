@@ -4,7 +4,7 @@
 
 ###
 
-<a href="https://builtbyjoel.vercel.app/" target="_blank"><img src="https://img.shields.io/badge/Launch%20the%20Desktop-008080?style=for-the-badge&logo=windows95&logoColor=white" height="34" alt="launch the desktop" /></a>
+<a href="https://builtbyjoel.dev/" target="_blank"><img src="https://img.shields.io/badge/Launch%20the%20Desktop-008080?style=for-the-badge&logo=windows95&logoColor=white" height="34" alt="launch the desktop" /></a>
 
 ###
 
@@ -148,7 +148,7 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 
 <h3>Hire me, or just come play with the Start menu.</h3>
 
-<a href="https://builtbyjoel.vercel.app/" target="_blank"><img src="https://img.shields.io/badge/builtbyjoel.vercel.app-008080?style=for-the-badge&logo=googlechrome&logoColor=white" height="32" alt="live site" /></a>
+<a href="https://builtbyjoel.dev/" target="_blank"><img src="https://img.shields.io/badge/builtbyjoel.dev-008080?style=for-the-badge&logo=googlechrome&logoColor=white" height="32" alt="live site" /></a>
 
 <sub>© Joel Vasquez · MIT Licensed</sub>
 

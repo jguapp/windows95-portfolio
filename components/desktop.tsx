@@ -80,6 +80,12 @@ const DEFAULT_ICONS: DesktopItemData[] = [
     type: "application",
   },
   {
+    id: "guestbook",
+    label: "Guestbook",
+    icon: "/images/win95/guestbook-32.png",
+    type: "application",
+  },
+  {
     id: "recycle-bin",
     label: "Recycle Bin",
     icon: "/images/win95/recycle-empty-32.png",
@@ -145,7 +151,8 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     defaultPositions["games"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 5 }
     defaultPositions["paint"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 6 }
     defaultPositions["calculator"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 7 }
-    defaultPositions["recycle-bin"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 8 }
+    defaultPositions["guestbook"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 8 }
+    defaultPositions["recycle-bin"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 9 }
 
     return defaultPositions
   }, [])

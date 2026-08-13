@@ -4,7 +4,7 @@ import "./globals.css"
 import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 
-const siteUrl = "https://builtbyjoel.vercel.app"
+const siteUrl = "https://builtbyjoel.dev"
 const title = "joel.codes() // human-readable"
 const description =
   "Joel Vasquez's portfolio, rebuilt as a working Windows 95 desktop — draggable windows, a Start menu, MS Paint, and five playable classic games."

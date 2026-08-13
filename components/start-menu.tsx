@@ -97,6 +97,12 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <span className="text-sm">Paint</span>
                     </div>
                   </li>
+                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("guestbook")}>
+                    <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
+                      <img src="/images/win95/guestbook-16.png" alt="Guestbook" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
+                      <span className="text-sm">Guestbook</span>
+                    </div>
+                  </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("explorer")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
                       <img src="/images/win95/explorer-16.png" alt="Windows Explorer" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />

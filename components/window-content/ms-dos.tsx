@@ -188,7 +188,7 @@ export default function MsDos() {
         }
 
         case "PING": {
-          const host = arg || "builtbyjoel.vercel.app"
+          const host = arg || "builtbyjoel.dev"
           setBusy(true)
           write("", `Pinging ${host} with 32 bytes of data:`, "")
           for (let i = 0; i < 4; i++) {

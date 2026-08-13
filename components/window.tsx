@@ -11,6 +11,7 @@ import Gallery from "./window-content/gallery"
 import Games from "./window-content/games"
 import Paint from "./window-content/paint"
 import Calculator from "./window-content/calculator"
+import Guestbook from "./window-content/guestbook"
 import Notepad from "./window-content/notepad"
 import MsDos from "./window-content/ms-dos"
 import Explorer from "./window-content/explorer"
@@ -39,6 +40,7 @@ const DEFAULT_MIN: Size = { width: 320, height: 200 }
 /** The games and editors draw to fixed boards, so they get a floor that keeps
  *  the board intact rather than letting the window crop it. */
 const MIN_SIZE: Record<string, Size> = {
+  guestbook: { width: 420, height: 380 },
   games: { width: 560, height: 400 },
   paint: { width: 560, height: 420 },
   resume: { width: 640, height: 460 },
@@ -53,6 +55,7 @@ const MIN_SIZE: Record<string, Size> = {
 }
 
 const DEFAULT_SIZE: Record<string, Size> = {
+  guestbook: { width: 560, height: 520 },
   calculator: { width: 320, height: 280 },
   notepad: { width: 620, height: 480 },
   msdos: { width: 660, height: 420 },
@@ -139,6 +142,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <Explorer />
       case "recycle-bin":
         return <RecycleBinWindow />
+      case "guestbook":
+        return <Guestbook />
       default:
         return <div>Content not available</div>
     }
