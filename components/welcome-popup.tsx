@@ -138,7 +138,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                     width={64}
                     height={64}
                     className="mt-[5px]"
-                    style={{ imageRendering: "pixelated" }}
+                    // Tailwind's preflight sets height:auto on every image,
+                    // which changes one dimension and not the other and makes
+                    // next/image complain. Pinning both settles it.
+                    style={{ width: 64, height: 64, imageRendering: "pixelated" }}
                   />
                   <div className="info-text flex-1 leading-[1.4] text-xs">
                     <p className="mt-[5px]">

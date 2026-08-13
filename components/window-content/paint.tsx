@@ -76,7 +76,7 @@ export default function Paint() {
       canvas.height = Math.max(container.clientHeight * 3, 1500)
 
       // Get context and set default styles
-      const ctx = canvas.getContext("2d")
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })
       if (!ctx) return
 
       // Fill with white background (only if first initialization)
@@ -92,7 +92,7 @@ export default function Paint() {
           const tempCanvas = document.createElement("canvas")
           tempCanvas.width = canvas.width
           tempCanvas.height = canvas.height
-          const tempCtx = tempCanvas.getContext("2d")
+          const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true })
           if (tempCtx) {
             tempCtx.fillStyle = "#FFFFFF"
             tempCtx.fillRect(0, 0, canvas.width, canvas.height)
@@ -101,7 +101,7 @@ export default function Paint() {
             const lastStateCanvas = document.createElement("canvas")
             lastStateCanvas.width = lastState.width
             lastStateCanvas.height = lastState.height
-            const lastStateCtx = lastStateCanvas.getContext("2d")
+            const lastStateCtx = lastStateCanvas.getContext("2d", { willReadFrequently: true })
             if (lastStateCtx) {
               lastStateCtx.putImageData(lastState, 0, 0)
               tempCtx.drawImage(lastStateCanvas, 0, 0, lastState.width, lastState.height)
@@ -137,7 +137,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -152,7 +152,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Save current state to redo stack
@@ -177,7 +177,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Get last state from redo stack
@@ -246,7 +246,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -322,7 +322,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return "#000000"
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return "#000000"
 
     const pixel = ctx.getImageData(x, y, 1, 1).data
@@ -341,7 +341,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Save current state
@@ -355,7 +355,7 @@ export default function Paint() {
     const tempCanvas = document.createElement("canvas")
     tempCanvas.width = currentState.width
     tempCanvas.height = currentState.height
-    const tempCtx = tempCanvas.getContext("2d")
+    const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true })
     if (!tempCtx) return
 
     // Draw current state to temp canvas
@@ -375,7 +375,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Ensure positive width and height
@@ -402,7 +402,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Restore canvas without selection marquee
@@ -426,7 +426,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Calculate new position
@@ -468,7 +468,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Restore canvas without selection marquee
@@ -503,7 +503,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Set text properties
@@ -535,7 +535,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Restore canvas to last state
@@ -559,7 +559,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Restore canvas to last state
@@ -597,7 +597,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Set airbrush properties
@@ -627,7 +627,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     if (!startPos) {
@@ -654,7 +654,7 @@ export default function Paint() {
     const y = Math.floor((e.clientY - rect.top) / zoomLevel)
     setStartPos({ x, y })
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Handle different tools
@@ -781,7 +781,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     const rect = canvas.getBoundingClientRect()
@@ -909,7 +909,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     const rect = canvas.getBoundingClientRect()
@@ -1048,7 +1048,7 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext("2d")
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
     // Clear canvas with white background

@@ -5,6 +5,9 @@ import { Analytics } from "@vercel/analytics/react"
 import { Suspense } from "react"
 
 const siteUrl = "https://builtbyjoel.dev"
+
+/** Set by Vercel on its own deployments, and by nothing else. */
+const onVercel = Boolean(process.env.NEXT_PUBLIC_VERCEL_ENV)
 const title = "joel.codes() // human-readable"
 const description =
   "Joel Vasquez's portfolio, rebuilt as a working Windows 95 desktop — draggable windows, a Start menu, MS Paint, and five playable classic games."
@@ -46,7 +49,14 @@ export default function RootLayout({
       <body className="font-['MS_Sans_Serif',sans-serif]">
         <Suspense>
           {children}
-          <Analytics />
+          {/*
+            Only on Vercel. The analytics component asks for
+            /_vercel/insights/script.js, which is served by Vercel's edge and
+            exists nowhere else, so running the site locally or anywhere else
+            filled the console with a 404, a MIME-type refusal and a failed
+            request on every single page load.
+          */}
+          {onVercel && <Analytics />}
         </Suspense>
       </body>
     </html>

@@ -553,7 +553,7 @@ const MenuDropdown = ({
  * where the text starts, which it did: it was drawing one-inch margins over a
  * page padded by 40.
  */
-const PAGE_WIDTH = 920
+const PAGE_WIDTH = 1000
 const PAGE_PADDING = 44
 const PAGE_MARGIN = PAGE_PADDING
 
