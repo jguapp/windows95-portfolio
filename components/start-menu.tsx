@@ -1,11 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { messageBox } from "@/components/win95-dialog"
 
 interface StartMenuProps {
   onOpenWindow: (id: string) => void
 }
+
+/** Windows 95 waited about a third of a second before opening a cascade. */
+const SUBMENU_DELAY_MS = 300
+/** And a moment before closing it, so a diagonal move does not lose it. */
+const SUBMENU_CLOSE_MS = 250
 
 export default function StartMenu({ onOpenWindow }: StartMenuProps) {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
@@ -19,13 +24,39 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
     }, 100)
   }
 
+  /**
+   * Submenus open on a short delay, and close on one too.
+   *
+   * Windows 95 waited a beat before opening a cascade, and waited again before
+   * closing it. Both matter: opening instantly means dragging the pointer down
+   * the menu flickers a submenu open at every item it passes, and closing
+   * instantly means the diagonal move from a parent item across to its own
+   * submenu closes the thing you were reaching for.
+   */
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const cancelHover = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    hoverTimer.current = null
+  }
+
   const handleMouseEnter = (menu: string) => {
-    setActiveSubmenu(menu)
+    cancelHover()
+    // Already showing one, so switch without the wait; only the first opening
+    // is deliberate enough to need it.
+    if (activeSubmenu && activeSubmenu !== menu) {
+      setActiveSubmenu(menu)
+      return
+    }
+    hoverTimer.current = setTimeout(() => setActiveSubmenu(menu), SUBMENU_DELAY_MS)
   }
 
   const handleMouseLeave = () => {
-    setActiveSubmenu(null)
+    cancelHover()
+    hoverTimer.current = setTimeout(() => setActiveSubmenu(null), SUBMENU_CLOSE_MS)
   }
+
+  useEffect(() => cancelHover, [])
 
   return (
     <div
