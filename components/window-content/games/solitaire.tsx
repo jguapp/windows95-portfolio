@@ -20,6 +20,41 @@ type CardState = {
   id: string
 }
 
+/**
+ * The deck designs from Game > Deck.
+ *
+ * The originals were painted bitmaps; these are gradients and repeating
+ * patterns in the same palette, which costs nothing to ship and scales.
+ */
+const DECKS: { name: string; style: React.CSSProperties }[] = [
+  {
+    name: "Blue",
+    style: {
+      backgroundColor: "#00007b",
+      backgroundImage:
+        "repeating-linear-gradient(45deg, #4a4ac8 0 2px, transparent 2px 5px), repeating-linear-gradient(-45deg, #4a4ac8 0 2px, transparent 2px 5px)",
+    },
+  },
+  {
+    name: "Red",
+    style: {
+      backgroundColor: "#8b0000",
+      backgroundImage:
+        "repeating-linear-gradient(45deg, #d05a5a 0 2px, transparent 2px 5px), repeating-linear-gradient(-45deg, #d05a5a 0 2px, transparent 2px 5px)",
+    },
+  },
+  { name: "Castle", style: { backgroundColor: "#004000", backgroundImage: "repeating-linear-gradient(0deg, #0a6a0a 0 3px, #004000 3px 6px)" } },
+  { name: "Beach", style: { backgroundColor: "#0b6ea8", backgroundImage: "repeating-linear-gradient(90deg, #f2d16b 0 4px, #0b6ea8 4px 10px)" } },
+  { name: "Roses", style: { backgroundColor: "#7b0037", backgroundImage: "radial-gradient(circle at 4px 4px, #ff8ab5 1.5px, transparent 2px)", backgroundSize: "8px 8px" } },
+  { name: "Fish", style: { backgroundColor: "#006d6d", backgroundImage: "repeating-linear-gradient(45deg, #3fbcbc 0 3px, transparent 3px 8px)" } },
+  { name: "Shell", style: { backgroundColor: "#5a3a1a", backgroundImage: "radial-gradient(circle at 5px 5px, #c99a5b 2px, transparent 3px)", backgroundSize: "10px 10px" } },
+  { name: "Mountain", style: { backgroundColor: "#2f3f6f", backgroundImage: "repeating-linear-gradient(135deg, #7f8fc0 0 2px, transparent 2px 7px)" } },
+  { name: "Sunset", style: { backgroundImage: "linear-gradient(#ff8c00, #8b0045)" } },
+  { name: "Robot", style: { backgroundColor: "#404040", backgroundImage: "repeating-linear-gradient(0deg, #a0a0a0 0 2px, transparent 2px 6px), repeating-linear-gradient(90deg, #a0a0a0 0 2px, transparent 2px 6px)" } },
+  { name: "Plaid", style: { backgroundColor: "#1f4f1f", backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 9px), repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 9px)" } },
+  { name: "Night", style: { backgroundColor: "#101040", backgroundImage: "radial-gradient(circle at 3px 3px, #ffffff 1px, transparent 1.5px)", backgroundSize: "9px 9px" } },
+]
+
 // Pile types
 type PileType = "stock" | "waste" | "foundation" | "tableau"
 
@@ -66,6 +101,15 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   // cascade so it keeps running while the piles themselves are cleared.
   const [cascadePiles, setCascadePiles] = useState<CardState[][] | null>(null)
   const [cascadeOrigins, setCascadeOrigins] = useState<{ x: number; y: number }[]>([])
+  /** Draw Three is the harder, and the default the original shipped with. */
+  const [drawThree, setDrawThree] = useState(true)
+  /** Vegas scores in dollars and starts you 52 down; Standard scores points. */
+  const [vegas, setVegas] = useState(false)
+  /** Which of the card backs is in use, from Game > Deck. */
+  const [deck, setDeck] = useState(0)
+  const [showDeckPicker, setShowDeckPicker] = useState(false)
+  /** The cards turned over by the last draw, so Draw Three can fan them. */
+  const [wasteShown, setWasteShown] = useState(1)
 
   const gameAreaRef = useRef<HTMLDivElement>(null)
 
@@ -239,21 +283,31 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       if (waste.length > 0) {
         setStock([...waste].reverse().map((card) => ({ ...card, faceUp: false })))
         setWaste([])
+        setWasteShown(1)
         setMoves(moves + 1)
+        // Vegas charges you for going back through the deck; Standard does not.
+        if (vegas) setScore((sc) => sc - 5)
         playFlipSound()
       }
       return
     }
 
-    // Draw one card from stock to waste
+    // Turn one or three, depending on Options.
     const newStock = [...stock]
-    const card = newStock.pop()
-
-    if (card) {
+    const count = Math.min(drawThree ? 3 : 1, newStock.length)
+    const drawn: CardState[] = []
+    for (let i = 0; i < count; i++) {
+      const card = newStock.pop()
+      if (!card) break
       card.faceUp = true
       markFlip(card.id)
+      drawn.push(card)
+    }
+
+    if (drawn.length > 0) {
       setStock(newStock)
-      setWaste([...waste, card])
+      setWaste([...waste, ...drawn])
+      setWasteShown(drawn.length)
       setMoves(moves + 1)
       playFlipSound()
     }
@@ -380,7 +434,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         setWaste(newWaste)
         setFoundations(newFoundations)
         setMoves(moves + 1)
-        setScore(score + 10) // Points for moving to foundation
+        setScore(score + (vegas ? 5 : 10)) // Vegas pays $5 a card; Standard 10 points
       }
     } else if (sourceType === "tableau") {
       const pile = tableau[sourceIndex]
@@ -399,7 +453,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
           if (!newTopCard.faceUp) {
             newTopCard.faceUp = true
             markFlip(newTopCard.id)
-            setScore(score + 5) // Points for revealing a card
+            setScore(score + (vegas ? 0 : 5)) // Vegas pays nothing for turning a card
           }
         }
 
@@ -407,9 +461,77 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         setTableau(newTableau)
         setFoundations(newFoundations)
         setMoves(moves + 1)
-        setScore(score + 10) // Points for moving to foundation
+        setScore(score + (vegas ? 5 : 10)) // Vegas pays $5 a card; Standard 10 points
       }
     }
+  }
+
+  /**
+   * Sends every card that can go home, in one pass.
+   *
+   * Right-clicking the table did this in the original, and it is how a won
+   * game is actually finished rather than dragging thirteen cards a suit.
+   */
+  const sendAllHome = () => {
+    const workingWaste = [...waste]
+    let workingTableau = tableau.map((pile) => [...pile])
+    const workingFoundations = foundations.map((pile) => [...pile])
+    let placed = 0
+
+    let moved = true
+    while (moved) {
+      moved = false
+
+      const tops: { card: CardState; take: () => void }[] = [
+        ...(workingWaste.length
+          ? [{ card: workingWaste[workingWaste.length - 1], take: () => workingWaste.pop() as CardState }]
+          : []),
+        ...workingTableau.flatMap((pile, i) =>
+          pile.length && pile[pile.length - 1].faceUp
+            ? [{ card: pile[pile.length - 1], take: () => workingTableau[i].pop() as CardState }]
+            : [],
+        ),
+      ]
+
+      for (const { card, take } of tops) {
+        const target = workingFoundations.findIndex((pile) =>
+          pile.length === 0 ? card.rank === "A" : canFollow(pile[pile.length - 1], card),
+        )
+        if (target === -1) continue
+        take()
+        workingFoundations[target] = [...workingFoundations[target], card]
+        placed += 1
+        moved = true
+        break
+      }
+    }
+
+    if (placed === 0) return
+
+    // Turning up whatever the departures exposed, as a real move would.
+    workingTableau = workingTableau.map((pile) => {
+      if (pile.length === 0) return pile
+      const top = pile[pile.length - 1]
+      if (!top.faceUp) {
+        top.faceUp = true
+        markFlip(top.id)
+      }
+      return pile
+    })
+
+    setWaste(workingWaste)
+    setTableau(workingTableau)
+    setFoundations(workingFoundations)
+    setMoves(moves + placed)
+    setScore(score + placed * (vegas ? 5 : 10))
+    playFlipSound()
+  }
+
+  /** True when `card` is the next card up from `below` in the same suit. */
+  const canFollow = (below: CardState, card: CardState) => {
+    if (below.suit !== card.suit) return false
+    const order = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+    return order.indexOf(card.rank) === order.indexOf(below.rank) + 1
   }
 
   /**
@@ -460,7 +582,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         if (!newTopCard.faceUp) {
           newTopCard.faceUp = true
           markFlip(newTopCard.id)
-          setScore(score + 5) // Points for revealing a card
+          setScore(score + (vegas ? 0 : 5)) // Vegas pays nothing for turning a card
         }
       }
 
@@ -533,6 +655,10 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       action: initGame,
     },
     {
+      label: "Deck...",
+      action: () => setShowDeckPicker(true),
+    },
+    {
       label: "High Scores",
       action: () => setShowHighScores(true),
     },
@@ -544,6 +670,20 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
   // Options menu options
   const optionsMenuOptions = [
+    {
+      label: `Draw ${drawThree ? "Three" : "One"}`,
+      action: () => {
+        setDrawThree((v) => !v)
+        initGame()
+      },
+    },
+    {
+      label: `${vegas ? "Vegas" : "Standard"} scoring`,
+      action: () => {
+        setVegas((v) => !v)
+        initGame()
+      },
+    },
     {
       label: `Sound: ${soundEnabled ? "On" : "Off"}`,
       action: toggleSound,
@@ -565,10 +705,12 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       return (
         <div
           key={card.id}
+          data-card={card.id}
+          data-face="down"
           className={`w-16 h-24 rounded border border-gray-400 bg-blue-700 ${isStacked ? "" : ""}`}
           style={isStacked ? { top: `${index * 20}px` } : {}}
         >
-          <div className="w-full h-full bg-[url('/images/card-back.png')] bg-cover"></div>
+          <div className="h-full w-full" style={DECKS[deck].style} />
         </div>
       )
     }
@@ -583,6 +725,8 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     return (
       <div
         key={card.id}
+        data-card={card.id}
+        data-face="up"
         className={`w-16 h-24 rounded border border-gray-400 bg-white ${motion}`}
         style={isStacked ? { top: `${index * 20}px` } : {}}
       >
@@ -745,7 +889,18 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       </div>
 
       {/* Game area */}
-      <div className="flex-1 p-4 relative bg-green-700 overflow-auto" onMouseMove={handleMouseMove} ref={gameAreaRef}>
+      <div
+        className="flex-1 p-4 relative bg-green-700 overflow-auto"
+        onMouseMove={handleMouseMove}
+        ref={gameAreaRef}
+        data-table
+        onContextMenu={(e) => {
+          // Right-clicking the table sent every playable card home in the
+          // original, and it is how a won game is actually finished.
+          e.preventDefault()
+          sendAllHome()
+        }}
+      >
         {/* Top row: Stock, Waste, and Foundations */}
         <div className="flex gap-4 mb-6">
           {/* Stock pile */}
@@ -754,7 +909,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             onClick={drawFromStock}
           >
             {stock.length > 0 ? (
-              <div className="w-full h-full bg-[url('/images/card-back.png')] bg-cover"></div>
+              <div className="h-full w-full" style={DECKS[deck].style} />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="w-10 h-10 rounded-full border-2 border-white border-dashed"></div>
@@ -839,6 +994,43 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             </div>
           ))}
         </div>
+
+        {/* Game > Deck */}
+        {showDeckPicker && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40" data-deck-picker>
+            <div className="w-[330px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]">
+              <div className="bg-[#000080] px-2 py-[2px] font-bold text-white">Select Card Back</div>
+              <div className="grid grid-cols-4 gap-2 p-3">
+                {DECKS.map((design, i) => (
+                  <button
+                    key={design.name}
+                    type="button"
+                    title={design.name}
+                    data-deck={i}
+                    onClick={() => {
+                      setDeck(i)
+                      setShowDeckPicker(false)
+                    }}
+                    className="h-[54px] w-[38px] rounded border border-gray-500"
+                    style={{
+                      ...design.style,
+                      boxShadow: deck === i ? "0 0 0 2px #000080" : undefined,
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-end gap-2 px-3 pb-3">
+                <button
+                  type="button"
+                  className="min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040]"
+                  onClick={() => setShowDeckPicker(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* The winning cascade, painted over the table until it runs out or is clicked away */}
         {cascadePiles && (
