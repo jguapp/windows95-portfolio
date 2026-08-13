@@ -16,6 +16,19 @@ import { useState } from "react"
  * 2005 video page carried.
  */
 
+/**
+ * Player and rail sizes.
+ *
+ * The player was 420x236, which is a thumbnail rather than a video. YouTube's
+ * default non-theatre player is 640 wide, and the related rail beside it is
+ * wide enough to read a title in two lines rather than five.
+ */
+const PLAYER_W = 640
+const PLAYER_H = 360
+const RAIL_W = 320
+const RAIL_THUMB_W = 120
+const RAIL_THUMB_H = 90
+
 interface Project {
   id: string
   title: string
@@ -109,6 +122,45 @@ A space-themed Pomodoro timer with ambient sound and haptics sits alongside task
     tags: ["swift", "swiftui", "ios", "accessibility", "screentime-api"],
     repo: "https://github.com/jguapp/Orbit",
   },
+  {
+    id: "sentiment",
+    title: "IMDB Sentiment Classifier - Reading 50,000 Reviews",
+    description: `A sentiment model trained on fifty thousand IMDB reviews, which predicts whether a review it has never seen is positive or negative.
+
+The interesting part of a task like this is not the accuracy number, it is what the model gets wrong. Sarcasm, faint praise and reviews that spend four paragraphs on the plot before one line of verdict are where a bag of words falls apart and where the work actually is.`,
+    views: 1105,
+    added: "11/14/2025",
+    rating: 4,
+    ratings: 22,
+    tags: ["python", "jupyter", "nlp", "scikit-learn", "sentiment-analysis"],
+    repo: "https://github.com/jguapp/IMDB-Reviews-Sentiment-Classifier",
+  },
+  {
+    id: "sorting",
+    title: "Sorting Algorithm Visualiser - Watch Them Race",
+    description: `Bars on a screen, sorted in front of you, one comparison at a time.
+
+Reading that quicksort is O(n log n) and watching it tear through a thousand bars while bubble sort is still working on the first fifty are different kinds of understanding, and only one of them survives an interview.`,
+    views: 1492,
+    added: "9/22/2025",
+    rating: 5,
+    ratings: 31,
+    tags: ["python", "algorithms", "visualisation", "pygame"],
+    repo: "https://github.com/jguapp/sorting-algorithm-visualizer",
+  },
+  {
+    id: "nyumatflix",
+    title: "NyumatFlix - Open Source Film and Television",
+    description: `An open-source streaming front end built on TMDB and AniList metadata, with browse rows, a hero, and playback that resolves through pluggable video sources.
+
+This is the codebase Sportsflix was shaped from: the same browse patterns, pointed at film and television rather than live sport.`,
+    views: 2038,
+    added: "7/08/2025",
+    rating: 4,
+    ratings: 37,
+    tags: ["typescript", "nextjs", "tmdb", "anilist", "open-source"],
+    repo: "https://github.com/jguapp/NyumatFlix",
+  },
 ]
 
 interface Comment {
@@ -127,7 +179,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "82 endpoints is a lot of surface. How are you keeping the Prisma schema from turning into spaghetti across 20 tables?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "2 weeks ago",
           owner: true,
           text: "Every table belongs to exactly one domain module and cross-domain reads go through a service layer rather than direct joins. It costs a little performance but the schema stays legible.",
@@ -140,7 +192,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "2.86x from caching alone? What was the hit rate?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "3 weeks ago",
           owner: true,
           text: "About 71% steady-state. The bigger win was in-flight deduplication: identical concurrent requests wait on one promise instead of each doing the work.",
@@ -153,7 +205,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Does the browser extension hit the same API as the mobile app or is there a separate surface for it?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "Same API, different auth. The extension gets a scoped token that can only save and read, so a compromised extension cannot touch account settings.",
@@ -166,7 +218,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Thread-pool oversubscription on 2 vCPUs is such a specific catch. How did you find it?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "Cold starts were slow but CPU sat below 100%, which never made sense. ONNX Runtime sizes its intra-op pool to the core count and the container was already running workers, so the threads fought each other. Pinning it to one fixed it.",
@@ -186,7 +238,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Curious why Redis for the queue rather than NATS or Kafka?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "Redis was already in the stack and the job volume did not justify a broker. Sorted sets gave me delayed retries for free, which was most of what I needed.",
@@ -199,7 +251,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "99.04% is oddly specific. What was the remaining 1%?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "Jobs that exhausted their retry budget and landed in the dead-letter queue, almost all of them hitting a downstream timeout. Tracked rather than silently dropped, which is the point.",
@@ -212,7 +264,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "7 workers feels like a magic number. Did you tune that or is it just what the box fit?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "2 months ago",
           owner: true,
           text: "Tuned. Throughput climbed to seven and then flattened, and past nine the Redis round trips started dominating. Grafana made the knee obvious.",
@@ -232,7 +284,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "The window dragging feels right. How are you handling resize from the top and left edges?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "2 weeks ago",
           owner: true,
           text: "Those grips move the origin as well as the size so the opposite edge stays put. Each resize is computed from the pointer and rect captured at mousedown rather than accumulated per frame, so it cannot drift.",
@@ -245,7 +297,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Where did the sounds come from? They sound period-correct.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "3 weeks ago",
           owner: true,
           text: "They are generated in the browser. Square and triangle oscillators with short envelopes, plus filtered noise for the explosions. No audio files ship at all.",
@@ -258,7 +310,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "The Solitaire win cascade got me. Did not expect that to be in here.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "It is a canvas that never clears between frames, which is exactly why the original left those ribbons behind. Clicking cuts it short, same as it did.",
@@ -271,7 +323,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "wait the DOS prompt actually works? just typed dir and got a real listing",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 month ago",
           owner: true,
           text: "It reads the same virtual drive Explorer and Notepad use. Save a file in Notepad and you can type it out in DOS without reloading anything.",
@@ -286,7 +338,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Registration used to mean twenty tabs open at once. This is the thing I wanted for four years.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "3 days ago",
           owner: true,
           text: "That was the whole motivation. The data was always there, it was just in the wrong place at the wrong time.",
@@ -299,7 +351,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Glad you show the rating count. A 5.0 from two people tells you nothing and most tools hide that.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 week ago",
           owner: true,
           text: "The badge colour comes from the score but the count sits right next to it in full, so a thin sample never reads as settled.",
@@ -312,7 +364,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Works on Hunter too, not just Baruch. Nice.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "1 week ago",
           owner: true,
           text: "All 26 CUNY colleges. It reads which campus you are on straight off the page rather than asking you to pick.",
@@ -327,7 +379,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Continue Watching as Live Now is such a clean mapping. Did the rest of the layout survive the swap?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "4 days ago",
           owner: true,
           text: "Almost all of it. Rows, hero, hover cards, all the same. Sport is really a catalogue with a clock attached, so the browse patterns carry straight over.",
@@ -340,7 +392,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Does it handle races or is it just ball sports with fixtures?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "6 days ago",
           owner: true,
           text: "A race weekend is a season of events like any other league, so F1 slots in beside the NFL and the EPL without special casing.",
@@ -353,6 +405,56 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "how are the public endpoints holding up under any real traffic?",
     },
   ],
+  sentiment: [
+    {
+      name: "df_head",
+      when: "2 months ago",
+      text: "What did it actually get wrong? Everyone posts the accuracy and nobody posts the failures.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 months ago",
+          owner: true,
+          text: "Sarcasm, mostly, and reviews that describe the plot for four paragraphs and give the verdict in one line. A bag of words weights all of that equally, so a glowing plot summary of a film someone hated reads as positive.",
+        },
+      ],
+    },
+    {
+      name: "notebook_nate",
+      when: "3 months ago",
+      text: "50k reviews is the classic dataset. Did you hold out a proper test set or just cross-validate?",
+    },
+  ],
+  sorting: [
+    {
+      name: "bigO_bandit",
+      when: "4 months ago",
+      text: "The bubble sort one hurts to watch. That is the point though isn't it.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "4 months ago",
+          owner: true,
+          text: "Entirely the point. You can read O(n squared) and nod, or you can watch it still working on the first fifty bars while quicksort has finished and gone home.",
+        },
+      ],
+    },
+  ],
+  nyumatflix: [
+    {
+      name: "stream_sleuth",
+      when: "5 months ago",
+      text: "Is this the same codebase Sportsflix came out of?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "5 months ago",
+          owner: true,
+          text: "Same shape, yes. Browse rows, hero, pluggable sources. Sportsflix swapped the catalogue for live sport and the genres for leagues.",
+        },
+      ],
+    },
+  ],
   orbit: [
     {
       name: "adhd_dev",
@@ -360,7 +462,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Most ADHD apps are a to-do list with a nicer font. The Eisenhower Matrix next to the timer is actually the workflow.",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "2 months ago",
           owner: true,
           text: "Deciding what to do and actually starting it are two different failures, and most apps only help with the first. The timer is one tap from the matrix for that reason.",
@@ -373,7 +475,7 @@ const COMMENTS: Record<string, Comment[]> = {
       text: "Screen Time API is a pain to work with. How did you find it?",
       replies: [
         {
-          name: "JoelVasquez",
+          name: "jguapp",
           when: "3 months ago",
           owner: true,
           text: "Restrictive by design, which is fair. You get aggregates rather than raw events, so the trends are weekly and monthly rather than live. That turned out to be healthier anyway.",
@@ -415,7 +517,7 @@ export default function RetroYoutube() {
       {/* Header */}
       <div style={{ borderBottom: "1px solid #CCC", padding: "8px 10px" }}>
         <div className="flex items-start justify-between">
-          <img src="/2005-youtube-logo.png" alt="YouTube" style={{ height: 34 }} />
+          <img src="/2005-youtube-logo.png" alt="YouTube" style={{ height: 52 }} />
           <div className="t11">
             <a href="#" style={LINK}>
               Sign Up
@@ -475,11 +577,11 @@ export default function RetroYoutube() {
 
       <div className="flex gap-3 p-3" style={{ alignItems: "flex-start" }}>
         {/* Main column */}
-        <div style={{ width: 420, flexShrink: 0 }}>
+        <div style={{ width: PLAYER_W, flexShrink: 0 }}>
           <h1 className="t15" style={{ fontWeight: "bold", marginBottom: 6 }}>{selected.title}</h1>
 
           {/* Flash-era player */}
-          <div style={{ background: "#000", width: 420, height: 236, position: "relative" }}>
+          <div data-player style={{ background: "#000", width: PLAYER_W, height: PLAYER_H, position: "relative" }}>
             <div
               className="flex h-full items-center justify-center"
               style={{ color: "#666", textAlign: "center", padding: 20 }}
@@ -517,7 +619,7 @@ export default function RetroYoutube() {
           <div className="t11 mt-1" style={{ color: "#666" }}>
             Added: {selected.added} &nbsp;From:{" "}
             <a href="https://github.com/jguapp" style={{ ...LINK, fontWeight: "bold" }}>
-              JoelVasquez
+              jguapp
             </a>
           </div>
 
@@ -638,7 +740,7 @@ export default function RetroYoutube() {
         </div>
 
         {/* Related videos sidebar */}
-        <div style={{ flex: 1, minWidth: 180 }}>
+        <div style={{ flex: 1, minWidth: RAIL_W }}>
           <div style={{ border: "1px solid #CCC" }}>
             <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
               Related Videos
@@ -655,14 +757,20 @@ export default function RetroYoutube() {
                   <img
                     src="/images/demo-coming-soon.png"
                     alt=""
-                    style={{ width: 60, height: 45, objectFit: "cover", border: "1px solid #CCC", flexShrink: 0 }}
+                    style={{
+                      width: RAIL_THUMB_W,
+                      height: RAIL_THUMB_H,
+                      objectFit: "cover",
+                      border: "1px solid #CCC",
+                      flexShrink: 0,
+                    }}
                   />
                   <span>
                     <span className="t11" style={{ ...LINK, display: "block" }}>{p.title}</span>
                     <span className="t10" style={{ color: "#666" }}>
                       {p.views.toLocaleString()} views
                       <br />
-                      From: JoelVasquez
+                      From: jguapp
                     </span>
                   </span>
                 </button>
@@ -675,15 +783,33 @@ export default function RetroYoutube() {
               About This Channel
             </div>
             <div className="t11" style={{ padding: 6, lineHeight: 1.5 }}>
-              <strong>JoelVasquez</strong>
-              <br />
-              Backend &amp; infrastructure engineer.
-              <br />
-              Baruch College &#8217;27.
-              <br />
-              <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={LINK}>
-                github.com/jguapp
-              </a>
+              <p style={{ marginBottom: 6 }}>
+                <strong>jguapp</strong> &#8212; Joined 2005 (allegedly)
+              </p>
+              <p style={{ marginBottom: 6 }}>
+                I make backends. The unglamorous half: the queue that does not lose your job when a worker dies, the
+                cache that stops the same request being computed four times, the right-sizing engine that quietly
+                hands back $53.3K a year because nobody had checked what those pods actually needed.
+              </p>
+              <p style={{ marginBottom: 6 }}>
+                Currently: Computer Science at Baruch, class of 2027. Previously: a summer at Liberty Mutual, a year
+                of AI agents at the Robert Wood Johnson Foundation, two years of data pipelines at CUNY. Also running
+                a ColorStack chapter that went from four people to three hundred.
+              </p>
+              <p style={{ marginBottom: 6 }}>
+                Things I will talk about for too long: why your Postgres connection pool is the problem, whether the
+                Solitaire win cascade counts as good UI, and the correct number of times to rewrite a side project
+                before shipping it. (Three. It is three.)
+              </p>
+              <p>
+                <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={LINK}>
+                  github.com/jguapp
+                </a>
+                {" · "}
+                <a href="https://builtbyjoel.dev" target="_blank" rel="noopener noreferrer" style={LINK}>
+                  builtbyjoel.dev
+                </a>
+              </p>
             </div>
           </div>
         </div>
