@@ -30,6 +30,15 @@ const P = ["#9BBC0F", "#8BAC0F", "#306230", "#0F380F"] as const
 
 const SCREEN_W = 160
 const SCREEN_H = 144
+/**
+ * Where the move list sits inside the text box.
+ *
+ * Four moves at nine pixels apart from y=117 put the fourth baseline on 144,
+ * the very bottom edge of the screen, so it was drawn off the panel and could
+ * not be read. These keep all four inside the box.
+ */
+const MOVE_TOP = 113
+const MOVE_STEP = 8
 
 /**
  * Sprites are 28x28 grids drawn at two logical pixels each, filling the 56x56
@@ -438,16 +447,16 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={5} y={117 + i * 9} size={7}>
+                    <Label x={5} y={MOVE_TOP + i * MOVE_STEP} size={7}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={13} y={117 + i * 9} size={7}>
+                  <Label x={13} y={MOVE_TOP + i * MOVE_STEP} size={7}>
                     {m.name}
                   </Label>
                 </g>
               ))}
-              <Label x={106} y={117} size={7}>
+              <Label x={104} y={MOVE_TOP} size={7}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
             </>

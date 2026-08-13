@@ -1691,12 +1691,12 @@ export default function Resume() {
             </a>{" "}
             |{" "}
             <a
-              href="https://builtbyjoel.vercel.app"
+              href="https://builtbyjoel.dev"
               className="text-blue-800 underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              builtbyjoel.vercel.app
+              builtbyjoel.dev
             </a>
           </p>
 
@@ -1759,7 +1759,7 @@ export default function Resume() {
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Projected <strong>$53.3K</strong> in annual infrastructure savings by building a deterministic{" "}
+                  Identified <strong>$53.3K</strong> in annual infrastructure savings by building a deterministic{" "}
                   <strong>Kubernetes</strong> right-sizing engine that analyzes p95/p99 CPU and memory telemetry across{" "}
                   <strong>50</strong> workloads and generates reviewable YAML patches.
                 </li>
@@ -1769,9 +1769,9 @@ export default function Resume() {
                   hundreds of manual operations.
                 </li>
                 <li>
-                  Accelerated <strong>Azure Local</strong> backup failure detection <strong>40%</strong> by building{" "}
-                  <strong>Datadog</strong> monitors and alerting workflows, improving incident response and reducing
-                  time-to-detection.
+                  Reduced <strong>Azure Local</strong> backup failure detection time by <strong>40%</strong> by
+                  building <strong>Datadog</strong> monitors and automated alerting workflows, enabling faster incident
+                  response.
                 </li>
               </ul>
             </div>
@@ -1796,14 +1796,14 @@ export default function Resume() {
                   statement analysis, memo drafting, and risk flag generation.
                 </li>
                 <li>
-                  Engineered multi-step agent pipelines combining LLM reasoning, financial data retrieval, and
-                  structured-output validation to streamline analysis across a <strong>$13B</strong> investment
-                  portfolio.
+                  Eliminated manual reformatting of model output by engineering multi-step agent pipelines combining
+                  LLM reasoning, financial data retrieval, and structured-output validation across a{" "}
+                  <strong>$13B</strong> investment portfolio.
                 </li>
                 <li>
                   Developed <strong>retrieval-augmented generation (RAG)</strong> pipelines to search and synthesize
-                  thousands of internal investment documents across SharePoint and Bipsync into structured investment
-                  summaries for portfolio analysis.
+                  over <strong>85,000</strong> internal investment documents across SharePoint and Bipsync into
+                  structured investment summaries for portfolio analysis.
                 </li>
               </ul>
             </div>
@@ -1903,8 +1903,8 @@ export default function Resume() {
                   pooling, and concurrent job scheduling across <strong>7</strong> containerized worker instances.
                 </li>
                 <li>
-                  Implemented fault-tolerant job execution with persistent job state, automatic retries with exponential
-                  backoff, dead-letter queues, and graceful worker recovery for failed and interrupted jobs.
+                  Sustained zero job loss across <strong>15</strong> forced worker crashes by implementing persistent
+                  job state, exponential-backoff retries, dead-letter queues, and lease-based crash recovery.
                 </li>
               </ul>
             </div>

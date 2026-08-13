@@ -6,6 +6,16 @@ import { useState, useRef, useEffect } from "react"
 
 /** Windows 95 drew desktop icons at 32x32, and so does this. */
 const ICON_PX = 32
+/**
+ * The cell a desktop icon occupies.
+ *
+ * Each item used to be as wide as its own label, so "Paint" sat in a narrow box
+ * and "My Projects" in a wide one, and because the image is centred in its box
+ * the icons themselves never lined up down the column. A fixed cell, with the
+ * label wrapping inside it, is what Windows 95 used and what makes a column
+ * look like a column.
+ */
+const CELL_PX = 75
 
 interface DesktopItemProps {
   id: string
@@ -259,10 +269,11 @@ export default function DesktopItem({
   return (
     <div
       ref={iconRef}
-      className={`desktop-icon text-center cursor-pointer p-0.5 inline-block transition-transform absolute ${
+      className={`desktop-icon text-center cursor-pointer p-0.5 transition-transform absolute ${
         isDragging ? "opacity-70" : ""
       }`}
       style={{
+        width: CELL_PX,
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
         zIndex: isDragging ? 100 : 1,
@@ -333,7 +344,9 @@ export default function DesktopItem({
         </div>
       ) : (
         <p
-          className={`desktop-icon-text mt-1.5 mb-0 text-xs ${isSelected ? "border border-dotted border-white" : ""}`}
+          className={`desktop-icon-text mt-1.5 mb-0 break-words leading-tight text-xs ${
+            isSelected ? "border border-dotted border-white" : ""
+          }`}
           draggable="false"
           onDoubleClick={(e) => {
             e.stopPropagation()

@@ -1319,18 +1319,15 @@ h6 {
 }
 
 .page-2005 {
-  /* 2005 YouTube set Arial at 11px for body copy. */
-  font-size: 11px !important;
+  /* MS Sans Serif needs a little more room than Arial did at the same size. */
+  font-size: 13px !important;
 }
 
-/* The universal selector near the top of this file pins MS Sans Serif on
-   everything with !important, which even an inline style cannot beat, so a page
-   that is meant to be a 2005 web page came out in the Windows shell face. A
-   descendant selector outranks the universal one. */
+/* Kept in the shell typeface rather than Arial: one font across the whole site
+   reads better than a period-accurate exception on a single window. */
 .page-2005,
 .page-2005 * {
-  font-family: Arial, Helvetica, sans-serif !important;
-  -webkit-font-smoothing: auto;
+  font-family: "MS Sans Serif", sans-serif !important;
 }
 
 .page-2005 .t10 {
@@ -1475,19 +1472,19 @@ h6 {
 }
 
 .win95-type {
-  font-size: 11px !important;
+  font-size: 13px !important;
 }
 
 .win95-type .t9 {
-  font-size: 9px !important;
-}
-
-.win95-type .t10 {
   font-size: 10px !important;
 }
 
+.win95-type .t10 {
+  font-size: 11px !important;
+}
+
 .win95-type .t13 {
-  font-size: 13px !important;
+  font-size: 14px !important;
 }
 
 .win95-type .t16 {

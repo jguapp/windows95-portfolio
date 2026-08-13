@@ -126,9 +126,11 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   })
 
   // Constants for icon positioning
-  const ICON_SPACING_Y = 100 // Vertical spacing between icons
-  const FIRST_COLUMN_X = 5 // X position for first column (shifted further left from 15 to 5)
-  const FIRST_ROW_Y = 15 // Y position for first row (shifted up from 20 to 15)
+  // The Windows 95 desktop grid: a 75px cell with the icon at the top and up to
+  // two lines of label under it.
+  const ICON_SPACING_Y = 76
+  const FIRST_COLUMN_X = 8
+  const FIRST_ROW_Y = 8
 
   // Initialize icon positions - this defines the default positions
   const initializeIconPositions = useCallback(() => {
@@ -163,20 +165,12 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     if (isInitialized) return
 
     try {
-      // Try to load saved icon positions first
-      const savedPositions = localStorage.getItem("win95-icon-positions")
-
-      if (savedPositions) {
-        // Saved positions predate any icon added since, so start from the
-        // defaults and let saved values override. Otherwise a new icon has no
-        // position and stacks on top of the first one.
-        setIcons(DEFAULT_ICONS)
-        setIconPositions({ ...initializeIconPositions(), ...JSON.parse(savedPositions) })
-        setNextItemId(1)
-      } else {
-        // Otherwise reset to default icons and positions
-        resetToDefaultIcons()
-      }
+      // Always start from the default grid. Restoring saved positions meant an
+      // icon dragged out of line stayed out of line for good, including the
+      // Recycle Bin, and any icon added since the save had no position at all
+      // and stacked on top of the first one.
+      localStorage.removeItem("win95-icon-positions")
+      resetToDefaultIcons()
 
       // Load saved background settings
       const savedBackground = localStorage.getItem("win95-background-image")

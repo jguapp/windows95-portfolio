@@ -19,6 +19,34 @@ type Wave = "square" | "triangle" | "sawtooth" | "sine"
 
 let ctx: AudioContext | null = null
 let muted = false
+/**
+ * Master volume, 0 to 1.
+ *
+ * Every effect multiplies its own gain by this, so one control governs the
+ * whole desktop rather than each game keeping its own idea of loudness.
+ * Changes are broadcast so the tray slider and anything else stay in step.
+ */
+let volume = 0.7
+const volumeListeners = new Set<() => void>()
+
+export function getVolume(): number {
+  return volume
+}
+
+export function setVolume(value: number) {
+  volume = Math.max(0, Math.min(1, value))
+  for (const listener of volumeListeners) listener()
+}
+
+export function subscribeVolume(listener: () => void): () => void {
+  volumeListeners.add(listener)
+  return () => volumeListeners.delete(listener)
+}
+
+/** The gain an effect should actually use, after the master control. */
+function level(gain: number): number {
+  return gain * volume
+}
 
 function audio(): AudioContext | null {
   if (typeof window === "undefined") return null
@@ -34,6 +62,7 @@ function audio(): AudioContext | null {
 
 export function setMuted(value: boolean) {
   muted = value
+  for (const listener of volumeListeners) listener()
 }
 
 export function isMuted() {
@@ -54,7 +83,7 @@ interface ToneOptions {
 
 export function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slideTo, delay = 0 }: ToneOptions) {
   const ac = audio()
-  if (!ac || muted) return
+  if (!ac || muted || volume === 0) return
 
   const start = ac.currentTime + delay
   const osc = ac.createOscillator()
@@ -66,7 +95,7 @@ export function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slid
 
   // A short attack and exponential decay stops every note clicking.
   amp.gain.setValueAtTime(0.0001, start)
-  amp.gain.exponentialRampToValueAtTime(gain, start + 0.008)
+  amp.gain.exponentialRampToValueAtTime(Math.max(0.0002, level(gain)), start + 0.008)
   amp.gain.exponentialRampToValueAtTime(0.0001, start + duration)
 
   osc.connect(amp).connect(ac.destination)
@@ -77,7 +106,7 @@ export function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slid
 /** White-noise burst, for explosions and card shuffles. */
 export function noise(duration = 0.2, gain = 0.05, filterHz = 1200) {
   const ac = audio()
-  if (!ac || muted) return
+  if (!ac || muted || volume === 0) return
 
   const frames = Math.floor(ac.sampleRate * duration)
   const buffer = ac.createBuffer(1, frames, ac.sampleRate)
@@ -92,7 +121,7 @@ export function noise(duration = 0.2, gain = 0.05, filterHz = 1200) {
   lp.frequency.value = filterHz
 
   const amp = ac.createGain()
-  amp.gain.value = gain
+  amp.gain.value = level(gain)
 
   src.connect(lp).connect(amp).connect(ac.destination)
   src.start()
@@ -136,7 +165,7 @@ function knock(delay = 0, strength = 1) {
   band.Q.value = 0.9
 
   const clickAmp = ac.createGain()
-  clickAmp.gain.value = 0.05 * strength
+  clickAmp.gain.value = level(0.05 * strength)
 
   src.connect(band).connect(clickAmp).connect(ac.destination)
   src.start(start)
@@ -148,7 +177,7 @@ function knock(delay = 0, strength = 1) {
   body.frequency.setValueAtTime(190 / strength, start)
   body.frequency.exponentialRampToValueAtTime(90, start + 0.07)
   bodyAmp.gain.setValueAtTime(0.0001, start)
-  bodyAmp.gain.exponentialRampToValueAtTime(0.07 * strength, start + 0.004)
+  bodyAmp.gain.exponentialRampToValueAtTime(Math.max(0.0002, level(0.07 * strength)), start + 0.004)
   bodyAmp.gain.exponentialRampToValueAtTime(0.0001, start + 0.09)
   body.connect(bodyAmp).connect(ac.destination)
   body.start(start)
