@@ -6,9 +6,10 @@ import Pong from "./games/pong"
 import Solitaire from "./games/solitaire"
 import Chess from "./games/chess"
 import Tetris from "./games/tetris"
+import FreeCell from "./games/freecell"
 import { createSound, type SynthAudio } from "@/lib/sound"
 
-type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris"
+type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris" | "freecell"
 
 export default function Games() {
   const [currentGame, setCurrentGame] = useState<GameType>("launcher")
@@ -117,6 +118,14 @@ export default function Games() {
       featured: false,
     },
     {
+      id: "freecell",
+      name: "FreeCell",
+      description: "All 32,000 deals, numbered as they always were",
+      image: "/images/win95/freecell-32.png",
+      category: "card",
+      featured: true,
+    },
+    {
       id: "pong",
       name: "Pong",
       description: "The original arcade classic",
@@ -142,6 +151,8 @@ export default function Games() {
         return <Chess onReturn={returnToLauncher} />
       case "tetris":
         return <Tetris onReturn={returnToLauncher} />
+      case "freecell":
+        return <FreeCell onReturn={returnToLauncher} />
       default:
         return renderLauncher()
     }
