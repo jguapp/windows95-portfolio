@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { CloseIcon } from "@/components/win95-controls"
 import { createSound, type SynthAudio } from "@/lib/sound"
+import { messageBox } from "@/components/win95-dialog"
+import { loadScores, saveScore, type ScoreEntry } from "@/lib/high-scores"
+import { Counter, Flag, Mine, Smiley, type Face } from "./minesweeper-parts"
 
 interface MinesweeperProps {
   onReturn: () => void
@@ -12,6 +15,15 @@ interface MinesweeperProps {
 const RIPPLE_STEP_MS = 26
 /** How long the mine you stepped on flashes alone before the rest appear. */
 const MINE_FLASH_MS = 420
+/** Windows 95 drew Minesweeper cells at 16x16. */
+const CELL_PX = 16
+
+/** The three boards Windows 95 shipped, with their mine counts. */
+const BOARDS: Record<Difficulty, { rows: number; cols: number; mines: number }> = {
+  easy: { rows: 9, cols: 9, mines: 10 },
+  medium: { rows: 16, cols: 16, mines: 40 },
+  hard: { rows: 16, cols: 30, mines: 99 },
+}
 
 function reducedMotion(): boolean {
   if (typeof window === "undefined") return false
@@ -58,10 +70,25 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     { name: "MAN", time: 78, difficulty: "medium" },
     { name: "TNT", time: 120, difficulty: "hard" },
   ])
+
+  // Best times are read once on the client. Reading during render would not
+  // match what the server sent and would blow up hydration.
+  useEffect(() => {
+    const stored = loadScores("minesweeper", [])
+    if (stored.length > 0) {
+      setHighScores(
+        stored.map((e) => ({ name: e.name, time: e.value, difficulty: (e.category as Difficulty) ?? "easy" })),
+      )
+    }
+  }, [])
   const [playerName, setPlayerName] = useState("")
   const [showNameInput, setShowNameInput] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
+  /** Open menu, and whether the mouse is held down over the board. */
+  const [menu, setMenu] = useState<string | null>(null)
+  const [pressing, setPressing] = useState(false)
+  /** Marks toggles the question-mark step in the right-click cycle. */
+  const [marks, setMarks] = useState(true)
 
   // Initialize sounds
   useEffect(() => {
@@ -90,47 +117,13 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
 
   // Set difficulty
   const setGameDifficulty = (level: Difficulty) => {
-    if (gameStatus !== "playing" || firstClick) {
-      switch (level) {
-        case "easy":
-          setGridSize({ rows: 9, cols: 9 })
-          setMineCount(10)
-          break
-        case "medium":
-          setGridSize({ rows: 16, cols: 16 })
-          setMineCount(40)
-          break
-        case "hard":
-          setGridSize({ rows: 16, cols: 30 })
-          setMineCount(99)
-          break
-      }
-      setDifficulty(level)
-      initializeGrid()
-    } else {
-      setShowConfirmation(true)
-    }
-  }
-
-  const confirmDifficultyChange = (level: Difficulty) => {
-    setShowConfirmation(false)
-    switch (level) {
-      case "easy":
-        setGridSize({ rows: 9, cols: 9 })
-        setMineCount(10)
-        break
-      case "medium":
-        setGridSize({ rows: 16, cols: 16 })
-        setMineCount(40)
-        break
-      case "hard":
-        setGridSize({ rows: 16, cols: 30 })
-        setMineCount(99)
-        break
-    }
+    const size = BOARDS[level]
+    setGridSize({ rows: size.rows, cols: size.cols })
+    setMineCount(size.mines)
     setDifficulty(level)
     initializeGrid()
   }
+
 
   // Toggle sound
   const toggleSound = () => {
@@ -369,9 +362,10 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
 
     if (newGrid[row][col].isFlagged) {
       // Flag becomes a question mark, which does not count against the mine
-      // counter, and a second right-click clears it.
+      // counter, and a second right-click clears it. With Marks turned off in
+      // the Game menu, the middle step is skipped entirely.
       newGrid[row][col].isFlagged = false
-      newGrid[row][col].isQuestioned = true
+      newGrid[row][col].isQuestioned = marks
       setFlagsPlaced(flagsPlaced - 1)
     } else if (newGrid[row][col].isQuestioned) {
       newGrid[row][col].isQuestioned = false
@@ -391,6 +385,18 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     // Check if player has won
     checkWinCondition(newGrid)
   }
+
+  // F2 for a new game, which is what every Windows 95 game used.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "F2") {
+        e.preventDefault()
+        initializeGrid()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [initializeGrid])
 
   // Check if the player has won
   const checkWinCondition = (currentGrid: CellState[][]) => {
@@ -428,19 +434,16 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       difficulty,
     }
 
-    const newHighScores = [...highScores, newScore]
-      .sort((a, b) => {
-        // First sort by difficulty
-        if (a.difficulty !== b.difficulty) {
-          const difficultyOrder = { easy: 0, medium: 1, hard: 2 }
-          return difficultyOrder[b.difficulty] - difficultyOrder[a.difficulty]
-        }
-        // Then by time (lower is better)
-        return a.time - b.time
-      })
-      .slice(0, 10) // Keep only top 10
-
-    setHighScores(newHighScores)
+    // Written to localStorage so a best time survives the window closing,
+    // which is the only thing that makes it a best time.
+    const stored: ScoreEntry[] = saveScore(
+      "minesweeper",
+      { name: newScore.name, value: newScore.time, category: difficulty },
+      true,
+    )
+    setHighScores(
+      stored.map((e) => ({ name: e.name, time: e.value, difficulty: (e.category as Difficulty) ?? "easy" })),
+    )
     setShowNameInput(false)
     setShowHighScores(true)
   }
@@ -490,112 +493,172 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  return (
-    <div className="flex flex-col items-center justify-start p-4 bg-[#c0c0c0] min-h-full w-full overflow-auto">
-      {/* Game Header */}
-      <div className="w-full max-w-4xl mx-auto mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setGameDifficulty("easy")}
-              className={`win95-button ${difficulty === "easy" ? "border-inset bg-gray-300" : ""}`}
-            >
-              Easy
-            </button>
-            <button
-              onClick={() => setGameDifficulty("medium")}
-              className={`win95-button ${difficulty === "medium" ? "border-inset bg-gray-300" : ""}`}
-            >
-              Medium
-            </button>
-            <button
-              onClick={() => setGameDifficulty("hard")}
-              className={`win95-button ${difficulty === "hard" ? "border-inset bg-gray-300" : ""}`}
-            >
-              Hard
-            </button>
-          </div>
-          <div className="flex space-x-2">
-            <button onClick={initializeGrid} className="win95-button">
-              New Game
-            </button>
-            <button onClick={onReturn} className="win95-button">
-              Exit
-            </button>
-          </div>
-        </div>
+  const face: Face = pressing && gameStatus === "playing" ? "oh" : gameStatus === "won" ? "cool" : gameStatus === "lost" ? "dead" : "smile"
 
-        {/* Game Info Panel */}
-        <div className="flex justify-between items-center mb-4 p-2 border-2 border-t-gray-400 border-l-gray-400 border-r-white border-b-white bg-gray-200">
-          <div className="flex items-center justify-center w-20 h-10 bg-black text-red-600 font-bold border-2 border-inset p-1">
-            {mineCount - flagsPlaced}
+  const menus: Record<string, { label: string; action: () => void; checked?: boolean; sep?: boolean }[]> = {
+    Game: [
+      { label: "New", action: initializeGrid },
+      { label: "Beginner", action: () => setGameDifficulty("easy"), checked: difficulty === "easy", sep: true },
+      { label: "Intermediate", action: () => setGameDifficulty("medium"), checked: difficulty === "medium" },
+      { label: "Expert", action: () => setGameDifficulty("hard"), checked: difficulty === "hard" },
+      { label: "Marks (?)", action: () => setMarks((m) => !m), checked: marks, sep: true },
+      { label: "Best Times...", action: () => setShowHighScores(true) },
+      { label: "Exit", action: onReturn, sep: true },
+    ],
+    Help: [
+      { label: "How to Play", action: () => setShowHelp(true) },
+      {
+        label: "About Minesweeper",
+        action: () => messageBox({ title: "About Minesweeper", text: "Minesweeper\n\nWindows 95 recreation.", icon: "information" }),
+      },
+    ],
+  }
+
+  return (
+    <div
+      className="win95-type flex h-full w-full flex-col bg-[#c0c0c0]"
+      style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+      data-minesweeper
+    >
+      {/* Menu bar */}
+      <div className="flex border-b border-[#808080] px-1" onMouseLeave={() => setMenu(null)}>
+        {Object.keys(menus).map((name) => (
+          <div key={name} className="relative">
+            <button
+              type="button"
+              className={`px-2 py-[2px] ${menu === name ? "bg-[#000080] text-white" : ""}`}
+              onClick={() => setMenu(menu === name ? null : name)}
+              onMouseEnter={() => menu && setMenu(name)}
+            >
+              <span className="underline">{name[0]}</span>
+              {name.slice(1)}
+            </button>
+            {menu === name && (
+              <div className="absolute left-0 top-full z-50 min-w-[150px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                {menus[name].map((item) => (
+                  <div key={item.label}>
+                    {item.sep && <div className="my-1 border-t border-t-[#808080] border-b border-b-white" />}
+                    <button
+                      type="button"
+                      className="flex w-full items-center px-2 py-[2px] text-left hover:bg-[#000080] hover:text-white"
+                      onClick={() => {
+                        item.action()
+                        setMenu(null)
+                      }}
+                    >
+                      <span className="mr-2 w-3">{item.checked ? "\u2713" : ""}</span>
+                      {item.label}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <button
-            onClick={initializeGrid}
-            className="w-10 h-10 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
-          >
-            {gameStatus === "lost" ? "😵" : gameStatus === "won" ? "😎" : "🙂"}
-          </button>
-          <div className="flex items-center justify-center w-20 h-10 bg-black text-red-600 font-bold border-2 border-inset p-1">
-            {formatTime(timeElapsed)}
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Game Board */}
-      <div className="w-full max-w-4xl mx-auto">
+      {/* The board sizes itself; the window does not stretch it. */}
+      <div className="flex flex-1 items-start justify-center overflow-auto p-3" onClick={() => setMenu(null)}>
         <div
-          className="border-4 border-t-gray-400 border-l-gray-400 border-r-white border-b-white p-2 bg-gray-200 grid"
+          className="p-[6px]"
           style={{
-            gridTemplateColumns: `repeat(${gridSize.cols}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${gridSize.rows}, minmax(0, 1fr))`,
+            backgroundColor: "#c0c0c0",
+            boxShadow: "inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #ffffff, inset -3px -3px 0 0 #808080, inset 3px 3px 0 0 #ffffff",
           }}
         >
-          {grid.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                data-detonated={detonated?.row === rowIndex && detonated?.col === colIndex ? "" : undefined}
-                className={`w-8 h-8 flex items-center justify-center font-bold cursor-pointer select-none
-                  ${
-                    cell.isRevealed
-                      ? "bg-gray-300 border border-t-gray-400 border-l-gray-400 border-r-gray-200 border-b-gray-200"
-                      : "bg-gray-200 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 hover:bg-gray-300"
-                  } ${
-                    detonated?.row === rowIndex && detonated?.col === colIndex ? "anim-mine-flash bg-red-600" : ""
-                  }`}
-                onClick={() => revealCell(rowIndex, colIndex)}
-                onContextMenu={(e) => {
-                  e.preventDefault()
-                  toggleFlag(rowIndex, colIndex)
-                }}
-                onMouseDown={(e) => {
-                  // Chording: both buttons on a satisfied number clears its
-                  // neighbours. buttons is a bitmask, 3 means left and right.
-                  if (e.buttons === 3) {
-                    e.preventDefault()
-                    chord(rowIndex, colIndex)
-                  }
-                }}
-              >
-                {cell.isRevealed ? (
-                  cell.isMine ? (
-                    <span className="text-black text-xl">💣</span>
-                  ) : (
-                    <span className="font-bold" style={{ color: getCellColor(cell.neighborMines) }}>
-                      {cell.neighborMines > 0 ? cell.neighborMines : ""}
-                    </span>
-                  )
-                ) : cell.isFlagged ? (
-                  <span className="text-red-600">🚩</span>
-                ) : cell.isQuestioned ? (
-                  <span className="font-bold text-black">?</span>
-                ) : (
-                  ""
-                )}
-              </div>
-            )),
-          )}
+          {/* Counter panel */}
+          <div
+            className="mb-[6px] flex items-center justify-between px-[5px] py-[4px]"
+            style={{
+              boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff, inset 2px 2px 0 0 #808080, inset -2px -2px 0 0 #ffffff",
+            }}
+          >
+            <Counter value={mineCount - flagsPlaced} label="mines" />
+            <button
+              type="button"
+              data-smiley
+              aria-label="New game"
+              onClick={initializeGrid}
+              className="flex h-[26px] w-[26px] items-center justify-center bg-[#c0c0c0]"
+              style={{
+                boxShadow: "inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #ffffff, inset -2px -2px 0 0 #808080, inset 2px 2px 0 0 #dfdfdf",
+              }}
+            >
+              <Smiley face={face} />
+            </button>
+            <Counter value={timeElapsed} label="time" />
+          </div>
+
+          {/* Board */}
+          <div
+            data-board
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridSize.cols}, ${CELL_PX}px)`,
+              gridTemplateRows: `repeat(${gridSize.rows}, ${CELL_PX}px)`,
+              boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff, inset 2px 2px 0 0 #808080, inset -2px -2px 0 0 #ffffff",
+              padding: 3,
+              backgroundColor: "#c0c0c0",
+            }}
+            onMouseDown={() => setPressing(true)}
+            onMouseUp={() => setPressing(false)}
+            onMouseLeave={() => setPressing(false)}
+          >
+            {grid.map((row, rowIndex) =>
+              row.map((cell, colIndex) => {
+                const blown = detonated?.row === rowIndex && detonated?.col === colIndex
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    data-cell={`${rowIndex}-${colIndex}`}
+                    data-detonated={blown ? "" : undefined}
+                    className={`flex select-none items-center justify-center ${blown ? "anim-mine-flash" : ""}`}
+                    style={{
+                      width: CELL_PX,
+                      height: CELL_PX,
+                      fontFamily: '"MS Sans Serif", sans-serif',
+                      fontSize: 13,
+                      fontWeight: "bold",
+                      lineHeight: 1,
+                      cursor: "default",
+                      backgroundColor: blown ? "#ff0000" : "#c0c0c0",
+                      // Raised until revealed, then a flat cell with a single
+                      // grey edge, which is exactly what the original drew.
+                      boxShadow: cell.isRevealed
+                        ? "inset 1px 1px 0 0 #808080"
+                        : "inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #ffffff, inset -2px -2px 0 0 #808080, inset 2px 2px 0 0 #ffffff",
+                      color: getCellColor(cell.neighborMines),
+                    }}
+                    onClick={() => revealCell(rowIndex, colIndex)}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      toggleFlag(rowIndex, colIndex)
+                    }}
+                    onMouseDown={(e) => {
+                      // Chording: both buttons on a satisfied number clears its
+                      // neighbours. buttons is a bitmask, 3 means left and right.
+                      if (e.buttons === 3) {
+                        e.preventDefault()
+                        chord(rowIndex, colIndex)
+                      }
+                    }}
+                  >
+                    {cell.isRevealed ? (
+                      cell.isMine ? (
+                        <Mine size={CELL_PX - 2} />
+                      ) : cell.neighborMines > 0 ? (
+                        cell.neighborMines
+                      ) : null
+                    ) : cell.isFlagged ? (
+                      <Flag size={CELL_PX - 2} />
+                    ) : cell.isQuestioned ? (
+                      "?"
+                    ) : null}
+                  </div>
+                )
+              }),
+            )}
+          </div>
         </div>
       </div>
 
@@ -836,32 +899,6 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       )}
 
       {/* Confirmation Modal */}
-      {showConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 max-w-md">
-            <div className="flex justify-between items-center mb-4 border-b-2 border-gray-400 pb-2">
-              <h2 className="text-xl font-bold">Change Difficulty?</h2>
-              <button
-                onClick={() => setShowConfirmation(false)}
-                className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <p className="text-black text-sm mb-4">
-              Changing difficulty will start a new game. Current progress will be lost.
-            </p>
-            <div className="flex justify-between">
-              <button className="win95-button" onClick={() => setShowConfirmation(false)}>
-                Cancel
-              </button>
-              <button className="win95-button" onClick={() => confirmDifficultyChange(difficulty)}>
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
