@@ -16,7 +16,7 @@ import MsDos from "./window-content/ms-dos"
 import Explorer from "./window-content/explorer"
 import RecycleBinWindow from "./window-content/recycle-bin"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
-import { windowTitle } from "@/lib/window-titles"
+import { windowIcon, windowTitle } from "@/lib/window-titles"
 
 // Shared by the three title-bar controls: a 16px Win95 button with the glyph
 // centred. flex centring replaces the old line-height trick, which could not
@@ -334,8 +334,19 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
           className="window-header bg-[#000080] p-[5px] flex justify-between items-center border-b-2 border-b-black text-white font-bold"
           onMouseDown={startDrag}
         >
-          <h1 className="text-sm m-0 p-[0_5px]">
-{windowTitle(id)}
+          {/* Windows 95 put the application's 16px icon at the left of every
+              title bar, which is also what you double-click to close. */}
+          <h1 className="text-sm m-0 flex items-center gap-[5px] p-[0_2px]">
+            {windowIcon(id) && (
+              <img
+                src={windowIcon(id)}
+                alt=""
+                data-title-icon
+                className="h-4 w-4 shrink-0"
+                style={{ imageRendering: "pixelated" }}
+              />
+            )}
+            {windowTitle(id)}
           </h1>
           <div className="controls flex gap-[5px]">
             <button

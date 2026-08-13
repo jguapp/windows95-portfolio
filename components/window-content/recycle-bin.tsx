@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react"
 import { empty, getItems, restore, subscribe } from "@/lib/recycle-bin"
+import { messageBox } from "@/components/win95-dialog"
 
 /**
  * The Recycle Bin window.
@@ -40,7 +41,7 @@ export default function RecycleBin() {
       },
     ],
     Edit: [{ label: "Select All", action: () => setSelected(items[0]?.item.id ?? null), disabled: !items.length }],
-    Help: [{ label: "About Recycle Bin", action: () => alert("Recycle Bin\n\nWindows 95 recreation.") }],
+    Help: [{ label: "About Recycle Bin", action: () => messageBox({ title: "About Recycle Bin", text: "Recycle Bin\n\nWindows 95 recreation.", icon: "information" }) }],
   }
 
   return (

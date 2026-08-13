@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { README_TEXT, displayPath, parsePath, resolve, textFiles, writeFile } from "@/lib/filesystem"
+import { messageBox } from "@/components/win95-dialog"
 
 /**
  * Windows 95 Notepad.
@@ -131,7 +132,7 @@ export default function Notepad() {
       { label: "Find...", action: () => setFindOpen(true) },
       { label: "Find Next\tF3", action: findNext },
     ],
-    Help: [{ label: "About Notepad", action: () => alert("Notepad\n\nWindows 95 recreation.") }],
+    Help: [{ label: "About Notepad", action: () => messageBox({ title: "About Notepad", text: "Notepad\n\nWindows 95 recreation.", icon: "information" }) }],
   }
 
   const lineCol = (() => {

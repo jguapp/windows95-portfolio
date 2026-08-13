@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react"
 import { type FsDir, type FsNode, displayPath, getRoot, iconFor, listDir, subscribe } from "@/lib/filesystem"
+import { messageBox } from "@/components/win95-dialog"
 
 /**
  * Windows Explorer over the virtual C:\ drive.
@@ -161,7 +162,7 @@ export default function Explorer() {
       { label: "List", action: () => setView("list"), checked: view === "list" },
       { label: "Details", action: () => setView("details"), checked: view === "details" },
     ],
-    Help: [{ label: "About Windows Explorer", action: () => alert("Windows Explorer\n\nWindows 95 recreation.") }],
+    Help: [{ label: "About Windows Explorer", action: () => messageBox({ title: "About Windows Explorer", text: "Windows Explorer\n\nWindows 95 recreation.", icon: "information" }) }],
   }
 
   return (

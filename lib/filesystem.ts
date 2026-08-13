@@ -224,7 +224,7 @@ export function iconFor(name: string, node: FsNode, open = false): string {
   }
   const lower = name.toLowerCase()
   if (lower.endsWith(".txt")) return "/images/win95/notepad-16.png"
-  if (lower.endsWith(".doc")) return "/images/desktop-icons/resume.png"
+  if (lower.endsWith(".doc")) return "/images/win95/resume-16.png"
   if (lower.endsWith(".com")) return "/images/win95/msdos-16.png"
   if (lower.includes("calc")) return "/images/win95/calculator-16.png"
   if (lower.includes("paint")) return "/images/win95/paint-16.png"

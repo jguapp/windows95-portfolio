@@ -186,7 +186,7 @@ export default function Games() {
       {/* Title bar */}
       <div className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between">
         <div className="flex items-center">
-          <img src="/images/desktop-icons/games.png" alt="Games" className="w-4 h-4 mr-2" />
+          <img src="/images/win95/games-16.png" alt="Games" className="w-4 h-4 mr-2" />
           <span className="font-bold">Games</span>
         </div>
       </div>

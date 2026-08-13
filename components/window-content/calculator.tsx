@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { messageBox } from "@/components/win95-dialog"
 
 /**
  * Windows 95 Calculator, Standard and Scientific.
@@ -273,7 +274,7 @@ export default function Calculator() {
       { label: "Standard", action: () => setMode("standard"), checked: mode === "standard" },
       { label: "Scientific", action: () => setMode("scientific"), checked: mode === "scientific" },
     ],
-    Help: [{ label: "About Calculator", action: () => alert("Calculator\n\nWindows 95 recreation.") }],
+    Help: [{ label: "About Calculator", action: () => messageBox({ title: "About Calculator", text: "Calculator\n\nWindows 95 recreation.", icon: "information" }) }],
   }
 
   return (

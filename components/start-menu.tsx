@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { messageBox } from "@/components/win95-dialog"
 
 interface StartMenuProps {
   onOpenWindow: (id: string) => void
@@ -14,7 +15,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
     window.close()
     // If window.close() doesn't work (most browsers block it), show a message
     setTimeout(() => {
-      alert("This would close the website in a real Windows 95 environment. Thanks for visiting!")
+      messageBox({ title: "Shut Down Windows", text: "This would shut down Windows in a real Windows 95 environment.\n\nThanks for visiting.", icon: "question" })
     }, 100)
   }
 
@@ -56,43 +57,43 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 <ul className="list-none m-0 p-0">
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("about-me")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/about-me.png" alt="About Me" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/about-me-16.png" alt="About Me" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">About Me</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("resume")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/resume.png" alt="Resume" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/resume-16.png" alt="Resume" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Resume</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("projects")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/youtube.png" alt="My Projects" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/projects-16.png" alt="My Projects" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">My Projects</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("contact")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/contact.png" alt="Contact Me" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/contact-16.png" alt="Contact Me" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Contact Me</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("gallery")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/gallery.png" alt="Gallery" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/gallery-16.png" alt="Gallery" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Gallery</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("games")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/games.png" alt="Games" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/games-16.png" alt="Games" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Games</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("paint")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/paint.png" alt="Paint" className="mr-2 w-9 h-9" />
+                      <img src="/images/win95/paint-16.png" alt="Paint" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Paint</span>
                     </div>
                   </li>

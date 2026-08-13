@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { taskbarTitle } from "@/lib/window-titles"
+import { taskbarTitle, windowIcon } from "@/lib/window-titles"
 
 interface TaskbarProps {
   openWindows: string[]
@@ -42,21 +42,6 @@ export default function Taskbar({
     return () => clearInterval(interval)
   }, [])
 
-  // Map window IDs to their respective icons
-  const iconMap: Record<string, string> = {
-    "about-me": "/images/desktop-icons/about-me.png",
-    resume: "/images/desktop-icons/resume.png",
-    projects: "/images/desktop-icons/youtube.png",
-    contact: "/images/desktop-icons/contact.png",
-    gallery: "/images/desktop-icons/gallery.png",
-    games: "/images/desktop-icons/games.png",
-    paint: "/images/desktop-icons/paint.png",
-    calculator: "/images/win95/calculator-32.png",
-    notepad: "/images/win95/notepad-32.png",
-    msdos: "/images/win95/msdos-32.png",
-    explorer: "/images/win95/explorer-32.png",
-    "recycle-bin": "/images/win95/recycle-empty-32.png",
-  }
 
   return (
     <div
@@ -108,9 +93,9 @@ export default function Taskbar({
               onClick={() => onWindowSelect(id)}
             >
               <img
-                src={iconMap[id] || "/placeholder.svg?height=16&width=16"}
+                src={windowIcon(id) || "/placeholder.svg?height=16&width=16"}
                 alt={`${id} Icon`}
-                className="w-8 h-8 -ml-0.5"
+                className="w-4 h-4 mx-1"
                 style={{ imageRendering: "pixelated" }}
               />
               <span className="ml-0">{taskbarTitle(id)}</span>

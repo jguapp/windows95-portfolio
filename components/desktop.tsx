@@ -7,6 +7,7 @@ import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
 import BlueScreenOfDeath from "./blue-screen-of-death"
 import { getItems, isEmpty, recycle, subscribe, type RecycledItem } from "@/lib/recycle-bin"
+import { MessageBoxHost, messageBox } from "@/components/win95-dialog"
 
 // Add IconPosition type export
 export interface IconPosition {
@@ -33,55 +34,55 @@ const DEFAULT_ICONS: DesktopItemData[] = [
   {
     id: "about-me",
     label: "About Me",
-    icon: "/images/desktop-icons/about-me.png", // Updated icon path
+    icon: "/images/win95/about-me-32.png", // Updated icon path
     type: "application",
   },
   {
     id: "resume",
     label: "Resume",
-    icon: "/images/desktop-icons/resume.png", // Updated Resume icon
+    icon: "/images/win95/resume-32.png", // Updated Resume icon
     type: "application",
   },
   {
     id: "projects",
     label: "My Projects",
-    icon: "/images/desktop-icons/youtube.png", // New YouTube icon
+    icon: "/images/win95/projects-32.png", // New YouTube icon
     type: "application",
   },
   {
     id: "contact",
     label: "Contact Me",
-    icon: "/images/desktop-icons/contact.png", // Updated Contact icon
+    icon: "/images/win95/contact-32.png", // Updated Contact icon
     type: "application",
   },
   {
     id: "gallery",
     label: "Gallery",
-    icon: "/images/desktop-icons/gallery.png", // Updated Gallery icon
+    icon: "/images/win95/gallery-32.png", // Updated Gallery icon
     type: "application",
   },
   {
     id: "games",
     label: "Games",
-    icon: "/images/desktop-icons/games.png", // Updated Games icon
+    icon: "/images/win95/games-32.png", // Updated Games icon
     type: "application",
   },
   {
     id: "paint",
     label: "Paint",
-    icon: "/images/desktop-icons/paint.png", // Updated Paint icon
+    icon: "/images/win95/paint-32.png", // Updated Paint icon
     type: "application",
   },
   {
     id: "calculator",
     label: "Calculator",
-    icon: "/images/win95/calculator-desktop.png",
+    icon: "/images/win95/calculator-32.png",
     type: "application",
   },
   {
     id: "recycle-bin",
     label: "Recycle Bin",
-    icon: "/images/win95/recycle-empty-desktop.png",
+    icon: "/images/win95/recycle-empty-32.png",
     type: "application",
   },
 ]
@@ -577,7 +578,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         icon.id === "recycle-bin"
           ? {
               ...icon,
-              icon: binEmpty ? "/images/win95/recycle-empty-desktop.png" : "/images/win95/recycle-full-desktop.png",
+              icon: binEmpty ? "/images/win95/recycle-empty-32.png" : "/images/win95/recycle-full-32.png",
             }
           : icon,
       ),
@@ -709,7 +710,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
 
       // For folder type, show an alert
       if (clickedIcon.type === "folder") {
-        alert("This is a folder")
+        messageBox({ title: "Folder", text: "This is a folder.", icon: "information" })
       }
 
       // For text document, open in Paint as a placeholder
@@ -877,7 +878,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
             </>
           ),
           action: () => {
-            alert("Send To menu would open here")
+            messageBox({ title: "Send To", text: "The Send To menu would open here.", icon: "information" })
             closeContextMenu()
           },
         },
@@ -1141,6 +1142,9 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
 
       {/* Blue Screen of Death */}
       {showBSOD && <BlueScreenOfDeath onRestart={handleRestart} />}
+
+      {/* Mounted once so any part of the shell can put up a message box. */}
+      <MessageBoxHost />
     </>
   )
 }

@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { CloseIcon } from "@/components/win95-controls"
 import { createSound, type SynthAudio } from "@/lib/sound"
+import { messageBox } from "@/components/win95-dialog"
 
 // Tetromino shapes
 const TETROMINOES = {
@@ -1114,7 +1115,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
               <button
                 className="w-full text-left px-4 py-1 hover:bg-blue-700 hover:text-white"
                 onClick={() => {
-                  alert("Tetris Windows 95 Edition\nCreated for Windows 95 Portfolio")
+                  messageBox({ title: "About Tetris", text: "Tetris\n\nWindows 95 recreation.", icon: "information" })
                   setShowMenu(null)
                 }}
               >

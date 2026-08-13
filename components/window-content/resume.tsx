@@ -4,6 +4,7 @@ import React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "@/components/win95-controls"
+import { messageBox } from "@/components/win95-dialog"
 
 // Dialog components
 const SaveDialog = ({
@@ -761,11 +762,11 @@ export default function Resume() {
   }
 
   const handleColumns = () => {
-    alert("This would open the columns dialog in a real Word 95 application.")
+    messageBox({ title: "Microsoft Word", text: "This would open the columns dialog in a real Word 95 application.", icon: "information" })
   }
 
   const handleDrawing = () => {
-    alert("This would open the drawing tools in a real Word 95 application.")
+    messageBox({ title: "Microsoft Word", text: "This would open the drawing tools in a real Word 95 application.", icon: "information" })
   }
 
   const handleTextColor = (color: string) => {
@@ -795,7 +796,7 @@ export default function Resume() {
   }
 
   const handleBorders = () => {
-    alert("This would open the borders dialog in a real Word 95 application.")
+    messageBox({ title: "Microsoft Word", text: "This would open the borders dialog in a real Word 95 application.", icon: "information" })
   }
 
   const handleMenuClick = (menuName: string, event: React.MouseEvent) => {
@@ -816,10 +817,10 @@ export default function Resume() {
           { label: "Print...", action: () => setPrintDialogOpen(true) },
           {
             label: "Print Preview...",
-            action: () => alert("This would open Print Preview in a real Word 95 application."),
+            action: () => messageBox({ title: "Microsoft Word", text: "This would open Print Preview in a real Word 95 application.", icon: "information" }),
           },
           { divider: true },
-          { label: "Exit", action: () => alert("This would close Word in a real Word 95 application.") },
+          { label: "Exit", action: () => messageBox({ title: "Microsoft Word", text: "This would close Word in a real Word 95 application.", icon: "information" }) },
         ]
       case "Edit":
         return [
@@ -1075,7 +1076,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => alert("This would open Print Preview in a real Word 95 application.")}
+          onClick={() => messageBox({ title: "Microsoft Word", text: "This would open Print Preview in a real Word 95 application.", icon: "information" })}
           title="Print Preview"
         >
           <img
@@ -1134,7 +1135,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => alert("This would open the format painter in a real Word 95 application.")}
+          onClick={() => messageBox({ title: "Microsoft Word", text: "This would open the format painter in a real Word 95 application.", icon: "information" })}
           title="Format Painter"
         >
           <img
@@ -1159,7 +1160,7 @@ export default function Resume() {
           </button>
           <button
             className="w-3 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center border-l-0"
-            onClick={() => alert("This would show a list of actions to undo in a real Word 95 application.")}
+            onClick={() => messageBox({ title: "Microsoft Word", text: "This would show a list of actions to undo in a real Word 95 application.", icon: "information" })}
             title="Undo List"
             disabled={undoStack.length <= 1}
           >
@@ -1181,7 +1182,7 @@ export default function Resume() {
           </button>
           <button
             className="w-3 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center border-l-0"
-            onClick={() => alert("This would show a list of actions to redo in a real Word 95 application.")}
+            onClick={() => messageBox({ title: "Microsoft Word", text: "This would show a list of actions to redo in a real Word 95 application.", icon: "information" })}
             title="Redo List"
             disabled={redoStack.length === 0}
           >
@@ -1224,7 +1225,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => alert("This would show control codes in a real Word 95 application.")}
+          onClick={() => messageBox({ title: "Microsoft Word", text: "This would show control codes in a real Word 95 application.", icon: "information" })}
           title="Control Codes"
         >
           <img
@@ -1242,7 +1243,7 @@ export default function Resume() {
           value="Normal"
           onChange={() => {
             // This would apply different predefined styles in a real Word app
-            alert("This would apply a style in a real Word 95 application.")
+            messageBox({ title: "Microsoft Word", text: "This would apply a style in a real Word 95 application.", icon: "information" })
           }}
         >
           <option>Normal</option>

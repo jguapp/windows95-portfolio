@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import type React from "react"
 import Image from "next/image"
+import { messageBox } from "@/components/win95-dialog"
 
 type Tool =
   | "pencil"
@@ -1063,7 +1064,7 @@ export default function Paint() {
 
       setIsModified(false)
     } catch (e) {
-      alert("Error saving file: " + e)
+      messageBox({ title: "Paint", text: "Error saving file: " + e, icon: "error" })
     }
   }
 

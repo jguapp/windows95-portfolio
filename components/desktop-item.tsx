@@ -4,6 +4,9 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 
+/** Windows 95 drew desktop icons at 32x32, and so does this. */
+const ICON_PX = 32
+
 interface DesktopItemProps {
   id: string
   label: string
@@ -238,41 +241,20 @@ export default function DesktopItem({
     return Math.max(Math.min(textLength * 6 + 12, 140), 80) // min 80px, max 140px
   }
 
-  // Get icon style based on type
-  const getIconStyle = () => {
-    const baseStyle = {
-      imageRendering: "pixelated" as const,
-      objectFit: "contain" as const,
-    }
-
-    if (type === "folder" || type === "text-document") {
-      return {
-        ...baseStyle,
-        maxWidth: "45%",
-        height: "auto",
-      }
-    }
-
-    // Add specific styling for shortcut icons
-    if (type === "shortcut") {
-      return {
-        ...baseStyle,
-        maxWidth: "45%", // Increased from 40% to 45%
-        height: "auto",
-      }
-    }
-
-    // Only "application" reaches here; the other three types returned above.
-    if (isNew) {
-      return {
-        ...baseStyle,
-        maxWidth: "100%",
-        height: "auto",
-      }
-    }
-
-    return baseStyle
-  }
+  /**
+   * Icons are true 32x32 bitmaps now, so they are drawn at 32px.
+   *
+   * The old artwork was 540x500 renders with roughly half the canvas empty,
+   * which is why each type needed its own percentage to look the right size
+   * and why they came out soft next to the crisp text. A 32px icon drawn at
+   * 32px with nearest-neighbour scaling is what Windows 95 put on the desktop.
+   */
+  const getIconStyle = () => ({
+    imageRendering: "pixelated" as const,
+    objectFit: "contain" as const,
+    width: ICON_PX,
+    height: ICON_PX,
+  })
 
   return (
     <div
@@ -312,23 +294,22 @@ export default function DesktopItem({
         <img
           src={getIconForType() || "/placeholder.svg"}
           alt={`${label} Icon`}
-          className="w-20 h-20 mx-auto"
+          className="mx-auto"
           draggable="false"
           style={getIconStyle()}
         />
         {isSelected && (
           <div
-            className="absolute inset-0 bg-[#000080] opacity-50 mix-blend-multiply"
+            className="absolute left-1/2 top-0 -translate-x-1/2 bg-[#000080] opacity-50 mix-blend-multiply"
             style={{
+              width: ICON_PX,
+              height: ICON_PX,
               WebkitMaskImage: `url(${getIconForType()})`,
               maskImage: `url(${getIconForType()})`,
-              WebkitMaskSize: "100% 100%",
-              maskSize: "100% 100%",
+              WebkitMaskSize: `${ICON_PX}px ${ICON_PX}px`,
+              maskSize: `${ICON_PX}px ${ICON_PX}px`,
               WebkitMaskRepeat: "no-repeat",
               maskRepeat: "no-repeat",
-              ...(type === "folder" || type === "text-document"
-                ? { maxWidth: "45%", height: "auto", margin: "0 auto" }
-                : {}),
             }}
           />
         )}
