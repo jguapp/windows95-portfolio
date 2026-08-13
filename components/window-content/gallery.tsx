@@ -1,332 +1,392 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { galleryImages, eventCategories } from "./gallery-data"
+import { useEffect, useMemo, useState } from "react"
+import { eventCategories, galleryImages, type GalleryImage } from "./gallery-data"
 import { CloseIcon } from "@/components/win95-controls"
+import { messageBox } from "@/components/win95-dialog"
+
+/**
+ * The photo gallery, as Explorer in Thumbnail view.
+ *
+ * Windows 95 had no photo gallery, so this had to pick something to be, and it
+ * was a modern grid with sort dropdowns and a slideshow bar. Explorer is the
+ * honest answer: it reuses the file-manager chrome the rest of the shell uses
+ * and puts the photos in C:\My Pictures, where they would have lived. Each
+ * event is a subfolder, thumbnails carry filenames, and double-clicking one
+ * opens it in a viewer window.
+ */
+
+/** Filenames are derived from the path, as a file manager would show them. */
+function fileName(image: GalleryImage): string {
+  return image.src.split("/").pop() ?? image.title
+}
+
+function folderOf(id: string): string {
+  return eventCategories.find((c) => c.id === id)?.name ?? id
+}
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
+
+type ViewMode = "thumbnails" | "large" | "list" | "details"
 
 export default function Gallery() {
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedImage, setSelectedImage] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showHelp, setShowHelp] = useState(false)
-  const [sortBy, setSortBy] = useState<"date" | "title">("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  /** The folder being shown; "all" is the root of My Pictures. */
+  const [folder, setFolder] = useState("all")
+  const [selected, setSelected] = useState<number | null>(null)
+  const [opened, setOpened] = useState<number | null>(null)
+  const [view, setView] = useState<ViewMode>("thumbnails")
+  const [menu, setMenu] = useState<string | null>(null)
   const [slideshow, setSlideshow] = useState(false)
-  const [slideshowIndex, setSlideshowIndex] = useState(0)
+  const [history, setHistory] = useState<string[]>(["all"])
+  const [historyIndex, setHistoryIndex] = useState(0)
 
-  // Filter images by category
-  const filteredImages = galleryImages.filter((image) => selectedCategory === "all" || image.event === selectedCategory)
+  const folders = useMemo(() => eventCategories.filter((c) => c.id !== "all"), [])
+  const shown = useMemo(
+    () => galleryImages.filter((image) => folder === "all" || image.event === folder),
+    [folder],
+  )
+  const current = opened !== null ? galleryImages.find((i) => i.id === opened) ?? null : null
 
-  // Sort images
-  const sortedImages = [...filteredImages].sort((a, b) => {
-    if (sortBy === "date") {
-      return sortOrder === "asc"
-        ? new Date(a.date).getTime() - new Date(b.date).getTime()
-        : new Date(b.date).getTime() - new Date(a.date).getTime()
-    } else {
-      return sortOrder === "asc" ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
-    }
-  })
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Handle slideshow
-  useEffect(() => {
-    if (!slideshow) return
-
-    const interval = setInterval(() => {
-      setSlideshowIndex((prev) => (prev + 1) % sortedImages.length)
-      setSelectedImage(sortedImages[slideshowIndex]?.id || null)
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [slideshow, slideshowIndex, sortedImages])
-
-  // Format date to Windows 95 style
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    })
+  const navigate = (id: string) => {
+    setFolder(id)
+    setSelected(null)
+    setHistory((h) => [...h.slice(0, historyIndex + 1), id])
+    setHistoryIndex((i) => i + 1)
   }
 
+  // The slideshow steps through whatever folder is open.
+  useEffect(() => {
+    if (!slideshow || shown.length === 0) return
+    const timer = setInterval(() => {
+      setOpened((prev) => {
+        const at = shown.findIndex((i) => i.id === prev)
+        return shown[(at + 1) % shown.length].id
+      })
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [slideshow, shown])
+
+  useEffect(() => {
+    if (slideshow && opened === null && shown.length > 0) setOpened(shown[0].id)
+  }, [slideshow, opened, shown])
+
+  // Escape closes the viewer, and the arrows step through the folder.
+  useEffect(() => {
+    if (opened === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpened(null)
+        setSlideshow(false)
+      }
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const at = shown.findIndex((i) => i.id === opened)
+        const next = (at + (e.key === "ArrowRight" ? 1 : shown.length - 1)) % shown.length
+        setOpened(shown[next].id)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [opened, shown])
+
+  const menus: Record<string, { label: string; action: () => void; checked?: boolean; sep?: boolean }[]> = {
+    File: [
+      { label: "Open", action: () => selected !== null && setOpened(selected) },
+      {
+        label: "Close",
+        action: () =>
+          window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "gallery" } })),
+        sep: true,
+      },
+    ],
+    View: [
+      { label: "Large Icons", action: () => setView("large"), checked: view === "large" },
+      { label: "List", action: () => setView("list"), checked: view === "list" },
+      { label: "Details", action: () => setView("details"), checked: view === "details" },
+      { label: "Thumbnails", action: () => setView("thumbnails"), checked: view === "thumbnails" },
+      { label: slideshow ? "Stop Slide Show" : "Slide Show", action: () => setSlideshow((s) => !s), sep: true },
+    ],
+    Help: [
+      {
+        label: "About My Pictures",
+        action: () =>
+          messageBox({
+            title: "About My Pictures",
+            text: `My Pictures\n\n${galleryImages.length} photographs across ${folders.length} folders.`,
+            icon: "information",
+          }),
+      },
+    ],
+  }
+
+  const path = folder === "all" ? "C:\\My Pictures" : `C:\\My Pictures\\${folderOf(folder)}`
+  const thumbSize = view === "thumbnails" ? 96 : view === "large" ? 32 : 16
+
   return (
-    <div className="flex flex-col h-full bg-[#c0c0c0] text-black">
-      {/* Menu Bar */}
-      <div className="menu-bar bg-[#c0c0c0] flex p-[4px_8px] gap-[10px] text-xs border-b border-[#808080]">
-        <span className="cursor-pointer p-[2px_5px] hover:bg-[#ffffff] hover:border hover:border-black">File</span>
-        <span className="cursor-pointer p-[2px_5px] hover:bg-[#ffffff] hover:border hover:border-black">Edit</span>
-        <span className="cursor-pointer p-[2px_5px] hover:bg-[#ffffff] hover:border hover:border-black">View</span>
-        <span
-          className="cursor-pointer p-[2px_5px] hover:bg-[#ffffff] hover:border hover:border-black"
-          onClick={() => setShowHelp(true)}
-        >
-          Help
-        </span>
-      </div>
-
-      {/* Toolbar */}
-      <div className="bg-[#c0c0c0] flex p-2 border-b border-[#808080] items-center">
-        <div className="flex space-x-2 mr-4">
-          <button
-            className="px-2 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-            onClick={() => setViewMode("grid")}
-          >
-            Grid View
-          </button>
-          <button
-            className="px-2 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-            onClick={() => setViewMode("list")}
-          >
-            List View
-          </button>
-        </div>
-
-        <div className="flex items-center space-x-2 mr-4">
-          <span className="text-xs">Sort by:</span>
-          <select
-            className="text-xs bg-white border border-[#808080] px-1"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "date" | "title")}
-          >
-            <option value="date">Date</option>
-            <option value="title">Title</option>
-          </select>
-          <button
-            className="px-2 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </button>
-        </div>
-
-        <button
-          className="px-2 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-          onClick={() => {
-            setSlideshow(!slideshow)
-            if (!slideshow && sortedImages.length > 0) {
-              setSelectedImage(sortedImages[0].id)
-              setSlideshowIndex(0)
-            }
-          }}
-        >
-          {slideshow ? "Stop Slideshow" : "Start Slideshow"}
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar - Categories */}
-        <div className="w-48 bg-[#c0c0c0] border-r border-[#808080] p-2 overflow-y-auto">
-          <div className="text-xs font-bold mb-2">Event Categories:</div>
-          <div className="space-y-1">
-            {eventCategories.map((category) => (
-              <div
-                key={category.id}
-                className={`text-xs p-1 cursor-pointer ${selectedCategory === category.id ? "bg-[#000080] text-white" : "hover:bg-[#d0d0d0]"}`}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 border-t border-[#808080] pt-2">
-            <div className="text-xs font-bold mb-2">Image Information:</div>
-            {selectedImage !== null && (
-              <div className="text-xs space-y-1">
-                {galleryImages.find((img) => img.id === selectedImage) && (
-                  <>
-                    <div>
-                      <span className="font-bold">Title:</span>{" "}
-                      {galleryImages.find((img) => img.id === selectedImage)?.title}
-                    </div>
-                    <div>
-                      <span className="font-bold">Date:</span>{" "}
-                      {formatDate(galleryImages.find((img) => img.id === selectedImage)?.date || "")}
-                    </div>
-                  </>
-                )}
+    <div
+      className="win95-type relative flex h-full w-full flex-col bg-[#c0c0c0] text-black"
+      style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+      data-gallery
+    >
+      {/* Menu bar */}
+      <div className="flex border-b border-[#808080] px-1" onMouseLeave={() => setMenu(null)}>
+        {Object.keys(menus).map((name) => (
+          <div key={name} className="relative">
+            <button
+              type="button"
+              className={`px-2 py-[2px] ${menu === name ? "bg-[#000080] text-white" : ""}`}
+              onClick={() => setMenu(menu === name ? null : name)}
+              onMouseEnter={() => menu && setMenu(name)}
+            >
+              <span className="underline">{name[0]}</span>
+              {name.slice(1)}
+            </button>
+            {menu === name && (
+              <div className="absolute left-0 top-full z-50 min-w-[160px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                {menus[name].map((item) => (
+                  <div key={item.label}>
+                    {item.sep && <div className="my-1 border-t border-t-[#808080] border-b border-b-white" />}
+                    <button
+                      type="button"
+                      className="flex w-full items-center px-2 py-[2px] text-left hover:bg-[#000080] hover:text-white"
+                      onClick={() => {
+                        item.action()
+                        setMenu(null)
+                      }}
+                    >
+                      <span className="mr-2 w-3">{item.checked ? "✓" : ""}</span>
+                      {item.label}
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
+        ))}
+      </div>
+
+      {/* Toolbar and address bar */}
+      <div className="flex items-center gap-1 border-b border-[#808080] p-1">
+        <button
+          type="button"
+          aria-label="Back"
+          disabled={historyIndex === 0}
+          onClick={() => {
+            setHistoryIndex((i) => i - 1)
+            setFolder(history[historyIndex - 1])
+            setSelected(null)
+          }}
+          className="h-[22px] w-[26px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] disabled:text-[#808080] active:border-t-[#404040] active:border-l-[#404040]"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          aria-label="Up One Level"
+          disabled={folder === "all"}
+          onClick={() => navigate("all")}
+          className="h-[22px] w-[26px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] disabled:text-[#808080] active:border-t-[#404040] active:border-l-[#404040]"
+        >
+          ↑
+        </button>
+        <span className="ml-2">Address</span>
+        <div
+          data-address
+          className="ml-1 flex flex-1 items-center gap-1 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[2px]"
+        >
+          <img
+            src="/images/win95/folder-open-16.png"
+            alt=""
+            className="h-4 w-4"
+            style={{ imageRendering: "pixelated" }}
+          />
+          {path}
+        </div>
+      </div>
+
+      {/* Panes */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Folder tree */}
+        <div className="w-[200px] shrink-0 overflow-auto border-r border-[#808080] bg-white p-1">
+          <button
+            type="button"
+            onClick={() => navigate("all")}
+            className={`flex w-full items-center gap-1 px-1 text-left ${folder === "all" ? "bg-[#000080] text-white" : ""}`}
+          >
+            <img
+              src="/images/win95/folder-open-16.png"
+              alt=""
+              className="h-4 w-4"
+              style={{ imageRendering: "pixelated" }}
+            />
+            My Pictures
+          </button>
+          {folders.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              data-folder={c.id}
+              onClick={() => navigate(c.id)}
+              className={`ml-4 flex w-[calc(100%-1rem)] items-center gap-1 px-1 text-left ${
+                folder === c.id ? "bg-[#000080] text-white" : ""
+              }`}
+            >
+              <img
+                src={
+                  folder === c.id ? "/images/win95/folder-open-16.png" : "/images/win95/folder-closed-16.png"
+                }
+                alt=""
+                className="h-4 w-4 shrink-0"
+                style={{ imageRendering: "pixelated" }}
+              />
+              <span className="truncate">{c.name}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 bg-white overflow-auto p-4 relative">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full">
-              <div className="w-64 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] mb-2">
-                <div className="h-full bg-[#000080]" style={{ width: `${Math.random() * 100}%` }}></div>
-              </div>
-              <div className="text-xs">Loading gallery images...</div>
-            </div>
-          ) : selectedImage !== null ? (
-            // Image Viewer
-            <div className="flex flex-col h-full">
-              <div className="flex-1 flex items-center justify-center bg-[#000000] relative">
-                <img
-                  src={galleryImages.find((img) => img.id === selectedImage)?.src || ""}
-                  alt={galleryImages.find((img) => img.id === selectedImage)?.title || ""}
-                  className="h-[70vh] w-[80%] object-cover"
-                />
-
-                {/* Navigation Controls */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
-                  <button
-                    className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-                    onClick={() => {
-                      const currentIndex = sortedImages.findIndex((img) => img.id === selectedImage)
-                      const prevIndex = (currentIndex - 1 + sortedImages.length) % sortedImages.length
-                      setSelectedImage(sortedImages[prevIndex].id)
-                      setSlideshowIndex(prevIndex)
-                    }}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-                    onClick={() => setSelectedImage(null)}
-                  >
-                    Back to Gallery
-                  </button>
-                  <button
-                    className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-                    onClick={() => {
-                      const currentIndex = sortedImages.findIndex((img) => img.id === selectedImage)
-                      const nextIndex = (currentIndex + 1) % sortedImages.length
-                      setSelectedImage(sortedImages[nextIndex].id)
-                      setSlideshowIndex(nextIndex)
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-
-              {/* Image Description */}
-              <div className="bg-[#c0c0c0] p-2 border-t border-[#808080]">
-                <div className="text-sm font-bold">{galleryImages.find((img) => img.id === selectedImage)?.title}</div>
-                <div className="text-xs mt-1">{galleryImages.find((img) => img.id === selectedImage)?.description}</div>
-                <div className="text-xs mt-1">
-                  <span className="font-bold">Date:</span>{" "}
-                  {formatDate(galleryImages.find((img) => img.id === selectedImage)?.date || "")}
-                </div>
-              </div>
-            </div>
-          ) : // Gallery Grid/List View
-          viewMode === "grid" ? (
-            <div className="grid grid-cols-3 gap-4">
-              {sortedImages.map((image) => (
-                <div
-                  key={image.id}
-                  className="border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] p-2 cursor-pointer hover:bg-[#efefef]"
-                  onClick={() => setSelectedImage(image.id)}
-                >
-                  <div className="h-32 bg-[#000000] flex items-center justify-center mb-2 overflow-hidden">
-                    <img
-                      src={image.src || "/placeholder.svg"}
-                      alt={image.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="text-xs font-bold truncate">{image.title}</div>
-                  <div className="text-xs">{formatDate(image.date)}</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000]">
-              <table className="w-full text-xs">
-                <thead className="bg-[#c0c0c0] border-b border-[#808080]">
-                  <tr>
-                    <th className="p-2 text-left">Title</th>
-                    <th className="p-2 text-left">Date</th>
-                    <th className="p-2 text-left">Category</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedImages.map((image, index) => (
-                    <tr
-                      key={image.id}
-                      className={`cursor-pointer hover:bg-[#000080] hover:text-white ${index % 2 === 0 ? "bg-white" : "bg-[#f0f0f0]"}`}
-                      onClick={() => setSelectedImage(image.id)}
+        {/* Contents */}
+        <div
+          data-contents
+          className="flex-1 overflow-auto bg-white p-2"
+          onClick={() => {
+            setSelected(null)
+            setMenu(null)
+          }}
+        >
+          {view === "details" ? (
+            <table className="w-full">
+              <thead>
+                <tr>
+                  {["Name", "Size", "Type", "Modified"].map((h) => (
+                    <th
+                      key={h}
+                      className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-1 py-[1px] text-left font-normal"
                     >
-                      <td className="p-2">{image.title}</td>
-                      <td className="p-2">{formatDate(image.date)}</td>
-                      <td className="p-2">{eventCategories.find((cat) => cat.id === image.event)?.name}</td>
-                    </tr>
+                      {h}
+                    </th>
                   ))}
-                </tbody>
-              </table>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((image) => (
+                  <tr
+                    key={image.id}
+                    data-photo={image.id}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelected(image.id)
+                    }}
+                    onDoubleClick={() => setOpened(image.id)}
+                    className={selected === image.id ? "bg-[#000080] text-white" : ""}
+                  >
+                    <td className="px-1">{fileName(image)}</td>
+                    <td className="px-1">&mdash;</td>
+                    <td className="px-1">JPEG Image</td>
+                    <td className="px-1">{formatDate(image.date)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className={view === "list" ? "flex flex-col" : "flex flex-wrap content-start gap-2"}>
+              {shown.map((image) => (
+                <button
+                  key={image.id}
+                  type="button"
+                  data-photo={image.id}
+                  title={image.description}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelected(image.id)
+                  }}
+                  onDoubleClick={() => setOpened(image.id)}
+                  className={`flex items-center ${
+                    view === "list" ? "gap-1 px-1" : "flex-col gap-1 p-1 text-center"
+                  } ${selected === image.id ? "bg-[#000080] text-white" : "text-black"}`}
+                  style={view === "thumbnails" ? { width: 120 } : view === "large" ? { width: 84 } : undefined}
+                >
+                  {view === "thumbnails" ? (
+                    <span
+                      className="flex items-center justify-center border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#c0c0c0]"
+                      style={{ width: thumbSize + 8, height: thumbSize + 8 }}
+                    >
+                      <img
+                        src={image.src}
+                        alt=""
+                        loading="lazy"
+                        style={{ maxWidth: thumbSize, maxHeight: thumbSize, objectFit: "contain" }}
+                      />
+                    </span>
+                  ) : (
+                    <img
+                      src={image.src}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: thumbSize, height: thumbSize, objectFit: "cover" }}
+                    />
+                  )}
+                  <span className={view === "thumbnails" ? "break-words leading-tight" : "truncate"}>
+                    {fileName(image)}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Status Bar */}
-      <div className="h-5 bg-[#c0c0c0] border-t border-[#808080] flex items-center text-xs px-2">
-        <span>{sortedImages.length} items</span>
-        <span className="ml-auto">
-          {selectedCategory === "all" ? "All Events" : eventCategories.find((cat) => cat.id === selectedCategory)?.name}
+      {/* Status bar */}
+      <div className="flex gap-4 border-t border-white bg-[#c0c0c0] px-2 py-[3px]">
+        <span data-status className="flex-1">
+          {selected !== null
+            ? galleryImages.find((i) => i.id === selected)?.title
+            : `${shown.length} object(s)`}
         </span>
+        {slideshow && <span>Slide Show</span>}
+        <span>{folder === "all" ? "My Pictures" : folderOf(folder)}</span>
       </div>
 
-      {/* Help Dialog */}
-      {showHelp && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] w-96">
-            <div className="bg-[#000080] text-white p-1 flex justify-between items-center">
-              <span className="font-bold">Gallery Help</span>
+      {/* Viewer */}
+      {current && (
+        <div
+          className="absolute inset-0 z-40 flex items-center justify-center bg-[#808080] p-4"
+          data-viewer
+          onClick={() => {
+            setOpened(null)
+            setSlideshow(false)
+          }}
+        >
+          <div
+            className="flex max-h-full flex-col border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between bg-[#000080] px-1 py-[2px] text-white">
+              <span className="px-1 font-bold">{fileName(current)}</span>
               <button
-                className="w-5 h-5 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] flex items-center justify-center text-black"
-                onClick={() => setShowHelp(false)}
+                type="button"
+                aria-label="Close"
+                onClick={() => {
+                  setOpened(null)
+                  setSlideshow(false)
+                }}
+                className="flex h-[16px] w-[16px] items-center justify-center border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-black active:border-t-[#404040] active:border-l-[#404040]"
               >
                 <CloseIcon />
               </button>
             </div>
-            <div className="p-4">
-              <h3 className="text-sm font-bold mb-2">Using the Gallery</h3>
-              <ul className="text-xs space-y-2">
-                <li>
-                  <span className="font-bold">View Images:</span> Click on any thumbnail to view the full image.
-                </li>
-                <li>
-                  <span className="font-bold">Navigate:</span> Use Previous and Next buttons to browse through images.
-                </li>
-                <li>
-                  <span className="font-bold">Categories:</span> Select a category from the left sidebar to filter
-                  images.
-                </li>
-                <li>
-                  <span className="font-bold">View Modes:</span> Switch between Grid and List views using the toolbar
-                  buttons.
-                </li>
-                <li>
-                  <span className="font-bold">Sort:</span> Sort images by date or title in ascending or descending
-                  order.
-                </li>
-                <li>
-                  <span className="font-bold">Slideshow:</span> Click "Start Slideshow" to automatically cycle through
-                  images.
-                </li>
-              </ul>
-              <div className="mt-4 flex justify-center">
-                <button
-                  className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] hover:bg-[#d0d0d0] active:shadow-[inset_-1px_-1px_#ffffff,inset_1px_1px_#000000] text-xs"
-                  onClick={() => setShowHelp(false)}
-                >
-                  Close
-                </button>
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-black p-2">
+              <img
+                src={current.src}
+                alt={current.title}
+                className="max-h-full max-w-full object-contain"
+                style={{ maxHeight: "60vh" }}
+              />
+            </div>
+            <div className="px-2 py-1">
+              <div className="font-bold">{current.title}</div>
+              <div>{current.description}</div>
+              <div>
+                {formatDate(current.date)} &mdash; {folderOf(current.event)}
               </div>
             </div>
           </div>
