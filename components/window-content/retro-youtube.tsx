@@ -70,6 +70,45 @@ Built with Next.js and TypeScript. All the sound is synthesised with the Web Aud
     repo: "https://github.com/jguapp/windows95-portfolio",
     live: "https://builtbyjoel.vercel.app",
   },
+  {
+    id: "rmp",
+    title: "RMP for CUNYfirst - Professor Ratings Where You Register",
+    description: `A browser extension that puts Rate My Professors data inside CUNYfirst and Schedule Builder, next to every instructor name, so you see it while you are picking classes instead of afterwards.
+
+Names pick up a colour-coded badge with the rating count spelled out, because a 4.8 from three students should not look like a 4.8 from three hundred. Hovering gives the full breakdown: would-take-again, average difficulty, the Awesome/Good/Bad split, the 5-to-1 histogram and the tags students actually attached. All 26 CUNY colleges are recognised, read straight off the page.`,
+    views: 2417,
+    added: "8/11/2026",
+    rating: 5,
+    ratings: 46,
+    tags: ["javascript", "chrome-extension", "cuny", "web-scraping"],
+    repo: "https://github.com/jguapp/RMP-Extension",
+  },
+  {
+    id: "sportsflix",
+    title: "Sportsflix - Live Sport in a Streaming-Service Shape",
+    description: `A sports front end built in the shape of a premium streaming service and pointed at live sport instead of film and television.
+
+The mapping is the whole idea: genres become leagues, episodes become fixtures within a season, Top 10 becomes the top ten events today, Continue Watching becomes Live Now. Scores, fixtures and results come from ESPN's public endpoints, and playback resolves through the same pluggable source pattern a video site uses.`,
+    views: 1663,
+    added: "8/12/2026",
+    rating: 4,
+    ratings: 29,
+    tags: ["typescript", "nextjs", "espn-api", "streaming"],
+    repo: "https://github.com/jguapp/Sportsflix",
+  },
+  {
+    id: "orbit",
+    title: "ORBIT - A Productivity App for ADHD Minds",
+    description: `A native iOS app in Swift for people whose executive function needs scaffolding rather than another checklist.
+
+A space-themed Pomodoro timer with ambient sound and haptics sits alongside task management with priorities, due dates, subtasks and Eisenhower Matrix sorting. Screen Time analytics feed weekly and monthly trends back in, and the reward loop is deliberately dopamine-friendly rather than punitive.`,
+    views: 812,
+    added: "5/01/2025",
+    rating: 5,
+    ratings: 18,
+    tags: ["swift", "swiftui", "ios", "accessibility", "screentime-api"],
+    repo: "https://github.com/jguapp/Orbit",
+  },
 ]
 
 interface Comment {
@@ -108,6 +147,37 @@ const COMMENTS: Record<string, Comment[]> = {
         },
       ],
     },
+    {
+      name: "prisma_pete",
+      when: "1 month ago",
+      text: "Does the browser extension hit the same API as the mobile app or is there a separate surface for it?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 month ago",
+          owner: true,
+          text: "Same API, different auth. The extension gets a scoped token that can only save and read, so a compromised extension cannot touch account settings.",
+        },
+      ],
+    },
+    {
+      name: "onnx_curious",
+      when: "1 month ago",
+      text: "Thread-pool oversubscription on 2 vCPUs is such a specific catch. How did you find it?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 month ago",
+          owner: true,
+          text: "Cold starts were slow but CPU sat below 100%, which never made sense. ONNX Runtime sizes its intra-op pool to the core count and the container was already running workers, so the threads fought each other. Pinning it to one fixed it.",
+        },
+      ],
+    },
+    {
+      name: "just_here_for_the_api",
+      when: "2 months ago",
+      text: "any plans to open the API publicly?",
+    },
   ],
   calligraphy: [
     {
@@ -136,6 +206,24 @@ const COMMENTS: Record<string, Comment[]> = {
         },
       ],
     },
+    {
+      name: "channels_all_the_way",
+      when: "2 months ago",
+      text: "7 workers feels like a magic number. Did you tune that or is it just what the box fit?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "2 months ago",
+          owner: true,
+          text: "Tuned. Throughput climbed to seven and then flattened, and past nine the Redis round trips started dominating. Grafana made the knee obvious.",
+        },
+      ],
+    },
+    {
+      name: "exponential_backoff_fan",
+      when: "2 months ago",
+      text: "graceful recovery of interrupted jobs is the part everyone skips. respect",
+    },
   ],
   portfolio: [
     {
@@ -163,6 +251,139 @@ const COMMENTS: Record<string, Comment[]> = {
           text: "They are generated in the browser. Square and triangle oscillators with short envelopes, plus filtered noise for the explosions. No audio files ship at all.",
         },
       ],
+    },
+    {
+      name: "pixelpusher88",
+      when: "1 month ago",
+      text: "The Solitaire win cascade got me. Did not expect that to be in here.",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 month ago",
+          owner: true,
+          text: "It is a canvas that never clears between frames, which is exactly why the original left those ribbons behind. Clicking cuts it short, same as it did.",
+        },
+      ],
+    },
+    {
+      name: "kernel_panic_kid",
+      when: "1 month ago",
+      text: "wait the DOS prompt actually works? just typed dir and got a real listing",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 month ago",
+          owner: true,
+          text: "It reads the same virtual drive Explorer and Notepad use. Save a file in Notepad and you can type it out in DOS without reloading anything.",
+        },
+      ],
+    },
+  ],
+  rmp: [
+    {
+      name: "cunyfirst_survivor",
+      when: "3 days ago",
+      text: "Registration used to mean twenty tabs open at once. This is the thing I wanted for four years.",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "3 days ago",
+          owner: true,
+          text: "That was the whole motivation. The data was always there, it was just in the wrong place at the wrong time.",
+        },
+      ],
+    },
+    {
+      name: "stats_first",
+      when: "1 week ago",
+      text: "Glad you show the rating count. A 5.0 from two people tells you nothing and most tools hide that.",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 week ago",
+          owner: true,
+          text: "The badge colour comes from the score but the count sits right next to it in full, so a thin sample never reads as settled.",
+        },
+      ],
+    },
+    {
+      name: "hunter_qc",
+      when: "1 week ago",
+      text: "Works on Hunter too, not just Baruch. Nice.",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "1 week ago",
+          owner: true,
+          text: "All 26 CUNY colleges. It reads which campus you are on straight off the page rather than asking you to pick.",
+        },
+      ],
+    },
+  ],
+  sportsflix: [
+    {
+      name: "matchday_mike",
+      when: "4 days ago",
+      text: "Continue Watching as Live Now is such a clean mapping. Did the rest of the layout survive the swap?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "4 days ago",
+          owner: true,
+          text: "Almost all of it. Rows, hero, hover cards, all the same. Sport is really a catalogue with a clock attached, so the browse patterns carry straight over.",
+        },
+      ],
+    },
+    {
+      name: "f1_or_nothing",
+      when: "6 days ago",
+      text: "Does it handle races or is it just ball sports with fixtures?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "6 days ago",
+          owner: true,
+          text: "A race weekend is a season of events like any other league, so F1 slots in beside the NFL and the EPL without special casing.",
+        },
+      ],
+    },
+    {
+      name: "espn_watcher",
+      when: "1 week ago",
+      text: "how are the public endpoints holding up under any real traffic?",
+    },
+  ],
+  orbit: [
+    {
+      name: "adhd_dev",
+      when: "2 months ago",
+      text: "Most ADHD apps are a to-do list with a nicer font. The Eisenhower Matrix next to the timer is actually the workflow.",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "2 months ago",
+          owner: true,
+          text: "Deciding what to do and actually starting it are two different failures, and most apps only help with the first. The timer is one tap from the matrix for that reason.",
+        },
+      ],
+    },
+    {
+      name: "swiftui_sam",
+      when: "3 months ago",
+      text: "Screen Time API is a pain to work with. How did you find it?",
+      replies: [
+        {
+          name: "JoelVasquez",
+          when: "3 months ago",
+          owner: true,
+          text: "Restrictive by design, which is fair. You get aggregates rather than raw events, so the trends are weekly and monthly rather than live. That turned out to be healthier anyway.",
+        },
+      ],
+    },
+    {
+      name: "focusmodefan",
+      when: "3 months ago",
+      text: "the haptics on session end are a small thing that makes it feel finished",
     },
   ],
 }

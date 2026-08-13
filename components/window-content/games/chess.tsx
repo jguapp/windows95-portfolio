@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import { createSound, type SynthAudio } from "@/lib/sound"
+import { play } from "@/lib/sound"
 
 interface ChessProps {
   onReturn: () => void
@@ -69,9 +69,6 @@ export default function Chess({ onReturn }: ChessProps) {
   const [isStalemate, setIsStalemate] = useState<boolean>(false)
   const [showPromotionDialog, setShowPromotionDialog] = useState<boolean>(false)
   const [promotionPosition, setPromotionPosition] = useState<Position | null>(null)
-  const [moveSound, setMoveSound] = useState<SynthAudio | null>(null)
-  const [captureSound, setCaptureSound] = useState<SynthAudio | null>(null)
-  const [checkSound, setCheckSound] = useState<SynthAudio | null>(null)
   const [showMenu, setShowMenu] = useState<boolean>(false)
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const boardRef = useRef<HTMLDivElement>(null)
@@ -131,13 +128,6 @@ export default function Chess({ onReturn }: ChessProps) {
 
   const [currentTheme, setCurrentTheme] = useState<BoardTheme>(themes[1]) // Set Classic as default
 
-  // Initialize sounds
-  useEffect(() => {
-    setMoveSound(createSound("/sounds/chess-move.mp3"))
-    setCaptureSound(createSound("/sounds/chess-capture.mp3"))
-    setCheckSound(createSound("/sounds/chess-check.mp3"))
-  }, [])
-
   // Initialize the board
   useEffect(() => {
     if (gameMode) {
@@ -156,30 +146,34 @@ export default function Chess({ onReturn }: ChessProps) {
     }
   }, [currentPlayer, gameMode, isCheckmate, isStalemate])
 
-  // Play sounds
-  const playMoveSound = () => {
-    if (moveSound) {
-      moveSound.currentTime = 0
-      moveSound.play().catch((err) => console.log("Audio playback failed:", err))
-    }
-  }
-
-  const playCaptureSound = () => {
-    if (captureSound) {
-      captureSound.currentTime = 0
-      captureSound.play().catch((err) => console.log("Audio playback failed:", err))
-    }
-  }
-
-  const playCheckSound = () => {
-    if (checkSound) {
-      checkSound.currentTime = 0
-      checkSound.play().catch((err) => console.log("Audio playback failed:", err))
-    }
+  /**
+   * One sound per move, chosen by what the move did.
+   *
+   * This is the rule chess.com follows, and the reason it reads so clearly: a
+   * capture that gives check is a check, not both at once. Previously a
+   * checking capture fired the capture sound and the check sound on top of
+   * each other.
+   */
+  const announceMove = (o: {
+    captured?: boolean
+    castled?: boolean
+    promoted?: boolean
+    check?: boolean
+    /** Checkmate or stalemate: either way the game is over. */
+    gameOver?: boolean
+    opponent?: boolean
+  }) => {
+    if (o.gameOver) return play("chessGameEnd")
+    if (o.check) return play("chessCheck")
+    if (o.promoted) return play("chessPromote")
+    if (o.castled) return play("chessCastle")
+    if (o.captured) return play("chessCapture")
+    play(o.opponent ? "chessMoveOpponent" : "chessMove")
   }
 
   // Start a new game with selected options
   const startGame = (mode: GameMode, color: PieceColor) => {
+    play("chessGameStart")
     setGameMode(mode)
     setPlayerColor(color)
     setBoardFlipped(color === "black")
@@ -315,9 +309,6 @@ export default function Chess({ onReturn }: ChessProps) {
       const newCapturedPieces = { ...capturedPieces }
       newCapturedPieces[capturedPiece.color].push(capturedPiece)
       setCapturedPieces(newCapturedPieces)
-      playCaptureSound()
-    } else {
-      playMoveSound()
     }
 
     // Update the board
@@ -346,9 +337,16 @@ export default function Chess({ onReturn }: ChessProps) {
     const isInCheck = isKingInCheck(newBoard, nextPlayer)
     setIsCheck(isInCheck)
 
+    // A king crossing two files is a castle; nothing else can.
+    const moveKind = {
+      captured: !!capturedPiece,
+      castled: piece.type === "king" && Math.abs(to.col - from.col) === 2,
+      opponent: gameMode === "bot" && currentPlayer !== playerColor,
+    }
+
     if (isInCheck) {
-      playCheckSound()
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      announceMove({ ...moveKind, check: true, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsCheckmate(true)
         if (gameMode === "local") {
@@ -369,6 +367,7 @@ export default function Chess({ onReturn }: ChessProps) {
       }
     } else {
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      announceMove({ ...moveKind, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsStalemate(true)
         setGameStatus("Stalemate! The game is a draw.")
@@ -407,9 +406,6 @@ export default function Chess({ onReturn }: ChessProps) {
       const newCapturedPieces = { ...capturedPieces }
       newCapturedPieces[capturedPiece.color].push(capturedPiece)
       setCapturedPieces(newCapturedPieces)
-      playCaptureSound()
-    } else {
-      playMoveSound()
     }
 
     // Move the promoted piece
@@ -444,9 +440,11 @@ export default function Chess({ onReturn }: ChessProps) {
     const isInCheck = isKingInCheck(newBoard, nextPlayer)
     setIsCheck(isInCheck)
 
+    const moveKind = { promoted: true, captured: !!capturedPiece }
+
     if (isInCheck) {
-      playCheckSound()
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      announceMove({ ...moveKind, check: true, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsCheckmate(true)
         if (gameMode === "local") {
@@ -467,6 +465,7 @@ export default function Chess({ onReturn }: ChessProps) {
       }
     } else {
       const hasValidMoves = hasAnyValidMoves(newBoard, nextPlayer)
+      announceMove({ ...moveKind, gameOver: !hasValidMoves })
       if (!hasValidMoves) {
         setIsStalemate(true)
         setGameStatus("Stalemate! The game is a draw.")

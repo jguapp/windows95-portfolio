@@ -102,6 +102,59 @@ function sequence(notes: [freq: number, at: number, dur?: number][], wave: Wave 
   for (const [freq, at, dur] of notes) tone({ freq, delay: at, duration: dur ?? 0.1, wave, gain })
 }
 
+/**
+ * A piece landing on a wooden board.
+ *
+ * This is what makes the chess.com sounds read the way they do: a very short
+ * noise transient for the contact, over a low sine that drops away fast for the
+ * body of the wood. A plain oscillator beep cannot sound like an object hitting
+ * a surface no matter what frequency it is given.
+ *
+ * @param strength Louder and lower for a capture than for a quiet move.
+ */
+function knock(delay = 0, strength = 1) {
+  const ac = audio()
+  if (!ac || muted) return
+
+  const start = ac.currentTime + delay
+
+  // Contact: a few milliseconds of band-limited noise.
+  const frames = Math.floor(ac.sampleRate * 0.03)
+  const buffer = ac.createBuffer(1, frames, ac.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < frames; i++) {
+    const fade = (1 - i / frames) ** 3
+    data[i] = (Math.random() * 2 - 1) * fade
+  }
+
+  const src = ac.createBufferSource()
+  src.buffer = buffer
+
+  const band = ac.createBiquadFilter()
+  band.type = "bandpass"
+  band.frequency.value = 2400
+  band.Q.value = 0.9
+
+  const clickAmp = ac.createGain()
+  clickAmp.gain.value = 0.05 * strength
+
+  src.connect(band).connect(clickAmp).connect(ac.destination)
+  src.start(start)
+
+  // Body: the board itself resonating, gone in under a tenth of a second.
+  const body = ac.createOscillator()
+  const bodyAmp = ac.createGain()
+  body.type = "sine"
+  body.frequency.setValueAtTime(190 / strength, start)
+  body.frequency.exponentialRampToValueAtTime(90, start + 0.07)
+  bodyAmp.gain.setValueAtTime(0.0001, start)
+  bodyAmp.gain.exponentialRampToValueAtTime(0.07 * strength, start + 0.004)
+  bodyAmp.gain.exponentialRampToValueAtTime(0.0001, start + 0.09)
+  body.connect(bodyAmp).connect(ac.destination)
+  body.start(start)
+  body.stop(start + 0.12)
+}
+
 /** Named effects, so callers ask for a sound rather than a frequency. */
 export const sfx = {
   click: () => tone({ freq: 620, duration: 0.03, gain: 0.03 }),
@@ -130,13 +183,40 @@ export const sfx = {
   cardDeal: () => noise(0.07, 0.035, 3000),
   cardFlip: () => noise(0.05, 0.03, 5000),
 
-  // Chess
-  chessMove: () => tone({ freq: 300, duration: 0.05, gain: 0.04, wave: "triangle" }),
+  // Chess.
+  //
+  // Modelled on the set chess.com uses, which is one wooden knock with
+  // variations layered on top rather than a different beep per event. Those
+  // recordings are theirs, so these are synthesised to the same shape: a piece
+  // hitting a board, plus whatever the move means.
+  chessMove: () => knock(0, 1),
+  /** The opponent's reply, pitched slightly differently so turns are audible. */
+  chessMoveOpponent: () => knock(0, 0.9),
+  /** Two impacts close together: the captured piece, then the captor landing. */
   chessCapture: () => {
-    noise(0.09, 0.04, 2200)
-    tone({ freq: 200, duration: 0.09, gain: 0.04, slideTo: 120 })
+    knock(0, 1.35)
+    knock(0.045, 0.85)
   },
-  chessCheck: () => sequence([[880, 0], [740, 0.09, 0.14]], "square", 0.045),
+  /** Two pieces moving, a beat apart. */
+  chessCastle: () => {
+    knock(0, 1)
+    knock(0.11, 0.95)
+  },
+  chessCheck: () => {
+    knock(0, 1.1)
+    sequence([[1046, 0.05, 0.09], [1318, 0.12, 0.14]], "sine", 0.045)
+  },
+  chessPromote: () => {
+    knock(0, 1)
+    sequence([[784, 0.05, 0.1], [1046, 0.13, 0.1], [1318, 0.21, 0.22]], "sine", 0.04)
+  },
+  /** A dull thud with no click: the piece never left the square. */
+  chessIllegal: () => tone({ freq: 150, duration: 0.14, gain: 0.05, slideTo: 110, wave: "sawtooth" }),
+  chessGameStart: () => {
+    knock(0, 1)
+    sequence([[523, 0.06, 0.12], [659, 0.16, 0.2]], "sine", 0.04)
+  },
+  chessGameEnd: () => sequence([[659, 0, 0.16], [523, 0.14, 0.16], [392, 0.28, 0.34]], "sine", 0.045),
 
   // Pong
   paddle: () => tone({ freq: 480, duration: 0.035, gain: 0.04 }),
@@ -177,9 +257,6 @@ const BY_PATH: Record<string, SfxName> = {
   "/sounds/score.mp3": "score",
   "/sounds/card-deal.mp3": "cardDeal",
   "/sounds/card-flip.mp3": "cardFlip",
-  "/sounds/chess-move.mp3": "chessMove",
-  "/sounds/chess-capture.mp3": "chessCapture",
-  "/sounds/chess-check.mp3": "chessCheck",
   "/sounds/tetris/move.mp3": "move",
   "/sounds/tetris/rotate.mp3": "rotate",
   "/sounds/tetris/drop.mp3": "drop",

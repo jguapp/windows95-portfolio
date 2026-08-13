@@ -125,9 +125,9 @@ function ToolButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-[62px] flex-col items-center gap-[1px] border-2 border-transparent px-1 py-[2px] text-[10px] leading-none enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] enabled:active:border-t-[#404040] enabled:active:border-l-[#404040] enabled:active:border-r-white enabled:active:border-b-white disabled:text-[#808080]"
+      className="t9 flex w-[64px] flex-col items-center gap-[2px] border-2 border-transparent px-1 py-[2px] leading-none enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] enabled:active:border-t-[#404040] enabled:active:border-l-[#404040] enabled:active:border-r-white enabled:active:border-b-white disabled:text-[#808080]"
     >
-      <span className="text-[18px] leading-none">{glyph}</span>
+      <span className="t16 leading-none">{glyph}</span>
       <span className="whitespace-nowrap">{label}</span>
     </button>
   )
@@ -194,7 +194,10 @@ export default function Contact() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#c0c0c0]" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
+    <div
+      className="win95-type flex h-full w-full flex-col bg-[#c0c0c0]"
+      style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+    >
       {/* Menu bar */}
       <div className="flex gap-3 border-b border-[#808080] px-2 py-[2px] text-xs">
         {["File", "Edit", "View", "Go", "Tools", "Compose", "Help"].map((m) => (

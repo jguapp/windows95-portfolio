@@ -56,67 +56,67 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 <ul className="list-none m-0 p-0">
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("about-me")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/about-me.png" alt="About Me" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/about-me.png" alt="About Me" className="mr-2 w-9 h-9" />
                       <span className="text-sm">About Me</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("resume")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/resume.png" alt="Resume" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/resume.png" alt="Resume" className="mr-2 w-9 h-9" />
                       <span className="text-sm">Resume</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("projects")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/youtube.png" alt="My Projects" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/youtube.png" alt="My Projects" className="mr-2 w-9 h-9" />
                       <span className="text-sm">My Projects</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("contact")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/contact.png" alt="Contact Me" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/contact.png" alt="Contact Me" className="mr-2 w-9 h-9" />
                       <span className="text-sm">Contact Me</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("gallery")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/gallery.png" alt="Gallery" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/gallery.png" alt="Gallery" className="mr-2 w-9 h-9" />
                       <span className="text-sm">Gallery</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("games")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/games.png" alt="Games" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/games.png" alt="Games" className="mr-2 w-9 h-9" />
                       <span className="text-sm">Games</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("paint")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/desktop-icons/paint.png" alt="Paint" className="mr-2 w-10 h-10" />
+                      <img src="/images/desktop-icons/paint.png" alt="Paint" className="mr-2 w-9 h-9" />
                       <span className="text-sm">Paint</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("explorer")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/win95/explorer-32.png" alt="Windows Explorer" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
+                      <img src="/images/win95/explorer-16.png" alt="Windows Explorer" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Windows Explorer</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("msdos")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/win95/msdos-32.png" alt="MS-DOS Prompt" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
+                      <img src="/images/win95/msdos-16.png" alt="MS-DOS Prompt" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">MS-DOS Prompt</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("notepad")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/win95/notepad-32.png" alt="Notepad" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
+                      <img src="/images/win95/notepad-16.png" alt="Notepad" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Notepad</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("calculator")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/win95/calculator-32.png" alt="Calculator" className="mr-2 w-8 h-8" style={{ imageRendering: "pixelated" }} />
+                      <img src="/images/win95/calculator-16.png" alt="Calculator" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Calculator</span>
                     </div>
                   </li>
@@ -141,7 +141,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 <ul className="list-none m-0 p-0">
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("notepad")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
-                      <img src="/images/win95/notepad-16.png" alt="Readme" className="mr-2 w-5 h-5" style={{ imageRendering: "pixelated" }} />
+                      <img src="/images/win95/notepad-16.png" alt="Readme" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Readme</span>
                     </div>
                   </li>

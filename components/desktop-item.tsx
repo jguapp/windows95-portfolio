@@ -17,6 +17,10 @@ interface DesktopItemProps {
   onRightClick: (e: React.MouseEvent) => void
   onDragEnd: (id: string, x: number, y: number) => void
   onRename?: (id: string, newName: string) => void
+  /** Called when this icon is released over the Recycle Bin. */
+  onDropInBin?: (id: string) => void
+  /** Reports whether the icon being dragged is currently over the bin. */
+  onDragOverBin?: (over: boolean) => void
 }
 
 export default function DesktopItem({
@@ -32,6 +36,8 @@ export default function DesktopItem({
   onRightClick,
   onDragEnd,
   onRename,
+  onDropInBin,
+  onDragOverBin,
 }: DesktopItemProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -41,6 +47,9 @@ export default function DesktopItem({
   const iconRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const positionRef = useRef(currentPosition)
+  /** Last pointer position, so the drop target can be resolved on mouse up. */
+  const pointerRef = useRef({ x: 0, y: 0 })
+  const overBinRef = useRef(false)
 
   // Update position ref when currentPosition changes
   useEffect(() => {
@@ -95,8 +104,26 @@ export default function DesktopItem({
     onClick() // Select the icon when starting to drag
   }
 
+  /**
+   * Whether the pointer is over the Recycle Bin.
+   *
+   * elementsFromPoint rather than elementFromPoint, because the icon being
+   * dragged sits under the cursor and would otherwise be the only hit.
+   */
+  const pointerOverBin = (x: number, y: number) => {
+    if (id === "recycle-bin") return false
+    return document.elementsFromPoint(x, y).some((el) => el.closest('[data-id="recycle-bin"]'))
+  }
+
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return
+
+    pointerRef.current = { x: e.clientX, y: e.clientY }
+    const over = pointerOverBin(e.clientX, e.clientY)
+    if (over !== overBinRef.current) {
+      overBinRef.current = over
+      onDragOverBin?.(over)
+    }
 
     // Calculate new position based on mouse position and drag offset
     const newX = e.clientX - dragOffset.x
@@ -123,12 +150,20 @@ export default function DesktopItem({
   }
 
   const handleMouseUp = () => {
-    if (isDragging) {
-      setIsDragging(false)
+    if (!isDragging) return
+    setIsDragging(false)
 
-      // Notify parent component of the new position
-      onDragEnd(id, positionRef.current.x, positionRef.current.y)
+    if (overBinRef.current) {
+      overBinRef.current = false
+      onDragOverBin?.(false)
+      // Dropped on the bin, so it is deleted rather than moved and its old
+      // position is what Restore will put it back to.
+      onDropInBin?.(id)
+      return
     }
+
+    // Notify parent component of the new position
+    onDragEnd(id, positionRef.current.x, positionRef.current.y)
   }
 
   const handleRenameSubmit = () => {

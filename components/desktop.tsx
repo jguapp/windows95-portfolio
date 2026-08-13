@@ -543,6 +543,30 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     closeContextMenu()
   }
 
+  /** True while an icon is being dragged over the Recycle Bin. */
+  const [binHover, setBinHover] = useState(false)
+
+  /**
+   * Drop an icon on the Recycle Bin.
+   *
+   * Same outcome as Delete from the context menu: the icon moves into the bin
+   * with the position it had, so Restore can put it back where it was.
+   */
+  const handleDropInBin = (id: string) => {
+    setBinHover(false)
+    const doomed = icons.find((icon) => icon.id === id)
+    if (!doomed || doomed.id === "recycle-bin") return
+
+    recycle(doomed, iconPositions)
+    setIcons((prev) => prev.filter((icon) => icon.id !== id))
+    setIconPositions((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    if (selectedIcon === id) setSelectedIcon(null)
+  }
+
   // The bin's artwork tracks whether it holds anything.
   const [binEmpty, setBinEmpty] = useState(true)
   useEffect(() => subscribe(() => setBinEmpty(isEmpty())), [])
@@ -1072,13 +1096,15 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
               label={icon.label}
               icon={icon.icon}
               type={icon.type}
-              isSelected={selectedIcon === icon.id}
+              isSelected={selectedIcon === icon.id || (icon.id === "recycle-bin" && binHover)}
               position={iconPositions[icon.id]}
               isNew={icon.isNew}
               onClick={() => handleIconClick(icon.id)}
               onDoubleClick={() => handleIconDoubleClick(icon.id)}
               onRightClick={(e) => handleIconRightClick(e, icon.id)}
               onDragEnd={handleIconDragEnd}
+              onDropInBin={handleDropInBin}
+              onDragOverBin={setBinHover}
               onRename={(id, newName) => {
                 handleRenameIcon(id, newName)
                 // Clear the isNew flag after renaming

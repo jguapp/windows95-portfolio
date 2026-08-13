@@ -1319,7 +1319,18 @@ h6 {
 }
 
 .page-2005 {
-  font-size: 12px !important;
+  /* 2005 YouTube set Arial at 11px for body copy. */
+  font-size: 11px !important;
+}
+
+/* The universal selector near the top of this file pins MS Sans Serif on
+   everything with !important, which even an inline style cannot beat, so a page
+   that is meant to be a 2005 web page came out in the Windows shell face. A
+   descendant selector outranks the universal one. */
+.page-2005,
+.page-2005 * {
+  font-family: Arial, Helvetica, sans-serif !important;
+  -webkit-font-smoothing: auto;
 }
 
 .page-2005 .t10 {
@@ -1427,4 +1438,58 @@ h6 {
   .anim-square-alert {
     animation: none;
   }
+}
+
+/* ==========================================================================
+   Authentic Windows 95 type scale
+
+   Same escape hatch as .page-2005 above, for the shell rather than the web
+   pages. The blanket rule near the top of this file forces every span, div and
+   button to 1.2rem with !important, which no Tailwind class and no inline style
+   can outrank, so a toolbar asking for 10px labels got 19px ones and the
+   captions ran into each other.
+
+   Anything inside .win95-type inherits from the container instead, which is
+   11px: MS Sans Serif at 8pt, the size Windows 95 actually used. The utilities
+   cover the handful of places that need something else.
+   ========================================================================== */
+
+.win95-type,
+.win95-type p,
+.win95-type span,
+.win95-type div,
+.win95-type a,
+.win95-type li,
+.win95-type td,
+.win95-type th,
+.win95-type label,
+.win95-type button,
+.win95-type input,
+.win95-type textarea,
+.win95-type select,
+.win95-type option,
+.win95-type h1,
+.win95-type h2,
+.win95-type h3 {
+  font-size: inherit !important;
+}
+
+.win95-type {
+  font-size: 11px !important;
+}
+
+.win95-type .t9 {
+  font-size: 9px !important;
+}
+
+.win95-type .t10 {
+  font-size: 10px !important;
+}
+
+.win95-type .t13 {
+  font-size: 13px !important;
+}
+
+.win95-type .t16 {
+  font-size: 16px !important;
 }
