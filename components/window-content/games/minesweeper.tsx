@@ -8,6 +8,16 @@ interface MinesweeperProps {
   onReturn: () => void
 }
 
+/** How long each ring of an opening region waits before it is painted. */
+const RIPPLE_STEP_MS = 26
+/** How long the mine you stepped on flashes alone before the rest appear. */
+const MINE_FLASH_MS = 420
+
+function reducedMotion(): boolean {
+  if (typeof window === "undefined") return false
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
 type CellState = {
   isMine: boolean
   isRevealed: boolean
@@ -30,6 +40,8 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   const [mineCount, setMineCount] = useState(10)
   const [grid, setGrid] = useState<CellState[][]>([])
   const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">("playing")
+  /** The mine that was stepped on, so it can flash before the rest resolve. */
+  const [detonated, setDetonated] = useState<{ row: number; col: number } | null>(null)
   const [flagsPlaced, setFlagsPlaced] = useState(0)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const [firstClick, setFirstClick] = useState(true)
@@ -145,6 +157,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
 
     setGrid(newGrid)
     setGameStatus("playing")
+    setDetonated(null)
     setFlagsPlaced(0)
     setTimeElapsed(0)
     setFirstClick(true)
@@ -198,6 +211,15 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   }
 
   // Reveal a cell
+  /**
+   * Reveals a cell, and everything the cell opens up.
+   *
+   * A blank square used to open its whole region on a single frame, which is
+   * the one moment in Minesweeper that deserves to be watched. The region is
+   * now walked outwards from the click and revealed a ring at a time, so it
+   * spreads instead of appearing. The set of cells revealed is identical
+   * either way; only when they are painted changes.
+   */
   const revealCell = (row: number, col: number) => {
     if (gameStatus !== "playing" || grid[row][col].isRevealed || grid[row][col].isFlagged) {
       return
@@ -224,56 +246,90 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
         bombSound.play().catch((err) => console.log("Audio playback failed:", err))
       }
 
-      // Reveal all mines
-      for (let i = 0; i < gridSize.rows; i++) {
-        for (let j = 0; j < gridSize.cols; j++) {
-          if (newGrid[i][j].isMine) {
-            newGrid[i][j].isRevealed = true
+      // The mine that was actually stepped on shows first and flashes; the
+      // rest of the board resolves behind it a beat later.
+      newGrid[row][col].isRevealed = true
+      setDetonated({ row, col })
+      setGrid([...newGrid])
+      setGameStatus("lost")
+
+      const revealRest = () => {
+        const finalGrid = newGrid.map((r) => [...r])
+        for (let i = 0; i < gridSize.rows; i++) {
+          for (let j = 0; j < gridSize.cols; j++) {
+            if (finalGrid[i][j].isMine) finalGrid[i][j].isRevealed = true
           }
         }
+        setGrid(finalGrid)
       }
-      setGrid(newGrid)
-      setGameStatus("lost")
+
+      if (reducedMotion()) revealRest()
+      else window.setTimeout(revealRest, MINE_FLASH_MS)
       return
     }
 
     // Reveal the clicked cell
     newGrid[row][col].isRevealed = true
 
-    // If cell has no adjacent mines, reveal neighbors recursively
+    // Walk outwards from the click, keeping each cell's distance from it, so
+    // the reveal can be played back in rings.
+    const rings: { r: number; c: number }[][] = []
     if (newGrid[row][col].neighborMines === 0) {
-      const revealEmptyCells = (r: number, c: number) => {
-        for (let di = -1; di <= 1; di++) {
-          for (let dj = -1; dj <= 1; dj++) {
-            if (di === 0 && dj === 0) continue
+      let frontier = [{ r: row, c: col }]
+      const seen = new Set([`${row}-${col}`])
 
-            const ni = r + di
-            const nj = c + dj
-
-            if (
-              ni >= 0 &&
-              ni < gridSize.rows &&
-              nj >= 0 &&
-              nj < gridSize.cols &&
-              !newGrid[ni][nj].isRevealed &&
-              !newGrid[ni][nj].isFlagged
-            ) {
-              newGrid[ni][nj].isRevealed = true
-              if (newGrid[ni][nj].neighborMines === 0) {
-                revealEmptyCells(ni, nj)
+      while (frontier.length > 0) {
+        const next: { r: number; c: number }[] = []
+        for (const { r, c } of frontier) {
+          if (newGrid[r][c].neighborMines !== 0) continue
+          for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+              if (di === 0 && dj === 0) continue
+              const ni = r + di
+              const nj = c + dj
+              const key = `${ni}-${nj}`
+              if (
+                ni < 0 ||
+                ni >= gridSize.rows ||
+                nj < 0 ||
+                nj >= gridSize.cols ||
+                seen.has(key) ||
+                newGrid[ni][nj].isRevealed ||
+                newGrid[ni][nj].isFlagged
+              ) {
+                continue
               }
+              seen.add(key)
+              next.push({ r: ni, c: nj })
             }
           }
         }
+        if (next.length > 0) rings.push(next)
+        frontier = next
       }
-
-      revealEmptyCells(row, col)
     }
 
-    setGrid(newGrid)
+    if (rings.length === 0 || reducedMotion()) {
+      for (const ring of rings) for (const { r, c } of ring) newGrid[r][c].isRevealed = true
+      setGrid([...newGrid])
+      checkWinCondition(newGrid)
+      return
+    }
 
-    // Check if player has won
-    checkWinCondition(newGrid)
+    setGrid([...newGrid])
+
+    // Paint one ring per step. The board is already decided at this point, so
+    // a click during the ripple cannot change the outcome.
+    rings.forEach((ring, i) => {
+      window.setTimeout(
+        () => {
+          for (const { r, c } of ring) newGrid[r][c].isRevealed = true
+          setGrid((prev) => prev.map((r2, ri) => (ring.some((x) => x.r === ri) ? [...r2] : r2)))
+          if (i === rings.length - 1) checkWinCondition(newGrid)
+        },
+        (i + 1) * RIPPLE_STEP_MS,
+      )
+    })
   }
 
   // Toggle flag on a cell
@@ -499,11 +555,14 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
             row.map((cell, colIndex) => (
               <div
                 key={`${rowIndex}-${colIndex}`}
+                data-detonated={detonated?.row === rowIndex && detonated?.col === colIndex ? "" : undefined}
                 className={`w-8 h-8 flex items-center justify-center font-bold cursor-pointer select-none
                   ${
                     cell.isRevealed
                       ? "bg-gray-300 border border-t-gray-400 border-l-gray-400 border-r-gray-200 border-b-gray-200"
                       : "bg-gray-200 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 hover:bg-gray-300"
+                  } ${
+                    detonated?.row === rowIndex && detonated?.col === colIndex ? "anim-mine-flash bg-red-600" : ""
                   }`}
                 onClick={() => revealCell(rowIndex, colIndex)}
                 onContextMenu={(e) => {

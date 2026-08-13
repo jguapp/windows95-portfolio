@@ -1296,6 +1296,13 @@ export default function Chess({ onReturn }: ChessProps) {
                       const isSelected =
                         selectedPosition && selectedPosition.row === displayRow && selectedPosition.col === displayCol
                       const isValidMove = validMoves.some((pos) => pos.row === displayRow && pos.col === displayCol)
+                      // The square a piece has just landed on, which is the one
+                      // that plays the slide.
+                      const justArrived =
+                        !!lastMove && lastMove.to.row === displayRow && lastMove.to.col === displayCol
+                      // The king under attack, so check is visible and not only audible.
+                      const kingInCheck =
+                        isCheck && piece?.type === "king" && piece.color === currentPlayer
 
                       return (
                         <div
@@ -1313,6 +1320,7 @@ export default function Chess({ onReturn }: ChessProps) {
                                 ? "ring-4 ring-yellow-400 ring-opacity-70 ring-inset"
                                 : ""
                             }
+                            ${kingInCheck ? "anim-square-alert" : ""}
                           `}
                           style={{
                             height: "100%",
@@ -1321,7 +1329,23 @@ export default function Chess({ onReturn }: ChessProps) {
                           onClick={() => handleCellClick(row, col)}
                         >
                           {piece && getPieceImagePath(piece) && (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div
+                              // Remounted on every move so the slide replays.
+                              key={`${moveHistory.length}-${displayRow}-${displayCol}`}
+                              className={`w-full h-full flex items-center justify-center ${
+                                justArrived ? "anim-piece-slide" : ""
+                              }`}
+                              style={
+                                justArrived && lastMove
+                                  ? ({
+                                      // In squares, not pixels, and negated when the
+                                      // board is flipped so it still reads as travel.
+                                      "--dx": (boardFlipped ? -1 : 1) * (lastMove.from.col - lastMove.to.col),
+                                      "--dy": (boardFlipped ? -1 : 1) * (lastMove.from.row - lastMove.to.row),
+                                    } as React.CSSProperties)
+                                  : undefined
+                              }
+                            >
                               <img
                                 src={getPieceImagePath(piece) || "/placeholder.svg"}
                                 alt={`${piece.color} ${piece.type}`}

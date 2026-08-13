@@ -1493,3 +1493,25 @@ h6 {
 .win95-type .t16 {
   font-size: 16px !important;
 }
+
+/* A chess piece travelling to its new square. The offset is handed in as
+   custom properties, in units of one square, so the same rule covers any move
+   on the board and works with it flipped. */
+@keyframes piece-slide {
+  from {
+    transform: translate(calc(var(--dx) * 100%), calc(var(--dy) * 100%));
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+.anim-piece-slide {
+  animation: piece-slide 150ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-piece-slide {
+    animation: none;
+  }
+}

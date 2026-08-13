@@ -74,10 +74,20 @@ const INITIAL_SPEED = 1000 // ms
 const SPEED_INCREASE = 0.9 // 10% faster per level
 const POINTS_PER_LINE = 100
 const LINES_PER_LEVEL = 10
+/** How long completed rows blink before the stack collapses onto them. */
+const LINE_FLASH_MS = 330
+
+/** Reads the OS motion preference at the moment it matters. */
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
 
 // Create empty board
 // A cell is 0 when empty, otherwise the colour of the settled piece.
 type Cell = 0 | string
+/** A piece in play: its grid, its colour, and where its top-left corner sits. */
+type Tetromino = ReturnType<typeof randomTetromino>
 
 const createEmptyBoard = (): Cell[][] => Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0))
 
@@ -122,6 +132,18 @@ export default function Tetris({ onReturn }: TetrisProps) {
   const [showMenu, setShowMenu] = useState<string | null>(null)
 
   // Audio refs
+  /**
+   * Rows that have just completed and are blinking before they collapse.
+   *
+   * The board keeps the finished rows in place for the length of the flash, so
+   * you get to see the line you made instead of it vanishing on the same frame
+   * the piece landed.
+   */
+  const [clearingRows, setClearingRows] = useState<number[]>([])
+  /** When the last gravity step happened, for the sub-cell drop offset. */
+  const lastStepRef = useRef(0)
+  /** The layer holding the falling piece, moved directly rather than via state. */
+  const pieceLayerRef = useRef<HTMLDivElement>(null)
   const moveSound = useRef<SynthAudio | null>(null)
   const rotateSound = useRef<SynthAudio | null>(null)
   const dropSound = useRef<SynthAudio | null>(null)
@@ -246,30 +268,29 @@ export default function Tetris({ onReturn }: TetrisProps) {
     [currentPiece, checkCollision, paused, gameOver, playSound],
   )
 
-  // Drop piece
-  const dropPiece = useCallback(() => {
-    if (paused || gameOver) return
-
-    const newPosition = { ...currentPiece.position, y: currentPiece.position.y + 1 }
-    if (!checkCollision(currentPiece, newPosition)) {
-      setCurrentPiece({ ...currentPiece, position: newPosition })
-    } else {
-      // Lock piece in place
+  /**
+   * Writes a piece into the board and deals with what that lands on.
+   *
+   * Takes the piece rather than reading state, so a hard drop can settle a
+   * piece at the bottom and lock it there in one go.
+   */
+  const lockPiece = useCallback(
+    (piece: Tetromino) => {
       const newBoard = [...board]
-      currentPiece.shape.forEach((row, y) => {
+      piece.shape.forEach((row, y) => {
         row.forEach((cell, x) => {
           if (cell) {
-            const boardY = currentPiece.position.y + y
-            const boardX = currentPiece.position.x + x
+            const boardY = piece.position.y + y
+            const boardX = piece.position.x + x
             if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
-              newBoard[boardY][boardX] = currentPiece.color
+              newBoard[boardY][boardX] = piece.color
             }
           }
         })
       })
 
       // Check for game over
-      if (currentPiece.position.y <= 0) {
+      if (piece.position.y <= 0) {
         setGameOver(true)
         if (gameLoopRef.current) {
           clearInterval(gameLoopRef.current)
@@ -284,45 +305,79 @@ export default function Tetris({ onReturn }: TetrisProps) {
       }
 
       // Check for completed lines
-      let linesCleared = 0
-      const updatedBoard = newBoard.reduce((acc, row) => {
-        if (row.every((cell) => cell)) {
-          linesCleared++
-          acc.unshift(Array<Cell>(COLS).fill(0))
-        } else {
-          acc.push(row)
+      const fullRows: number[] = []
+      newBoard.forEach((row, y) => {
+        if (row.every((cell) => cell)) fullRows.push(y)
+      })
+
+      const collapse = () => {
+        const updatedBoard = newBoard.reduce((acc, row) => {
+          if (row.every((cell) => cell)) acc.unshift(Array<Cell>(COLS).fill(0))
+          else acc.push(row)
+          return acc
+        }, [] as Cell[][])
+
+        if (fullRows.length > 0) {
+          const newLines = lines + fullRows.length
+          const newLevel = Math.floor(newLines / LINES_PER_LEVEL) + 1
+
+          setLines(newLines)
+          setScore(score + fullRows.length * POINTS_PER_LINE * level)
+
+          if (newLevel > level) {
+            setLevel(newLevel)
+            setSpeed(INITIAL_SPEED * Math.pow(SPEED_INCREASE, newLevel - 1))
+            playSound(levelUpSound)
+          } else {
+            playSound(clearSound)
+          }
         }
-        return acc
-      }, [] as Cell[][])
 
-      // Update score and level
-      if (linesCleared > 0) {
-        const newLines = lines + linesCleared
-        const newScore = score + linesCleared * POINTS_PER_LINE * level
-        const newLevel = Math.floor(newLines / LINES_PER_LEVEL) + 1
-
-        setLines(newLines)
-        setScore(newScore)
-
-        // Level up
-        if (newLevel > level) {
-          setLevel(newLevel)
-          setSpeed(INITIAL_SPEED * Math.pow(SPEED_INCREASE, newLevel - 1))
-          playSound(levelUpSound)
-        } else {
-          playSound(clearSound)
-        }
-      } else {
-        playSound(dropSound)
+        setClearingRows([])
+        setBoard(updatedBoard)
+        setCurrentPiece(nextPiece)
+        setNextPiece(randomTetromino())
+        lastStepRef.current = performance.now()
       }
 
-      setBoard(updatedBoard)
-      setCurrentPiece(nextPiece)
-      setNextPiece(randomTetromino())
-    }
-  }, [currentPiece, nextPiece, board, checkCollision, paused, gameOver, score, level, lines, playSound])
+      if (fullRows.length > 0 && !prefersReducedMotion()) {
+        // Show the completed rows blinking on the locked board, then collapse.
+        // The next piece is held back until the flash is over, so nothing can
+        // be moved during it and the pause cannot cost the player anything.
+        playSound(dropSound)
+        setBoard(newBoard)
+        setClearingRows(fullRows)
+        window.setTimeout(collapse, LINE_FLASH_MS)
+        return
+      }
 
-  // Hard drop
+      if (fullRows.length === 0) playSound(dropSound)
+      collapse()
+    },
+    [board, nextPiece, score, level, lines, playSound],
+  )
+
+  // Drop piece
+  const dropPiece = useCallback(() => {
+    if (paused || gameOver) return
+
+    const newPosition = { ...currentPiece.position, y: currentPiece.position.y + 1 }
+    if (!checkCollision(currentPiece, newPosition)) {
+      lastStepRef.current = performance.now()
+      setCurrentPiece({ ...currentPiece, position: newPosition })
+      return
+    }
+    lockPiece(currentPiece)
+  }, [currentPiece, checkCollision, paused, gameOver, lockPiece])
+
+  /**
+   * Hard drop.
+   *
+   * This used to set the piece to the landing row and then call dropPiece,
+   * which read the piece from state that had not committed yet and so moved it
+   * a single row instead of locking it at the bottom. Space soft-dropped one
+   * cell and no amount of pressing it ever finished a piece.
+   */
   const hardDrop = useCallback(() => {
     if (paused || gameOver) return
 
@@ -331,10 +386,8 @@ export default function Tetris({ onReturn }: TetrisProps) {
       newY++
     }
 
-    setCurrentPiece({ ...currentPiece, position: { ...currentPiece.position, y: newY } })
-    dropPiece()
-    playSound(dropSound)
-  }, [currentPiece, checkCollision, dropPiece, paused, gameOver, playSound])
+    lockPiece({ ...currentPiece, position: { ...currentPiece.position, y: newY } })
+  }, [currentPiece, checkCollision, lockPiece, paused, gameOver])
 
   // Handle keyboard input
   useEffect(() => {
@@ -385,8 +438,10 @@ export default function Tetris({ onReturn }: TetrisProps) {
       }
 
       gameLoopRef.current = setInterval(() => {
+        lastStepRef.current = performance.now()
         dropPiece()
       }, speed)
+      lastStepRef.current = performance.now()
     }
 
     return () => {
@@ -441,6 +496,40 @@ export default function Tetris({ onReturn }: TetrisProps) {
     })
   }, [gameOver, audioEnabled])
 
+  /**
+   * Slides the falling piece between rows.
+   *
+   * Gravity still moves the piece a whole cell at a time, because anything else
+   * would change collision and therefore the game. This only offsets where that
+   * piece is drawn, by however far it is through the current interval, so it
+   * travels instead of teleporting. The transform is written straight to the
+   * node: doing it through state would re-render the whole board sixty times a
+   * second for a purely visual nudge.
+   */
+  useEffect(() => {
+    if (!gameStarted || paused || gameOver) {
+      if (pieceLayerRef.current) pieceLayerRef.current.style.transform = "translateY(0px)"
+      return
+    }
+    if (prefersReducedMotion()) return
+
+    let frame = 0
+    const tick = () => {
+      const layer = pieceLayerRef.current
+      if (layer) {
+        const elapsed = performance.now() - lastStepRef.current
+        // Capped at one cell so a slow frame cannot draw the piece past where
+        // it is really about to land.
+        const progress = Math.max(0, Math.min(elapsed / speed, 1))
+        layer.style.transform = `translateY(${(progress * (BLOCK_SIZE + 1)).toFixed(2)}px)`
+      }
+      frame = requestAnimationFrame(tick)
+    }
+
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [gameStarted, paused, gameOver, speed])
+
   // Render board
   const renderBoard = () => {
     const boardWithPiece = [...board.map((row) => [...row])]
@@ -463,25 +552,14 @@ export default function Tetris({ onReturn }: TetrisProps) {
       }
     }
 
-    // Add current piece to board
-    if (!gameOver) {
-      currentPiece.shape.forEach((row, y) => {
-        row.forEach((cell, x) => {
-          if (cell) {
-            const boardY = currentPiece.position.y + y
-            const boardX = currentPiece.position.x + x
-            if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
-              boardWithPiece[boardY][boardX] = currentPiece.color
-            }
-          }
-        })
-      })
-    }
+    // The falling piece is drawn as its own layer rather than written into the
+    // grid, which is what lets it sit between two rows while it travels.
+    const PITCH = BLOCK_SIZE + 1
 
     return (
       <div className="relative">
         <div
-          className="tetris-board border-2 border-gray-400 bg-gray-800"
+          className="tetris-board relative border-2 border-gray-400 bg-gray-800"
           style={{
             display: "grid",
             gridTemplateRows: `repeat(${ROWS}, ${BLOCK_SIZE}px)`,
@@ -499,6 +577,8 @@ export default function Tetris({ onReturn }: TetrisProps) {
                 <div
                   key={`${y}-${x}`}
                   data-ghost={isGhost || undefined}
+                  data-clearing={clearingRows.includes(y) || undefined}
+                  className={clearingRows.includes(y) ? "anim-row-flash" : undefined}
                   style={{
                     backgroundColor: cell || "#111",
                     border: cell
@@ -513,6 +593,37 @@ export default function Tetris({ onReturn }: TetrisProps) {
                 />
               )
             }),
+          )}
+
+          {/* The falling piece */}
+          {!gameOver && (
+            <div
+              ref={pieceLayerRef}
+              data-piece
+              className="pointer-events-none absolute"
+              style={{ left: 2, top: 2, willChange: "transform" }}
+            >
+              {currentPiece.shape.map((row, y) =>
+                row.map((cell, x) =>
+                  cell ? (
+                    <div
+                      key={`p-${y}-${x}`}
+                      className="absolute"
+                      style={{
+                        left: (currentPiece.position.x + x) * PITCH,
+                        top: (currentPiece.position.y + y) * PITCH,
+                        width: BLOCK_SIZE,
+                        height: BLOCK_SIZE,
+                        backgroundColor: currentPiece.color,
+                        border: "1px solid rgba(255, 255, 255, 0.3)",
+                        boxShadow:
+                          "inset 2px 2px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px rgba(0, 0, 0, 0.4)",
+                      }}
+                    />
+                  ) : null,
+                ),
+              )}
+            </div>
           )}
         </div>
 
