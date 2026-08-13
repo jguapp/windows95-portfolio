@@ -11,8 +11,10 @@ Each is an original 16x16 or 32x32 bitmap at 16 colours. They are not resized,
 which is why they stay crisp with `image-rendering: pixelated` where a
 downscaled large PNG would look soft.
 
-`reversi-32.png` is the exception: the set has no Reversi tile, so that one is
-original artwork drawn for this project in the same 16-colour palette.
+Four are exceptions. Reversi shipped with Windows 3.1 but the set has no tile
+for it, and Chess, Tetris and Pong never shipped with Windows at all, so
+`reversi-32.png`, `chess-32.png`, `tetris-32.png` and `pong-32.png` are original
+artwork drawn for this project on the same 32x32 grid at 16 colours.
 
 ```
 MIT License

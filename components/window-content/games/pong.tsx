@@ -665,7 +665,7 @@ export default function Pong({ onReturn }: PongProps) {
       {/* Windows 95 Title Bar */}
       <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
         <div className="flex items-center">
-          <img src="/images/games/pong-logo.png" alt="Pong" className="w-5 h-5 mr-2" />
+          <img src="/images/win95/pong-32.png" alt="Pong" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
           <span className="font-bold">Pong</span>
         </div>
         <button

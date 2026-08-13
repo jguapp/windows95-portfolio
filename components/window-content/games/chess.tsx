@@ -1220,7 +1220,7 @@ export default function Chess({ onReturn }: ChessProps) {
       {/* Windows 95 Title Bar */}
       <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
         <div className="flex items-center">
-          <img src="/images/games/chess-logo-king.png" alt="Chess" className="w-5 h-5 mr-2" />
+          <img src="/images/win95/chess-32.png" alt="Chess" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
           <span className="font-bold">Chess</span>
         </div>
         <button

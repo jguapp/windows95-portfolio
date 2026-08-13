@@ -10,6 +10,7 @@ import FreeCell from "./games/freecell"
 import Hearts from "./games/hearts"
 import Reversi from "./games/reversi"
 import { createSound, type SynthAudio } from "@/lib/sound"
+import { messageBox } from "@/components/win95-dialog"
 
 type GameType = "launcher" | "minesweeper" | "solitaire" | "pong" | "chess" | "tetris" | "freecell" | "hearts" | "reversi"
 
@@ -21,6 +22,9 @@ export default function Games() {
   const [bgMusic, setBgMusic] = useState<SynthAudio | null>(null)
   const [hoveredGame, setHoveredGame] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"all" | "arcade" | "board" | "puzzle">("all")
+  /** The icon with the selection box round it, as in any Explorer window. */
+  const [selected, setSelected] = useState<string | null>(null)
+  const [menu, setMenu] = useState<string | null>(null)
 
   // Initialize sounds
   useEffect(() => {
@@ -91,7 +95,7 @@ export default function Games() {
       id: "chess",
       name: "Chess",
       description: "The classic strategy board game",
-      image: "/images/games/chess-logo-king.png",
+      image: "/images/win95/chess-32.png",
       category: "board",
       featured: true,
     },
@@ -99,7 +103,7 @@ export default function Games() {
       id: "solitaire",
       name: "Solitaire",
       description: "The timeless card game",
-      image: "/images/games/solitaire-logo.png",
+      image: "/images/win95/solitaire-32.png",
       category: "card",
       featured: false,
     },
@@ -107,7 +111,7 @@ export default function Games() {
       id: "tetris",
       name: "Tetris",
       description: "The addictive block-stacking game",
-      image: "/images/games/tetris-icon.png",
+      image: "/images/win95/tetris-32.png",
       category: "puzzle",
       featured: true,
     },
@@ -115,7 +119,7 @@ export default function Games() {
       id: "minesweeper",
       name: "Minesweeper",
       description: "Clear the minefield without exploding",
-      image: "/images/games/minesweeper-logo.png",
+      image: "/images/win95/minesweeper-32.png",
       category: "puzzle",
       featured: false,
     },
@@ -147,7 +151,7 @@ export default function Games() {
       id: "pong",
       name: "Pong",
       description: "The original arcade classic",
-      image: "/images/games/pong-logo.png",
+      image: "/images/win95/pong-32.png",
       category: "arcade",
       featured: false,
     },
@@ -180,186 +184,156 @@ export default function Games() {
     }
   }
 
-  // Render the game launcher interface
-  const renderLauncher = () => (
-    <div className="h-full w-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Title bar */}
-      <div className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between">
-        <div className="flex items-center">
-          <img src="/images/win95/games-16.png" alt="Games" className="w-4 h-4 mr-2" />
-          <span className="font-bold">Games</span>
-        </div>
-      </div>
+  /**
+   * The launcher, drawn as an Explorer folder rather than a card grid.
+   *
+   * Windows 95 had no games launcher: games lived in the Start menu and, if you
+   * went looking, in a folder full of program icons. The card grid with hover
+   * states belonged to a much later decade. This keeps the window, which is
+   * wanted, but dresses it as the folder it would have been, so it reuses the
+   * chrome the rest of the shell already uses.
+   */
+  const renderLauncher = () => {
+    const shown = activeTab === "all" ? games : games.filter((game) => game.category === activeTab)
 
-      {/* Menu bar */}
-      <div className="bg-[#c0c0c0] border-b border-[#808080] px-2 py-1 flex space-x-4 text-sm">
-        <button className="hover:bg-[#000080] hover:text-white px-2" onMouseEnter={playHoverSound}>
-          File
-        </button>
-        <button className="hover:bg-[#000080] hover:text-white px-2" onMouseEnter={playHoverSound}>
-          Options
-        </button>
-        <button className="hover:bg-[#000080] hover:text-white px-2" onMouseEnter={playHoverSound}>
-          Help
-        </button>
-      </div>
+    const menus: Record<string, { label: string; action: () => void; checked?: boolean; sep?: boolean }[]> = {
+      File: [
+        { label: "Open", action: () => selected && selectGame(selected as GameType) },
+        {
+          label: "Close",
+          action: () => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "games" } })),
+          sep: true,
+        },
+      ],
+      View: [
+        { label: "All Games", action: () => setActiveTab("all"), checked: activeTab === "all" },
+        { label: "Arcade", action: () => setActiveTab("arcade"), checked: activeTab === "arcade" },
+        { label: "Board Games", action: () => setActiveTab("board"), checked: activeTab === "board" },
+        { label: "Puzzle", action: () => setActiveTab("puzzle"), checked: activeTab === "puzzle" },
+      ],
+      Options: [{ label: `Sound: ${audioEnabled ? "On" : "Off"}`, action: toggleMusic }],
+      Help: [
+        {
+          label: "About Games",
+          action: () =>
+            messageBox({
+              title: "About Games",
+              text: `Games\n\n${games.length} games, in the folder they would have lived in.`,
+              icon: "information",
+            }),
+        },
+      ],
+    }
 
-      {/* Main content */}
-      <div className="flex-1 p-4 overflow-auto">
-        {/* Category tabs */}
-        <div className="mb-4 flex border-b border-[#808080]">
-          {(
-            [
-              { id: "all", label: "All Games" },
-              { id: "arcade", label: "Arcade" },
-              { id: "board", label: "Board Games" },
-              { id: "puzzle", label: "Puzzle" },
-            ] as const
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              className={`px-4 py-1 mr-1 ${
-                activeTab === tab.id
-                  ? "bg-[#c0c0c0] border-t border-l border-r border-[#808080] border-b-0 relative -mb-px"
-                  : "bg-[#d4d0c8] border border-[#808080]"
-              }`}
-              onClick={() => {
-                setActiveTab(tab.id)
-                playSelectSound()
-              }}
-              onMouseEnter={playHoverSound}
-            >
-              {tab.label}
-            </button>
+    return (
+      <div
+        className="win95-type flex h-full w-full flex-col bg-[#c0c0c0]"
+        style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+        data-games-folder
+      >
+        {/* Menu bar */}
+        <div className="flex border-b border-[#808080] px-1" onMouseLeave={() => setMenu(null)}>
+          {Object.keys(menus).map((name) => (
+            <div key={name} className="relative">
+              <button
+                type="button"
+                className={`px-2 py-[2px] ${menu === name ? "bg-[#000080] text-white" : ""}`}
+                onClick={() => setMenu(menu === name ? null : name)}
+                onMouseEnter={() => menu && setMenu(name)}
+              >
+                <span className="underline">{name[0]}</span>
+                {name.slice(1)}
+              </button>
+              {menu === name && (
+                <div className="absolute left-0 top-full z-50 min-w-[150px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                  {menus[name].map((item) => (
+                    <div key={item.label}>
+                      {item.sep && <div className="my-1 border-t border-t-[#808080] border-b border-b-white" />}
+                      <button
+                        type="button"
+                        className="flex w-full items-center px-2 py-[2px] text-left hover:bg-[#000080] hover:text-white"
+                        onClick={() => {
+                          item.action()
+                          setMenu(null)
+                        }}
+                      >
+                        <span className="mr-2 w-3">{item.checked ? "\u2713" : ""}</span>
+                        {item.label}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
 
-        {/* Featured games section */}
-        <div className="mb-6">
-          <div className="bg-[#000080] text-white px-2 py-1 mb-2">
-            <h2 className="text-sm font-bold">Featured Games</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {games
-              .filter((game) => game.featured)
-              .map((game) => (
-                <div
-                  key={game.id}
-                  className="border-2 border-[#808080] bg-[#d4d0c8] p-2 cursor-pointer"
-                  style={{
-                    borderTopColor: "#ffffff",
-                    borderLeftColor: "#ffffff",
-                    borderBottomColor: "#404040",
-                    borderRightColor: "#404040",
-                  }}
-                  onClick={() => selectGame(game.id as GameType)}
-                  onMouseEnter={() => {
-                    setHoveredGame(game.id)
-                    playHoverSound()
-                  }}
-                  onMouseLeave={() => setHoveredGame(null)}
-                >
-                  <div className="flex items-center">
-                    <div className="mr-3 border border-[#808080] bg-white p-2 flex-shrink-0">
-                      <img
-                        src={game.image || "/placeholder.svg"}
-                        alt={game.name}
-                        className="w-16 h-16 object-contain"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-bold">{game.name}</h3>
-                      <p className="text-sm mb-2">{game.description}</p>
-                      <button
-                        className="px-4 py-1 text-sm border-2 border-[#808080] bg-[#c0c0c0] active:bg-[#d4d0c8]"
-                        style={{
-                          borderTopColor: "#ffffff",
-                          borderLeftColor: "#ffffff",
-                          borderBottomColor: "#404040",
-                          borderRightColor: "#404040",
-                        }}
-                      >
-                        Play Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* Address bar, as Explorer had */}
+        <div className="flex items-center gap-1 border-b border-[#808080] px-2 py-1">
+          <span>Address</span>
+          <div className="ml-1 flex flex-1 items-center gap-1 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[2px]">
+            <img
+              src="/images/win95/games-16.png"
+              alt=""
+              className="h-4 w-4"
+              style={{ imageRendering: "pixelated" }}
+            />
+            {"C:\\Program Files\\Accessories\\Games"}
           </div>
         </div>
 
-        {/* All games grid */}
-        <div>
-          <div className="bg-[#000080] text-white px-2 py-1 mb-2">
-            <h2 className="text-sm font-bold">
-              {activeTab === "all" ? "All Games" : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Games`}
-            </h2>
-          </div>
-          <div className="grid grid-cols-5 gap-2">
-            {filteredGames.map((game) => (
-              <div
+        {/* Contents */}
+        <div
+          data-contents
+          className="flex-1 overflow-auto bg-white p-2"
+          onClick={() => {
+            setSelected(null)
+            setMenu(null)
+          }}
+        >
+          <div className="flex flex-wrap content-start gap-1">
+            {shown.map((game) => (
+              <button
                 key={game.id}
-                className={`flex flex-col items-center p-2 cursor-pointer border-2 ${
-                  hoveredGame === game.id ? "bg-[#d4d0c8]" : "bg-[#c0c0c0]"
+                type="button"
+                data-game={game.id}
+                title={game.description}
+                className={`flex w-[92px] flex-col items-center gap-1 p-2 text-center ${
+                  selected === game.id ? "bg-[#000080] text-white" : "text-black"
                 }`}
-                style={{
-                  borderTopColor: "#ffffff",
-                  borderLeftColor: "#ffffff",
-                  borderBottomColor: "#404040",
-                  borderRightColor: "#404040",
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelected(game.id)
+                  playSelectSound()
                 }}
-                onClick={() => selectGame(game.id as GameType)}
-                onMouseEnter={() => {
-                  setHoveredGame(game.id)
-                  playHoverSound()
+                onDoubleClick={(e) => {
+                  e.stopPropagation()
+                  selectGame(game.id as GameType)
                 }}
-                onMouseLeave={() => setHoveredGame(null)}
+                onMouseEnter={playHoverSound}
               >
-                <div className="mb-2 border border-[#808080] bg-white p-1 flex items-center justify-center h-16 w-16">
-                  <img
-                    src={game.image || "/placeholder.svg"}
-                    alt={game.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-                <h3 className="text-xs font-bold text-center mb-1">{game.name}</h3>
-                <p className="text-xs text-center mb-1 hidden md:block">{game.description}</p>
-                <div className="mt-auto">
-                  <span className="inline-block px-1 py-0.5 text-xs border border-[#808080] bg-[#d4d0c8]">
-                    {game.category}
-                  </span>
-                </div>
-              </div>
+                <img
+                  src={game.image}
+                  alt=""
+                  className="h-8 w-8"
+                  style={{ imageRendering: "pixelated" }}
+                />
+                <span className="break-words leading-tight">{game.name}</span>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Sound toggle */}
-        <div className="mt-6 flex justify-end">
-          <button
-            className="px-3 py-1 text-sm border-2 border-[#808080] bg-[#c0c0c0] flex items-center"
-            style={{
-              borderTopColor: "#ffffff",
-              borderLeftColor: "#ffffff",
-              borderBottomColor: "#404040",
-              borderRightColor: "#404040",
-            }}
-            onClick={toggleMusic}
-            onMouseEnter={playHoverSound}
-          >
-            <span className="mr-2">{audioEnabled ? "Sound: On" : "Sound: Off"}</span>
-            <span>{audioEnabled ? "🔊" : "🔇"}</span>
-          </button>
-        </div>
-
         {/* Status bar */}
-        <div className="mt-6 border-t border-[#808080] pt-1 flex justify-between text-xs">
-          <div>5 games available</div>
-          <div>© 1995 Microsoft Corporation</div>
+        <div className="flex gap-4 border-t border-white bg-[#c0c0c0] px-2 py-[3px]">
+          <span data-status className="flex-1">
+            {selected ? games.find((g) => g.id === selected)?.description : `${shown.length} object(s)`}
+          </span>
+          <span>Double-click to play</span>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

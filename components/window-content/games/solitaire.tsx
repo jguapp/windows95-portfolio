@@ -608,7 +608,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       {/* Windows 95 Title Bar */}
       <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
         <div className="flex items-center">
-          <img src="/images/games/solitaire-logo.png" alt="Solitaire" className="w-5 h-5 mr-2" />
+          <img src="/images/win95/solitaire-32.png" alt="Solitaire" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
           <span className="font-bold">Solitaire</span>
         </div>
         <button
