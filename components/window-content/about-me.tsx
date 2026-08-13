@@ -179,7 +179,7 @@ export default function AboutMe() {
                       {/* Friend Grid - First Row */}
                       <div className="text-center">
                         <img
-                          src="/images/blob/profile-picture.jpeg"
+                          src="/images/blob/finn.jpeg"
                           alt="Friend"
                           className="w-16 h-16 object-cover mx-auto mb-1"
                         />
@@ -255,15 +255,15 @@ export default function AboutMe() {
                         <table className="text-sm">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4">Name:</td>
+                              <td className="w-[124px] pr-4 align-top">Name:</td>
                               <td>Joel Vasquez</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Member Since:</td>
+                              <td className="w-[124px] pr-4 align-top">Member Since:</td>
                               <td>February 4, 2004</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Last Update:</td>
+                              <td className="w-[124px] pr-4 align-top">Last Update:</td>
                               <td>February 25, 2026</td>
                             </tr>
                           </tbody>
@@ -276,23 +276,23 @@ export default function AboutMe() {
                         <table className="text-sm">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4">School:</td>
+                              <td className="w-[124px] pr-4 align-top">School:</td>
                               <td className="text-[#42b3f5]">Baruch College '26</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Status:</td>
+                              <td className="w-[124px] pr-4 align-top">Status:</td>
                               <td>Student</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Sex:</td>
+                              <td className="w-[124px] pr-4 align-top">Sex:</td>
                               <td className="text-[#42b3f5]">Male</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Residence:</td>
+                              <td className="w-[124px] pr-4 align-top">Residence:</td>
                               <td className="text-[#42b3f5]">New York, NY</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Birthday:</td>
+                              <td className="w-[124px] pr-4 align-top">Birthday:</td>
                               <td>May 21st</td>
                             </tr>
                           </tbody>
@@ -305,15 +305,15 @@ export default function AboutMe() {
                         <table className="text-sm">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4">Email:</td>
+                              <td className="w-[124px] pr-4 align-top">Email:</td>
                               <td className="text-[#42b3f5]">jfvasq1@gmail.com</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Screename:</td>
+                              <td className="w-[124px] pr-4 align-top">Screename:</td>
                               <td className="text-[#42b3f5]">jguapp</td>
                             </tr>
                             <tr>
-                              <td className="pr-4">Websites:</td>
+                              <td className="w-[124px] pr-4 align-top">Websites:</td>
                               <td className="text-[#42b3f5] break-words">
                                 https://github.com/jguapp
                                 <br />

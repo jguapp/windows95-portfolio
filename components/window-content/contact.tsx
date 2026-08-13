@@ -125,7 +125,7 @@ function ToolButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="t9 flex w-[64px] flex-col items-center gap-[2px] border-2 border-transparent px-1 py-[2px] leading-none enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] enabled:active:border-t-[#404040] enabled:active:border-l-[#404040] enabled:active:border-r-white enabled:active:border-b-white disabled:text-[#808080]"
+      className="t9 flex w-[78px] flex-col items-center gap-[2px] border-2 border-transparent px-1 py-[2px] leading-none enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] enabled:active:border-t-[#404040] enabled:active:border-l-[#404040] enabled:active:border-r-white enabled:active:border-b-white disabled:text-[#808080]"
     >
       <span className="t16 leading-none">{glyph}</span>
       <span className="whitespace-nowrap">{label}</span>

@@ -1320,7 +1320,7 @@ h6 {
 
 .page-2005 {
   /* MS Sans Serif needs a little more room than Arial did at the same size. */
-  font-size: 13px !important;
+  font-size: 15px !important;
 }
 
 /* Kept in the shell typeface rather than Arial: one font across the whole site
@@ -1331,19 +1331,19 @@ h6 {
 }
 
 .page-2005 .t10 {
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 
 .page-2005 .t11 {
-  font-size: 11px !important;
-}
-
-.page-2005 .t13 {
   font-size: 13px !important;
 }
 
-.page-2005 .t15 {
+.page-2005 .t13 {
   font-size: 15px !important;
+}
+
+.page-2005 .t15 {
+  font-size: 18px !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1472,23 +1472,23 @@ h6 {
 }
 
 .win95-type {
-  font-size: 13px !important;
+  font-size: 15px !important;
 }
 
 .win95-type .t9 {
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 
 .win95-type .t10 {
-  font-size: 11px !important;
+  font-size: 13px !important;
 }
 
 .win95-type .t13 {
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .win95-type .t16 {
-  font-size: 16px !important;
+  font-size: 18px !important;
 }
 
 /* A chess piece travelling to its new square. The offset is handed in as
