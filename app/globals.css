@@ -1515,3 +1515,138 @@ h6 {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Windows 95 chrome
+
+   The three things that give a screenshot away at a glance are the type, the
+   bevels and the scrollbars. Type is handled by .win95-type above; this is the
+   other two, plus selection and focus.
+   ========================================================================== */
+
+/* Every Windows 95 border is two pixels and four colours, never one grey. */
+.win95-raised {
+  border: none;
+  box-shadow:
+    inset -1px -1px 0 0 #000000,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+
+/* Sunken fields and group boxes invert the same four. */
+.win95-sunken {
+  border: none;
+  box-shadow:
+    inset -1px -1px 0 0 #ffffff,
+    inset 1px 1px 0 0 #808080,
+    inset -2px -2px 0 0 #dfdfdf,
+    inset 2px 2px 0 0 #000000;
+}
+
+/* A pressed button swaps the order and nudges its label down and right. */
+.win95-raised:active {
+  box-shadow:
+    inset -1px -1px 0 0 #ffffff,
+    inset 1px 1px 0 0 #808080,
+    inset -2px -2px 0 0 #dfdfdf,
+    inset 2px 2px 0 0 #000000;
+  padding-left: 1px;
+  padding-top: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbars
+
+   16px wide, a trough of 50% dither between #c0c0c0 and white, a raised thumb,
+   and square end buttons with a four-row black triangle. Drawn rather than
+   shipped as bitmaps, so they stay crisp on any display.
+   -------------------------------------------------------------------------- */
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #c0c0c0 #dfdfdf;
+}
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #c0c0c0;
+  background-image:
+    linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%),
+    linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 1px 1px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #c0c0c0;
+  box-shadow:
+    inset -1px -1px 0 0 #000000,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+
+::-webkit-scrollbar-button:single-button {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: #c0c0c0;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow:
+    inset -1px -1px 0 0 #000000,
+    inset 1px 1px 0 0 #ffffff,
+    inset -2px -2px 0 0 #808080,
+    inset 2px 2px 0 0 #dfdfdf;
+}
+
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 shape-rendering=%22crispEdges%22 fill=%22%23000%22%3E%3Crect x=%228%22 y=%226%22 width=%221%22 height=%221%22/%3E%3Crect x=%227%22 y=%227%22 width=%223%22 height=%221%22/%3E%3Crect x=%226%22 y=%228%22 width=%225%22 height=%221%22/%3E%3Crect x=%225%22 y=%229%22 width=%227%22 height=%221%22/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 shape-rendering=%22crispEdges%22 fill=%22%23000%22%3E%3Crect x=%228%22 y=%229%22 width=%221%22 height=%221%22/%3E%3Crect x=%227%22 y=%228%22 width=%223%22 height=%221%22/%3E%3Crect x=%226%22 y=%227%22 width=%225%22 height=%221%22/%3E%3Crect x=%225%22 y=%226%22 width=%227%22 height=%221%22/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 shape-rendering=%22crispEdges%22 fill=%22%23000%22%3E%3Crect x=%226%22 y=%228%22 width=%221%22 height=%221%22/%3E%3Crect x=%227%22 y=%227%22 width=%221%22 height=%223%22/%3E%3Crect x=%228%22 y=%226%22 width=%221%22 height=%225%22/%3E%3Crect x=%229%22 y=%225%22 width=%221%22 height=%227%22/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 shape-rendering=%22crispEdges%22 fill=%22%23000%22%3E%3Crect x=%229%22 y=%228%22 width=%221%22 height=%221%22/%3E%3Crect x=%228%22 y=%227%22 width=%221%22 height=%223%22/%3E%3Crect x=%227%22 y=%226%22 width=%221%22 height=%225%22/%3E%3Crect x=%226%22 y=%225%22 width=%221%22 height=%227%22/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar-corner {
+  background-color: #c0c0c0;
+}
+
+/* The 2005 web pages predate none of this, but they are web pages inside the
+   shell rather than part of it, so they keep an ordinary scrollbar. */
+.page-2005::-webkit-scrollbar {
+  width: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Selection and focus
+   -------------------------------------------------------------------------- */
+
+::selection {
+  background-color: #000080;
+  color: #ffffff;
+}
+
+/* Windows 95 marked the focused control with a dotted rectangle inset by one
+   pixel. Nothing in the shell showed focus at all before this. */
+#desktop button:focus-visible,
+#desktop [role="button"]:focus-visible,
+#taskbar button:focus-visible,
+#start-menu button:focus-visible,
+[data-messagebox] button:focus-visible {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
