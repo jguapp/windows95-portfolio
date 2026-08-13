@@ -1,20 +1,24 @@
 import "server-only"
+import postgres from "postgres"
 
 /**
  * Guestbook storage.
  *
  * Entries are shared between visitors, so they need somewhere real to live.
- * This talks to Upstash Redis over its REST API, which needs no driver and no
- * connection pooling: two environment variables and fetch. That matters on
- * serverless, where a pooled Postgres client is a liability and every cold
- * start pays for it.
+ * This talks to any Postgres over a single `DATABASE_URL`, which means the free
+ * tier of Neon or Supabase, or a database on a box you own, all work with the
+ * same code and none of them tie the site to its host.
  *
- *   UPSTASH_REDIS_REST_URL
- *   UPSTASH_REDIS_REST_TOKEN
+ *   DATABASE_URL=postgres://user:password@host/dbname?sslmode=require
  *
- * With neither set the guestbook runs against an in-process list instead, so
+ * Use the *pooled* connection string. Serverless runs many short-lived
+ * instances, and pointing them all at a direct Postgres connection exhausts the
+ * server's connection limit under any real traffic; Neon and Supabase both hand
+ * out a pooler URL for exactly this.
+ *
+ * With DATABASE_URL unset the guestbook falls back to an in-process list, so
  * local development works out of the box. That list is per-instance and does
- * not survive a restart, which is exactly why it is not the production path.
+ * not survive a restart, which is why it is not the production path.
  */
 
 export interface GuestbookEntry {
@@ -29,57 +33,118 @@ export interface GuestbookEntry {
   at: string
 }
 
-const KEY = "guestbook:entries"
 const MAX_ENTRIES = 200
 
-const url = process.env.UPSTASH_REDIS_REST_URL
-const token = process.env.UPSTASH_REDIS_REST_TOKEN
+const connectionString = process.env.DATABASE_URL
 
 export function isPersistent(): boolean {
-  return Boolean(url && token)
+  return Boolean(connectionString)
 }
 
 /** Development fallback. Per-instance and lost on restart, by design. */
 const memory: GuestbookEntry[] = []
 
-async function redis(command: unknown[]): Promise<unknown> {
-  const response = await fetch(url as string, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(command),
-    cache: "no-store",
-  })
-  if (!response.ok) throw new Error(`Upstash responded ${response.status}`)
-  const body = (await response.json()) as { result?: unknown }
-  return body.result
+/**
+ * One connection per instance.
+ *
+ * A serverless instance handles one request at a time, so a pool of one is all
+ * it can use, and anything larger just holds connections the pooler could give
+ * to someone else. Prepared statements are off because a transaction-mode
+ * pooler cannot keep them between statements.
+ */
+let sql: ReturnType<typeof postgres> | null = null
+
+function db() {
+  if (!connectionString) return null
+  if (!sql) {
+    sql = postgres(connectionString, {
+      max: 1,
+      idle_timeout: 20,
+      prepare: false,
+    })
+  }
+  return sql
 }
 
+/**
+ * Creates the table on first use.
+ *
+ * Kept as a promise so concurrent requests on a cold instance wait on one
+ * statement rather than each issuing their own CREATE.
+ */
+let ready: Promise<void> | null = null
+
+function ensureTable(client: NonNullable<ReturnType<typeof db>>): Promise<void> {
+  if (!ready) {
+    ready = client`
+      CREATE TABLE IF NOT EXISTS guestbook (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        message TEXT NOT NULL,
+        site TEXT,
+        drawing TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `.then(() => undefined)
+    // A failed migration must not be cached, or every later request believes
+    // the table exists.
+    ready.catch(() => {
+      ready = null
+    })
+  }
+  return ready
+}
+
+interface Row {
+  id: string
+  name: string
+  message: string
+  site: string | null
+  drawing: string | null
+  created_at: Date
+}
+
+const toEntry = (row: Row): GuestbookEntry => ({
+  id: row.id,
+  name: row.name,
+  message: row.message,
+  site: row.site ?? undefined,
+  drawing: row.drawing ?? undefined,
+  at: row.created_at.toISOString(),
+})
+
 export async function listEntries(): Promise<GuestbookEntry[]> {
-  if (!isPersistent()) return [...memory]
+  const client = db()
+  if (!client) return [...memory]
 
-  // Newest first: entries are pushed onto the head of the list.
-  const raw = (await redis(["LRANGE", KEY, 0, MAX_ENTRIES - 1])) as string[] | null
-  if (!raw) return []
-
-  return raw.flatMap((item) => {
-    try {
-      const parsed = JSON.parse(item) as GuestbookEntry
-      // A malformed row should cost that one row, not the whole page.
-      return parsed && typeof parsed.message === "string" ? [parsed] : []
-    } catch {
-      return []
-    }
-  })
+  await ensureTable(client)
+  const rows = await client<Row[]>`
+    SELECT id, name, message, site, drawing, created_at
+    FROM guestbook
+    ORDER BY created_at DESC
+    LIMIT ${MAX_ENTRIES}
+  `
+  return rows.map(toEntry)
 }
 
 export async function addEntry(entry: GuestbookEntry): Promise<void> {
-  if (!isPersistent()) {
+  const client = db()
+  if (!client) {
     memory.unshift(entry)
     memory.length = Math.min(memory.length, MAX_ENTRIES)
     return
   }
 
-  await redis(["LPUSH", KEY, JSON.stringify(entry)])
-  // Trim on write so the list cannot grow without bound.
-  await redis(["LTRIM", KEY, 0, MAX_ENTRIES - 1])
+  await ensureTable(client)
+  await client`
+    INSERT INTO guestbook (id, name, message, site, drawing, created_at)
+    VALUES (
+      ${entry.id},
+      ${entry.name},
+      ${entry.message},
+      ${entry.site ?? null},
+      ${entry.drawing ?? null},
+      ${entry.at}
+    )
+  `
 }
