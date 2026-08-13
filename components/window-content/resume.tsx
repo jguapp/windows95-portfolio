@@ -541,6 +541,10 @@ const MenuDropdown = ({
   )
 }
 
+/** A letter page at 96dpi, less one inch of margin either side. */
+const PAGE_WIDTH = 816
+const PAGE_MARGIN = 96
+
 export default function Resume() {
   // Helper function to convert font size to the HTML font size value (1-7)
   const getFontSizeValue = (size: number): string => {
@@ -570,7 +574,33 @@ export default function Resume() {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
-  const [zoomLevel] = useState("100%")
+  const [zoomLevel, setZoomLevel] = useState("100%")
+  /** Where the caret is, for the status bar. Word always showed this. */
+  const [caret, setCaret] = useState({ line: 1, col: 1 })
+
+  /**
+   * Reads the caret out of the selection.
+   *
+   * Line is counted by how many block elements precede the one holding the
+   * caret, which is as close to Word's idea of a line as a contentEditable
+   * document gets without laying out the text itself.
+   */
+  const updateCaret = () => {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return
+    const node = selection.anchorNode
+    if (!node) return
+
+    const page = resumeRef.current
+    if (!page || !page.contains(node)) return
+
+    const block = (node.nodeType === 3 ? node.parentElement : (node as HTMLElement))?.closest(
+      "p, li, h1, h2, h3, div",
+    )
+    const blocks = [...page.querySelectorAll("p, li, h1, h2, h3")]
+    const index = block ? blocks.indexOf(block as HTMLElement) : -1
+    setCaret({ line: index >= 0 ? index + 1 : 1, col: selection.anchorOffset + 1 })
+  }
   const [undoStack, setUndoStack] = useState<string[]>([])
   const [redoStack, setRedoStack] = useState<string[]>([])
   const [clipboardContent, setClipboardContent] = useState<string | null>(null)
@@ -1032,7 +1062,13 @@ export default function Resume() {
       </div>
 
       {/* Standard Toolbar */}
-      <div className="toolbar bg-[#c0c0c0] flex items-center p-1 border-b border-[#808080] gap-0 w-full">
+      <div
+        data-toolbar
+        className="toolbar bg-[#c0c0c0] flex items-center p-1 border-b border-[#808080] gap-0 w-full"
+      >
+        {/* Grab handle: Word's toolbars could be torn off, and every one wore
+            this two-line ridge at its left edge. */}
+        <span className="mr-1 h-[20px] w-[4px] shrink-0 border-l border-l-white border-r border-r-[#808080]" />
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
           onClick={handleNewDocument}
@@ -1237,7 +1273,13 @@ export default function Resume() {
       </div>
 
       {/* Formatting Toolbar */}
-      <div className="toolbar bg-[#c0c0c0] flex items-center p-1 border-b border-[#808080] gap-0 w-full">
+      <div
+        data-toolbar
+        className="toolbar bg-[#c0c0c0] flex items-center p-1 border-b border-[#808080] gap-0 w-full"
+      >
+        {/* Grab handle: Word's toolbars could be torn off, and every one wore
+            this two-line ridge at its left edge. */}
+        <span className="mr-1 h-[20px] w-[4px] shrink-0 border-l border-l-white border-r border-r-[#808080]" />
         <select
           className="w-32 h-6 bg-white border border-[#808080] shadow-[inset_1px_1px_#404040] px-1 text-[11px]"
           value="Normal"
@@ -1521,26 +1563,96 @@ export default function Resume() {
             className="w-4 h-4"
           />
         </button>
+        <span className="mx-1 h-5 w-[2px] border-l border-l-[#808080] border-r border-r-white" />
+        <select
+          data-zoom
+          aria-label="Zoom"
+          className="h-6 w-[68px] border border-[#808080] bg-white px-1 text-[11px] shadow-[inset_1px_1px_#404040]"
+          value={zoomLevel}
+          onChange={(e) => setZoomLevel(e.target.value)}
+        >
+          {["50%", "75%", "100%", "150%", "200%"].map((level) => (
+            <option key={level}>{level}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Ruler */}
-      <div className="h-5 bg-[#c0c0c0] border-b border-[#808080] relative">
-        <div className="absolute top-3 left-0 w-full h-2 flex">
-          {Array.from({ length: 80 }).map((_, i) => (
-            <div
-              key={i}
-              className={`border-l border-[#404040] ${i % 10 === 0 ? "h-2" : i % 5 === 0 ? "h-1.5" : "h-1"}`}
-              style={{ width: "0.125rem" }}
-            ></div>
+      {/*
+        Ruler.
+
+        Word 95 always showed one under the toolbars: a white measure the width
+        of the text column, grey where the margins are, numbered every inch with
+        a tick at each eighth, and the indent markers at either end. The old one
+        was eighty undifferentiated ticks two pixels apart, which measured
+        nothing and matched no page width.
+      */}
+      <div data-ruler className="flex justify-center overflow-hidden bg-[#c0c0c0] px-2 py-1">
+        <div
+          className="relative h-[18px] shrink-0 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white"
+          style={{ width: PAGE_WIDTH }}
+        >
+          {/* Margins, shown as the grey ends of the measure. */}
+          <div className="absolute inset-y-0 left-0 bg-[#c0c0c0]" style={{ width: PAGE_MARGIN }} />
+          <div className="absolute inset-y-0 right-0 bg-[#c0c0c0]" style={{ width: PAGE_MARGIN }} />
+
+          {/* An inch is 96 CSS pixels, so the numbering lines up with the page. */}
+          {Array.from({ length: Math.floor(PAGE_WIDTH / 12) }).map((_, i) => {
+            const x = i * 12
+            const inch = x % 96 === 0
+            const half = x % 48 === 0
+            return (
+              <div
+                key={i}
+                className="absolute bg-[#404040]"
+                style={{
+                  left: x,
+                  top: inch ? 4 : half ? 6 : 8,
+                  width: 1,
+                  height: inch ? 10 : half ? 6 : 3,
+                }}
+              />
+            )
+          })}
+          {Array.from({ length: Math.floor(PAGE_WIDTH / 96) }).map((_, i) => (
+            <span
+              key={`n${i}`}
+              className="absolute select-none text-[9px] leading-none text-[#404040]"
+              style={{ left: i * 96 + 2, top: 3 }}
+            >
+              {i === 0 ? "" : i}
+            </span>
           ))}
+
+          {/* Indent markers: first line above, left and right below. */}
+          <div
+            className="absolute h-0 w-0 border-x-[5px] border-t-[7px] border-x-transparent border-t-[#404040]"
+            style={{ left: PAGE_MARGIN - 5, top: 0 }}
+          />
+          <div
+            className="absolute h-0 w-0 border-x-[5px] border-b-[7px] border-x-transparent border-b-[#404040]"
+            style={{ left: PAGE_MARGIN - 5, bottom: 0 }}
+          />
+          <div
+            className="absolute h-0 w-0 border-x-[5px] border-b-[7px] border-x-transparent border-b-[#404040]"
+            style={{ right: PAGE_MARGIN - 5, bottom: 0 }}
+          />
         </div>
       </div>
 
-      {/* Document Content */}
+      {/*
+        The document sat flush against the window, which is the one thing that
+        never looked like Word. A page is a white sheet with an edge, sitting on
+        the grey workspace, and the zoom scales the sheet rather than the window.
+      */}
+      <div data-workspace className="flex-1 overflow-auto bg-[#808080] p-4">
       <div
         ref={resumeRef}
-        className="document flex-1 overflow-auto p-6 bg-white"
+        data-page
+        className="document mx-auto bg-white p-10 shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
+        onKeyUp={updateCaret}
+        onClick={updateCaret}
         style={{
+          width: PAGE_WIDTH,
           fontFamily: fontFamily,
           fontSize: `${fontSize}px`,
           fontWeight: isBold ? "bold" : "normal",
@@ -1829,6 +1941,32 @@ export default function Resume() {
             </div>
           </div>
         </div>
+      </div>
+      </div>
+
+      {/*
+        Status bar. Word 95 reported the page, section, page count, the caret's
+        distance down the page and its line and column, with the five mode
+        indicators greyed until they were switched on. This window had none.
+      */}
+      <div
+        data-status
+        className="flex items-center gap-0 border-t border-white bg-[#c0c0c0] px-1 py-[2px] text-[11px]"
+      >
+        {["Page 1", "Sec 1", "1/1"].map((cell) => (
+          <span key={cell} className="border-r border-r-[#808080] px-2">
+            {cell}
+          </span>
+        ))}
+        <span className="border-r border-r-[#808080] px-2">At {(1 + (caret.line - 1) * 0.17).toFixed(1)}&quot;</span>
+        <span className="border-r border-r-[#808080] px-2">Ln {caret.line}</span>
+        <span className="border-r border-r-[#808080] px-2">Col {caret.col}</span>
+        <span className="flex-1" />
+        {["REC", "TRK", "EXT", "OVR", "WPH"].map((mode) => (
+          <span key={mode} className="px-2 text-[#808080]">
+            {mode}
+          </span>
+        ))}
       </div>
 
       {/* Dialogs */}
