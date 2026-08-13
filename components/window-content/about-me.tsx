@@ -7,18 +7,19 @@ export default function AboutMe() {
     <div className="bg-[#D8DFEA] text-black h-full overflow-auto">
       {/* TheFacebook header with integrated navigation */}
       <div className="w-full bg-[#3B5998]">
-        <div className="relative h-[105px]">
+        <div className="relative h-[130px]">
           {/* Main header background with image */}
           <div className="absolute inset-0">
             <img
-              src="/images/blob/screenshot-2025-05-08-at-12-01-06-pm.png"
+              src="/images/blob/thefacebook-header.png"
               alt="TheFacebook Header"
               className="w-full h-full object-cover object-center"
+              style={{ imageRendering: "auto" }}
             />
           </div>
 
           {/* Navigation links directly on top of the header */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-40 space-x-6 text-white text-sm">
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-[19%] space-x-6 text-white text-sm">
             <a href="#" className="hover:underline">
               home
             </a>
@@ -107,10 +108,10 @@ export default function AboutMe() {
               <div className="flex-1 flex items-stretch h-full">
                 <div className="w-full h-full flex flex-col justify-center bg-white">
                   <img
-                    src="/images/blob/mcdonalds-ad.jpeg"
-                    alt="McDonald's 90s Advertisement"
-                    className="w-[200px] h-[492px] max-h-full"
-                    style={{ objectPosition: "center" }}
+                    src="/images/blob/skyscraper-ad.png"
+                    alt="Advertisement"
+                    className="h-full w-full object-cover"
+                    style={{ imageRendering: "pixelated" }}
                   />
                 </div>
               </div>
@@ -140,9 +141,11 @@ export default function AboutMe() {
                   <div className="bg-[#3B5998] text-white px-1 py-1 text-sm font-bold">Picture</div>
                   <div className="p-3 flex justify-center">
                     <img
-                      src="/images/blob/profile-picture.jpeg"
+                      src="/images/blob/profile-headshot.jpeg"
                       alt="Profile"
-                      className="w-[120px] h-[150px] object-cover"
+                      // The headshot is square, and a 120x150 box was cropping
+                      // the sides off it rather than showing the whole crop.
+                      className="h-[150px] w-[150px] object-cover"
                     />
                   </div>
                 </div>
@@ -264,7 +267,7 @@ export default function AboutMe() {
                             </tr>
                             <tr>
                               <td className="w-[124px] pr-4 align-top">Last Update:</td>
-                              <td>February 25, 2026</td>
+                              <td>August 13, 2026</td>
                             </tr>
                           </tbody>
                         </table>
@@ -277,7 +280,7 @@ export default function AboutMe() {
                           <tbody className="leading-tight">
                             <tr>
                               <td className="w-[124px] pr-4 align-top">School:</td>
-                              <td className="text-[#42b3f5]">Baruch College '26</td>
+                              <td className="text-[#42b3f5]">Baruch College '27</td>
                             </tr>
                             <tr>
                               <td className="w-[124px] pr-4 align-top">Status:</td>
@@ -330,15 +333,15 @@ export default function AboutMe() {
                         <table className="text-sm w-full">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4 align-top w-1/4">Looking For:</td>
-                              <td className="text-[#42b3f5]">Networking, Internship Opportunities</td>
+                              <td className="w-[124px] pr-4 align-top">Looking For:</td>
+                              <td className="text-[#42b3f5]">Networking, New Grad Opportunities</td>
                             </tr>
                             <tr>
-                              <td className="pr-4 align-top w-1/4">Interested In:</td>
+                              <td className="w-[124px] pr-4 align-top">Interested In:</td>
                               <td className="text-[#42b3f5]">Machine Learning, Data Science, Web Development</td>
                             </tr>
                             <tr>
-                              <td className="pr-4 align-top w-1/4">Interests:</td>
+                              <td className="w-[124px] pr-4 align-top">Interests:</td>
                               <td className="text-[#42b3f5] break-words">
                                 Reading, Writing, Open Source, Basketball, Legos, Watching Movies, Guitar, Gaming, Math,
                                 Coding, Working Out, Sleeping
@@ -353,7 +356,7 @@ export default function AboutMe() {
                         <table className="text-sm w-full">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4 align-top w-1/4">Favorite Music:</td>
+                              <td className="w-[124px] pr-4 align-top">Favorite Music:</td>
                               <td className="text-[#42b3f5] break-words">
                                 The Strokes, Arctic Monkeys, Radiohead, Mac Miller, Kendrick Lamar, Bob Dylan, Marvin
                                 Gaye, Faye Webster, Stevie Wonder, Queen, Michael Jackson, Billy Joel, Tame Impala
@@ -368,7 +371,7 @@ export default function AboutMe() {
                         <table className="text-sm w-full">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4 align-top w-1/4">Favorite Movies:</td>
+                              <td className="w-[124px] pr-4 align-top">Favorite Movies:</td>
                               <td className="text-[#42b3f5] break-words">
                                 Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Pitch Perfect, Spiderman
                                 2, Good Will Hunting, Star Wars
@@ -383,11 +386,17 @@ export default function AboutMe() {
                         <table className="text-sm w-full">
                           <tbody className="leading-tight">
                             <tr>
-                              <td className="pr-4 align-top w-1/4">About Me:</td>
+                              <td className="w-[124px] pr-4 align-top">About Me:</td>
                               <td>
-                                Hi there! I&apos;m Joel, a Computer Science student at Baruch College with a passion for
-                                machine learning, data engineering, and web development. I&apos;m currently working as a
-                                Data Engineer at CUNY Institute for Demographic Research while pursuing my degree.
+                                Hi there! I&apos;m Joel, a Computer Science student at Baruch College, graduating
+                                in 2027. I build backend and infrastructure: the things that have to keep working when
+                                nobody is watching them. This summer I&apos;m a Software Engineer Intern at Liberty
+                                Mutual, where I built a Kubernetes right-sizing engine that found $53.3K a year in
+                                savings and automated disaster recovery across 877 virtual machines. Before that I
+                                spent a year deploying AI agents at the Robert Wood Johnson Foundation and two years
+                                writing data pipelines at the CUNY Institute for Demographic Research. Outside work I
+                                run the ColorStack chapter here, which grew from four founding members to over three
+                                hundred, and I build things like the desktop you are reading this on.
                               </td>
                             </tr>
                           </tbody>
