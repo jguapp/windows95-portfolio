@@ -541,9 +541,21 @@ const MenuDropdown = ({
   )
 }
 
-/** A letter page at 96dpi, less one inch of margin either side. */
-const PAGE_WIDTH = 816
-const PAGE_MARGIN = 96
+/**
+ * The page, and the margins the ruler draws.
+ *
+ * Wider than a strict 8.5in sheet on purpose: the real resume runs narrow
+ * margins and packs each bullet onto fewer lines, and at letter width with an
+ * inch either side the same text wrapped two or three times more often than
+ * the document it is copying.
+ *
+ * PAGE_MARGIN has to match the page's own padding or the ruler lies about
+ * where the text starts, which it did: it was drawing one-inch margins over a
+ * page padded by 40.
+ */
+const PAGE_WIDTH = 920
+const PAGE_PADDING = 44
+const PAGE_MARGIN = PAGE_PADDING
 
 export default function Resume() {
   // Helper function to convert font size to the HTML font size value (1-7)
@@ -1648,11 +1660,12 @@ export default function Resume() {
       <div
         ref={resumeRef}
         data-page
-        className="document mx-auto bg-white p-10 shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
+        className="document mx-auto bg-white shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
         onKeyUp={updateCaret}
         onClick={updateCaret}
         style={{
           width: PAGE_WIDTH,
+          padding: PAGE_PADDING,
           fontFamily: fontFamily,
           fontSize: `${fontSize}px`,
           fontWeight: isBold ? "bold" : "normal",

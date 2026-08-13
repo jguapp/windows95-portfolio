@@ -280,29 +280,16 @@ export default function Pong({ onReturn }: PongProps) {
     lastFrameRef.current = now
     if (squashRef.current > 0) squashRef.current = Math.max(0, squashRef.current - dt)
 
-    // Clear canvas with a neon grid background
-    ctx.fillStyle = "black"
+    /*
+      Black and white, as Pong was.
+
+      The magenta grid, the cyan glow and the two-tone score were an eighties
+      arcade cabinet, not a 1972 television game. Everything is white on black
+      now: the only reason the original had two colours was that some cabinets
+      taped coloured gel over the screen.
+    */
+    ctx.fillStyle = "#000000"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    // Draw neon grid
-    ctx.strokeStyle = "rgba(255, 0, 255, 0.2)"
-    ctx.lineWidth = 1
-
-    // Vertical lines
-    for (let x = 0; x < canvas.width; x += 20) {
-      ctx.beginPath()
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, canvas.height)
-      ctx.stroke()
-    }
-
-    // Horizontal lines
-    for (let y = 0; y < canvas.height; y += 20) {
-      ctx.beginPath()
-      ctx.moveTo(0, y)
-      ctx.lineTo(canvas.width, y)
-      ctx.stroke()
-    }
 
     if (!pausedRef.current && !gameOverRef.current && serveDelayRef.current > 0) {
       // Between points the ball waits at the centre line. Play resumes when
@@ -457,19 +444,14 @@ export default function Pong({ onReturn }: PongProps) {
     }
 
     // Draw center line
-    ctx.setLineDash([5, 5])
-    ctx.beginPath()
-    ctx.moveTo(canvas.width / 2, 0)
-    ctx.lineTo(canvas.width / 2, canvas.height)
-    ctx.strokeStyle = "rgba(255, 0, 255, 0.5)"
-    ctx.lineWidth = 2
-    ctx.stroke()
-    ctx.setLineDash([])
+    // The dashed centre line was a column of short white blocks, not a stroke.
+    ctx.fillStyle = "#ffffff"
+    for (let y = 4; y < canvas.height; y += 32) {
+      ctx.fillRect(canvas.width / 2 - 2, y, 4, 18)
+    }
 
-    // Draw paddles with neon glow
-    ctx.shadowBlur = 15
-    ctx.shadowColor = "#ff00ff"
-    ctx.fillStyle = "#ff00ff"
+    // Paddles
+    ctx.fillStyle = "#ffffff"
 
     // Player paddle
     ctx.fillRect(0, playerPosRef.current, PADDLE_WIDTH, PADDLE_HEIGHT)
@@ -479,20 +461,17 @@ export default function Pong({ onReturn }: PongProps) {
 
     // Draw the streak the ball left behind, oldest and faintest first
     if (!reducedMotionRef.current) {
-      ctx.shadowBlur = 0
       trailRef.current.forEach((point, i) => {
         const age = (i + 1) / (trailRef.current.length + 1)
-        ctx.fillStyle = `rgba(0, 255, 255, ${age * 0.4})`
+        ctx.fillStyle = `rgba(255, 255, 255, ${age * 0.35})`
         const inset = (1 - age) * 3
         ctx.fillRect(point.x + inset, point.y + inset, BALL_SIZE - inset * 2, BALL_SIZE - inset * 2)
       })
     }
 
-    // Draw ball with neon glow. It flattens against the paddle on impact and
-    // springs back over the next few frames.
-    ctx.shadowBlur = 20
-    ctx.shadowColor = "#00ffff"
-    ctx.fillStyle = "#00ffff"
+    // The ball flattens against the paddle on impact and springs back over the
+    // next few frames.
+    ctx.fillStyle = "#ffffff"
     const squash = reducedMotionRef.current ? 0 : squashRef.current / SQUASH_TIME
     const ballW = BALL_SIZE * (1 - squash * 0.45)
     const ballH = BALL_SIZE * (1 + squash * 0.45)
@@ -503,15 +482,11 @@ export default function Pong({ onReturn }: PongProps) {
       ballH,
     )
 
-    // Reset shadow
-    ctx.shadowBlur = 0
-
     // Draw score
     ctx.font = "24px 'Press Start 2P'"
     ctx.textAlign = "center"
-    ctx.fillStyle = "#ff00ff"
+    ctx.fillStyle = "#ffffff"
     ctx.fillText(score.player.toString(), canvas.width / 4, 30)
-    ctx.fillStyle = "#00ffff"
     ctx.fillText(score.computer.toString(), (canvas.width / 4) * 3, 30)
 
     // Draw game over message
@@ -519,17 +494,14 @@ export default function Pong({ onReturn }: PongProps) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx.fillStyle = "#ff00ff"
+      ctx.fillStyle = "#ffffff"
       ctx.font = "24px 'Press Start 2P'"
       ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 30)
-
-      if (winner === "player") {
-        ctx.fillStyle = "#00ffff"
-        ctx.fillText("YOU WIN!", canvas.width / 2, canvas.height / 2)
-      } else {
-        ctx.fillStyle = "#ff0000"
-        ctx.fillText("COMPUTER WINS!", canvas.width / 2, canvas.height / 2)
-      }
+      ctx.fillText(
+        winner === "player" ? "YOU WIN!" : "COMPUTER WINS!",
+        canvas.width / 2,
+        canvas.height / 2,
+      )
 
       ctx.font = "16px 'Press Start 2P'"
       ctx.fillStyle = "#ffffff"
@@ -541,7 +513,7 @@ export default function Pong({ onReturn }: PongProps) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx.fillStyle = "#00ffff"
+      ctx.fillStyle = "#ffffff"
       ctx.font = "24px 'Press Start 2P'"
       ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2)
     }
