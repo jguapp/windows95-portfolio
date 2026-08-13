@@ -28,7 +28,7 @@ No hero section. No parallax. Just a teal desktop, a Start menu, and a résumé 
 
 </div>
 
-Not a PDF embed. A working Word 95 window with a live menu bar, formatting toolbar, and an editable document. Change the font, resize the text, insert a table, run a spell check.
+Not a PDF embed. A working Word 95 window: two toolbars, a ruler with indent markers, a status bar that tracks the caret, and an editable page sitting on the grey workspace. Change the font, resize the text, insert a table, run a spell check, zoom the page.
 
 <div align="center">
 <img src=".github/assets/resume.png" alt="The résumé rendered inside a Microsoft Word 95 window" width="90%" />
@@ -38,14 +38,20 @@ Not a PDF embed. A working Word 95 window with a live menu bar, formatting toolb
 
 <div align="center">
 
-## Five games, all playable
+## Eight games, all playable
 
 </div>
 
-Chess with a real opponent. Minesweeper with three difficulties. Tetris, Solitaire, and Pong. Every one runs in its own draggable window, and every one keeps score.
+Solitaire, Minesweeper, FreeCell, Hearts and Reversi, the ones Windows actually shipped, plus Chess, Tetris and Pong. They live in a folder of program icons, the way they did.
 
 <div align="center">
-<img src=".github/assets/games.png" alt="The Games window listing Chess, Solitaire, Tetris, Minesweeper and Pong" width="90%" />
+<img src=".github/assets/games.png" alt="The Games folder, eight program icons in an Explorer window" width="90%" />
+</div>
+
+FreeCell knows its 32,000 deals by number, and they are the real ones: game 617 here is the 617 everyone remembers. Hearts plays four hands with passing and Shooting the Moon. Minesweeper has the seven-segment counters, the smiley that reacts, and best times that survive a refresh.
+
+<div align="center">
+<img src=".github/assets/minesweeper.png" alt="Minesweeper with its LED counters and smiley button" width="90%" />
 </div>
 
 ###
@@ -66,14 +72,44 @@ Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It dra
 
 <div align="center">
 
-## A gallery, and a profile straight out of 2004
+## The projects are a video site from 2005
 
 </div>
 
+Every project is a video page: view counts, star ratings, related videos down the side, and comment threads where people ask the awkward questions.
+
+<div align="center">
+<img src=".github/assets/projects.png" alt="The projects window styled as YouTube in 2005" width="90%" />
+</div>
+
+###
+
+<div align="center">
+
+## Mail that behaves like mail
+
+</div>
+
+Contact is Outlook Express: folder tree, message list, reading pane, and a compose window that actually sends.
+
+<div align="center">
+<img src=".github/assets/contact.png" alt="The contact window styled as Outlook Express" width="90%" />
+</div>
+
+###
+
+<div align="center">
+
+## A gallery, and a profile
+
+</div>
+
+The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one subfolder per event.
+
 <table align="center">
 <tr>
-<td width="50%"><img src=".github/assets/gallery.png" alt="The photo gallery window" /></td>
-<td width="50%"><img src=".github/assets/about.png" alt="The About Me window styled as theFacebook" /></td>
+<td width="50%"><img src=".github/assets/gallery.png" alt="The gallery as an Explorer window in Thumbnail view" /></td>
+<td width="50%"><img src=".github/assets/about.png" alt="The About Me window" /></td>
 </tr>
 </table>
 
@@ -89,10 +125,14 @@ Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It dra
 
 | | |
 | --- | --- |
-| **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop |
+| **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle |
+| **MS-DOS Prompt** | fourteen commands over a virtual `C:\` drive |
+| **Notepad** | opens and saves to that same drive, and DOS can read what you wrote |
 | **Blue Screen of Death** | it's in there, and it's faithful |
 | **Display Properties** | five wallpapers and working screen savers |
-| **Right-click** | the desktop, the icons, everywhere |
+| **Drag to the Recycle Bin** | and File > Restore puts it back where it was |
+| **The tray speaker** | a volume slider that governs every sound |
+| **Right-click** | the desktop, the icons, the Solitaire table, everywhere |
 
 </div>
 
