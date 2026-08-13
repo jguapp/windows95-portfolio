@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { createSound, type SynthAudio } from "@/lib/sound"
+import CardCascade from "./card-cascade"
 
 interface SolitaireProps {
   onReturn: () => void
@@ -61,6 +62,10 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   const [showNameInput, setShowNameInput] = useState(false)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const [gameStarted, setGameStarted] = useState(false)
+  // Snapshot of the foundations at the moment of victory, handed to the
+  // cascade so it keeps running while the piles themselves are cleared.
+  const [cascadePiles, setCascadePiles] = useState<CardState[][] | null>(null)
+  const [cascadeOrigins, setCascadeOrigins] = useState<{ x: number; y: number }[]>([])
 
   const gameAreaRef = useRef<HTMLDivElement>(null)
 
@@ -122,6 +127,27 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     }
   }, [gameStarted, gameWon])
 
+  // Cards that are mid-animation. Both animations are one-shot and short, so
+  // the id is simply dropped from the set once the CSS has had time to run.
+  const [flipping, setFlipping] = useState<Set<string>>(new Set())
+  const [landing, setLanding] = useState<Set<string>>(new Set())
+
+  const mark = (setter: typeof setFlipping, id: string, ms: number) => {
+    setter((prev) => new Set(prev).add(id))
+    setTimeout(
+      () =>
+        setter((prev) => {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        }),
+      ms,
+    )
+  }
+
+  const markFlip = (id: string) => mark(setFlipping, id, 200)
+  const markLanding = (id: string) => mark(setLanding, id, 160)
+
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -172,6 +198,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     setMoves(0)
     setScore(0)
     setGameWon(false)
+    setCascadePiles(null)
     setTimeElapsed(0)
     setGameStarted(true)
 
@@ -224,6 +251,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
     if (card) {
       card.faceUp = true
+      markFlip(card.id)
       setStock(newStock)
       setWaste([...waste, card])
       setMoves(moves + 1)
@@ -328,7 +356,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     // Play sound if moved
     if (moved) {
       playFlipSound()
-      checkWinCondition()
     }
 
     // Reset drag state
@@ -349,6 +376,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         const newFoundations = [...foundations]
         newFoundations[foundationIndex] = [...newFoundations[foundationIndex], card]
 
+        markLanding(card.id)
         setWaste(newWaste)
         setFoundations(newFoundations)
         setMoves(moves + 1)
@@ -370,14 +398,32 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
           const newTopCard = newTableau[sourceIndex][newTableau[sourceIndex].length - 1]
           if (!newTopCard.faceUp) {
             newTopCard.faceUp = true
+            markFlip(newTopCard.id)
             setScore(score + 5) // Points for revealing a card
           }
         }
 
+        markLanding(card.id)
         setTableau(newTableau)
         setFoundations(newFoundations)
         setMoves(moves + 1)
         setScore(score + 10) // Points for moving to foundation
+      }
+    }
+  }
+
+  /**
+   * Sends a card straight to the first foundation that will take it.
+   *
+   * The status bar has always promised this and nothing implemented it, so a
+   * double-click did nothing at all.
+   */
+  const sendToFoundation = (sourceType: PileType, sourceIndex: number, card: CardState) => {
+    for (let f = 0; f < 4; f += 1) {
+      if (canMoveToFoundation(card, f)) {
+        moveCardToFoundation(sourceType, sourceIndex, f)
+        playFlipSound()
+        return
       }
     }
   }
@@ -395,6 +441,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         const newTableau = [...tableau]
         newTableau[targetIndex] = [...newTableau[targetIndex], card]
 
+        markLanding(card.id)
         setWaste(newWaste)
         setTableau(newTableau)
         setMoves(moves + 1)
@@ -412,28 +459,43 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         const newTopCard = newTableau[sourceIndex][newTableau[sourceIndex].length - 1]
         if (!newTopCard.faceUp) {
           newTopCard.faceUp = true
+          markFlip(newTopCard.id)
           setScore(score + 5) // Points for revealing a card
         }
       }
 
+      for (const c of cardsToMove) markLanding(c.id)
       setTableau(newTableau)
       setMoves(moves + 1)
     }
   }
 
-  // Check if the game is won
-  const checkWinCondition = () => {
-    // Game is won when all foundations have 13 cards (A through K)
+  // Check if the game is won.
+  //
+  // This watches the foundations rather than running inside the move handlers,
+  // which read the pre-move state and so missed the winning move entirely.
+  useEffect(() => {
     const isWon = foundations.every((foundation) => foundation.length === 13)
+    if (!isWon || gameWon) return
 
-    if (isWon && !gameWon) {
-      setGameWon(true)
-      playWinSound()
-      // Add bonus points for winning
-      setScore(score + 100)
-      setShowNameInput(true)
+    setGameWon(true)
+    playWinSound()
+    setScore((s) => s + 100)
+
+    // Measure where the piles sit before the cascade takes the table over, so
+    // the cards appear to leave the foundations they were stacked on.
+    const area = gameAreaRef.current
+    if (area) {
+      const base = area.getBoundingClientRect()
+      const origins = Array.from(area.querySelectorAll<HTMLElement>("[data-foundation]")).map((el) => {
+        const r = el.getBoundingClientRect()
+        return { x: r.left - base.left, y: r.top - base.top }
+      })
+      setCascadeOrigins(origins)
     }
-  }
+    setCascadePiles(foundations)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foundations, gameWon])
 
   // Toggle sound
   const toggleSound = () => {
@@ -515,10 +577,13 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     const isRed = card.suit === "hearts" || card.suit === "diamonds"
     const suitSymbol = card.suit === "hearts" ? "♥" : card.suit === "diamonds" ? "♦" : card.suit === "clubs" ? "♣" : "♠"
 
+    // A card is either turning face-up or settling onto a pile, never both.
+    const motion = flipping.has(card.id) ? "anim-card-flip" : landing.has(card.id) ? "anim-card-land" : ""
+
     return (
       <div
         key={card.id}
-        className={`w-16 h-24 rounded border border-gray-400 bg-white ${isStacked ? "" : ""}`}
+        className={`w-16 h-24 rounded border border-gray-400 bg-white ${motion}`}
         style={isStacked ? { top: `${index * 20}px` } : {}}
       >
         <div className="p-1 flex flex-col justify-between h-full">
@@ -707,6 +772,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
                     startDrag([card], "waste", 0, e)
                   }
                 }}
+                onDoubleClick={() => {
+                  if (waste.length > 0) sendToFoundation("waste", 0, waste[waste.length - 1])
+                }}
               >
                 {renderCard(waste[waste.length - 1], 0)}
               </div>
@@ -720,6 +788,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
           {foundations.map((pile, i) => (
             <div
               key={`foundation-${i}`}
+              data-foundation={i}
               className="w-16 h-24 rounded border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] bg-green-800 relative"
               onMouseUp={(e) => endDrag(e, "foundation", i)}
             >
@@ -759,6 +828,10 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
                       startDrag(cardsToMove, "tableau", i, e)
                     }
                   }}
+                  onDoubleClick={() => {
+                    // Only the exposed card at the bottom of a pile can fly off.
+                    if (card.faceUp && j === pile.length - 1) sendToFoundation("tableau", i, card)
+                  }}
                 >
                   {renderCard(card, j, true)}
                 </div>
@@ -766,6 +839,11 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             </div>
           ))}
         </div>
+
+        {/* The winning cascade, painted over the table until it runs out or is clicked away */}
+        {cascadePiles && (
+          <CardCascade cards={cascadePiles} origins={cascadeOrigins} onDone={() => setCascadePiles(null)} />
+        )}
 
         {/* Dragging cards */}
         {isDragging && dragState && (
@@ -800,8 +878,8 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         </button>
       </div>
 
-      {/* Win message */}
-      {gameWon && !showNameInput && !showHighScores && (
+      {/* Win message, held back until the cascade has had its moment */}
+      {gameWon && !cascadePiles && !showNameInput && !showHighScores && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#c0c0c0] border-2 border-[#5a5a5a] border-r-white border-b-white w-[400px]">
             <div className="bg-[#000080] text-white px-2 py-1 flex justify-between items-center">

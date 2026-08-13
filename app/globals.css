@@ -1337,3 +1337,94 @@ h6 {
 .page-2005 .t15 {
   font-size: 15px !important;
 }
+
+/* ---------------------------------------------------------------------------
+   Game motion
+   Short, mechanical animations in the spirit of the era. Every one of these is
+   decoration only, so the reduced-motion block at the end switches them all off
+   without changing a thing about how the games play.
+   --------------------------------------------------------------------------- */
+
+/* The second half of a card turning over: the face widens out from nothing. */
+@keyframes card-flip {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* A card dropping onto its new pile. */
+@keyframes card-land {
+  from {
+    transform: translateY(-7px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* A completed Tetris row blinking before it collapses. */
+@keyframes row-flash {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: invert(1) brightness(1.8);
+  }
+}
+
+/* The mine you actually stepped on, before the rest of the board resolves. */
+@keyframes mine-flash {
+  0%,
+  100% {
+    background-color: #ff0000;
+  }
+  50% {
+    background-color: #ffffff;
+  }
+}
+
+/* A king in check, and the square a captured piece leaves behind. */
+@keyframes square-alert {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 3px rgba(255, 0, 0, 0.9);
+  }
+  50% {
+    box-shadow: inset 0 0 0 3px rgba(255, 0, 0, 0.15);
+  }
+}
+
+.anim-card-flip {
+  animation: card-flip 150ms steps(4, end);
+  transform-origin: center;
+}
+
+.anim-card-land {
+  animation: card-land 120ms ease-out;
+}
+
+.anim-row-flash {
+  animation: row-flash 110ms steps(1, end) 3;
+}
+
+.anim-mine-flash {
+  animation: mine-flash 100ms steps(1, end) 4;
+}
+
+.anim-square-alert {
+  animation: square-alert 180ms steps(1, end) 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-card-flip,
+  .anim-card-land,
+  .anim-row-flash,
+  .anim-mine-flash,
+  .anim-square-alert {
+    animation: none;
+  }
+}

@@ -50,6 +50,20 @@ export default function Pong({ onReturn }: PongProps) {
   const PADDLE_WIDTH = 10
   const BALL_SIZE = 10
   const WINNING_SCORE = 5
+  /**
+   * Speeds are pixels per second, not pixels per frame.
+   *
+   * The loop used to add a fixed step every frame, which tied the whole game to
+   * the refresh rate: identical play was roughly two and a half times faster on
+   * a 144Hz monitor than on a 60Hz one. Multiplying by elapsed time instead
+   * makes the ball cross the table in the same wall-clock time everywhere.
+   */
+  const SERVE_SPEED = 300
+  const RALLY_BASE = 360
+  const RALLY_STEP = 15
+  const RALLY_MAX = 660
+  const TRAIL_LENGTH = 7
+  const SQUASH_TIME = 0.09
 
   // Animation frame reference
   const animationRef = useRef<number>(0)
@@ -61,6 +75,13 @@ export default function Pong({ onReturn }: PongProps) {
   const rallyRef = useRef(0)
   const ballPosRef = useRef({ x: 0, y: 0 })
   const ballSpeedRef = useRef({ x: 0, y: 0 })
+  /** Recent ball positions, oldest first, drawn as a fading streak. */
+  const trailRef = useRef<{ x: number; y: number }[]>([])
+  /** Seconds left on the squash the ball plays after a paddle hit. */
+  const squashRef = useRef(0)
+  /** Timestamp of the previous frame, so motion can be measured in seconds. */
+  const lastFrameRef = useRef(0)
+  const reducedMotionRef = useRef(false)
   const pausedRef = useRef(paused)
   const gameOverRef = useRef(gameOver)
   const difficultyRef = useRef(difficulty)
@@ -128,9 +149,11 @@ export default function Pong({ onReturn }: PongProps) {
     const angle = (Math.random() * Math.PI) / 4 - Math.PI / 8 // Random angle between -22.5 and 22.5 degrees
     const direction = Math.random() > 0.5 ? 1 : -1 // Random initial direction
     ballSpeedRef.current = {
-      x: Math.cos(angle) * 5 * direction,
-      y: Math.sin(angle) * 5,
+      x: Math.cos(angle) * SERVE_SPEED * direction,
+      y: Math.sin(angle) * SERVE_SPEED,
     }
+    trailRef.current = []
+    squashRef.current = 0
 
     setScore({ player: 0, computer: 0 })
     setGameOver(false)
@@ -166,13 +189,80 @@ export default function Pong({ onReturn }: PongProps) {
     setShowHighScores(true)
   }
 
+  /**
+   * Bounces the ball off the walls and the paddles.
+   *
+   * Called once per movement slice rather than once per frame, and returns true
+   * on a paddle hit so the caller stops advancing: the ball has already been
+   * given a new direction and must not keep travelling on the old one.
+   */
+  const collide = (canvas: HTMLCanvasElement): boolean => {
+    // Ball collision with top and bottom walls
+    if (ballPosRef.current.y <= 0 || ballPosRef.current.y >= canvas.height - BALL_SIZE) {
+      ballSpeedRef.current.y = -Math.abs(ballSpeedRef.current.y) * (ballPosRef.current.y <= 0 ? -1 : 1)
+      ballPosRef.current.y = Math.max(0, Math.min(ballPosRef.current.y, canvas.height - BALL_SIZE))
+    }
+
+    const hitPaddle = (paddleTop: number) => {
+      if (paddleSound && soundEnabled) {
+        paddleSound.currentTime = 0
+        paddleSound.play().catch((err) => console.log("Audio playback failed:", err))
+      }
+      // Where on the paddle it landed sets the angle, -30 to 30 degrees.
+      const hitPos = (ballPosRef.current.y - paddleTop) / PADDLE_HEIGHT
+      rallyRef.current++
+      squashRef.current = SQUASH_TIME
+      return {
+        angle: ((hitPos - 0.5) * Math.PI) / 3,
+        speed: Math.min(RALLY_BASE + rallyRef.current * RALLY_STEP, RALLY_MAX),
+      }
+    }
+
+    // Player paddle. The ball has to be travelling towards it, otherwise a ball
+    // that grazes the paddle can be caught twice on consecutive slices.
+    if (
+      ballSpeedRef.current.x < 0 &&
+      ballPosRef.current.x <= PADDLE_WIDTH &&
+      ballPosRef.current.y + BALL_SIZE >= playerPosRef.current &&
+      ballPosRef.current.y <= playerPosRef.current + PADDLE_HEIGHT
+    ) {
+      const { angle, speed } = hitPaddle(playerPosRef.current)
+      ballSpeedRef.current.x = Math.cos(angle) * speed
+      ballSpeedRef.current.y = Math.sin(angle) * speed
+      ballPosRef.current.x = PADDLE_WIDTH
+      return true
+    }
+
+    // Computer paddle
+    if (
+      ballSpeedRef.current.x > 0 &&
+      ballPosRef.current.x >= canvas.width - PADDLE_WIDTH - BALL_SIZE &&
+      ballPosRef.current.y + BALL_SIZE >= computerPosRef.current &&
+      ballPosRef.current.y <= computerPosRef.current + PADDLE_HEIGHT
+    ) {
+      const { angle, speed } = hitPaddle(computerPosRef.current)
+      ballSpeedRef.current.x = -Math.cos(angle) * speed
+      ballSpeedRef.current.y = Math.sin(angle) * speed
+      ballPosRef.current.x = canvas.width - PADDLE_WIDTH - BALL_SIZE
+      return true
+    }
+
+    return false
+  }
+
   // Game loop
-  const gameLoop = () => {
+  const gameLoop = (now = performance.now()) => {
     if (!canvasRef.current) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
     if (!ctx) return
+
+    // Clamped so a backgrounded tab cannot hand back a gap large enough to
+    // teleport the ball through a paddle when the window comes back.
+    const dt = Math.min((now - (lastFrameRef.current || now)) / 1000, 0.05)
+    lastFrameRef.current = now
+    if (squashRef.current > 0) squashRef.current = Math.max(0, squashRef.current - dt)
 
     // Clear canvas with a neon grid background
     ctx.fillStyle = "black"
@@ -199,59 +289,21 @@ export default function Pong({ onReturn }: PongProps) {
     }
 
     if (!pausedRef.current && !gameOverRef.current) {
-      // Update ball position
-      ballPosRef.current.x += ballSpeedRef.current.x
-      ballPosRef.current.y += ballSpeedRef.current.y
+      // Advance in slices no longer than a few pixels. At full rally speed a
+      // single 60Hz step is longer than the paddle is wide, so one test per
+      // frame would let the ball pass straight through it.
+      const travel = Math.hypot(ballSpeedRef.current.x, ballSpeedRef.current.y) * dt
+      const slices = Math.max(1, Math.ceil(travel / 4))
+      const slice = dt / slices
 
-      // Ball collision with top and bottom walls
-      if (ballPosRef.current.y <= 0 || ballPosRef.current.y >= canvas.height - BALL_SIZE) {
-        ballSpeedRef.current.y = -ballSpeedRef.current.y
+      for (let i = 0; i < slices; i += 1) {
+        ballPosRef.current.x += ballSpeedRef.current.x * slice
+        ballPosRef.current.y += ballSpeedRef.current.y * slice
+        if (collide(canvas)) break
       }
 
-      // Ball collision with paddles
-      // Player paddle
-      if (
-        ballPosRef.current.x <= PADDLE_WIDTH &&
-        ballPosRef.current.y + BALL_SIZE >= playerPosRef.current &&
-        ballPosRef.current.y <= playerPosRef.current + PADDLE_HEIGHT
-      ) {
-        // Play paddle sound
-        if (paddleSound && soundEnabled) {
-          paddleSound.currentTime = 0
-          paddleSound.play().catch((err) => console.log("Audio playback failed:", err))
-        }
-
-        // Calculate angle based on where ball hits paddle
-        const hitPos = (ballPosRef.current.y - playerPosRef.current) / PADDLE_HEIGHT
-        const angle = ((hitPos - 0.5) * Math.PI) / 3 // -30 to 30 degrees
-
-        rallyRef.current++
-        const speed = Math.min(6 + rallyRef.current * 0.25, 11)
-        ballSpeedRef.current.x = Math.cos(angle) * speed
-        ballSpeedRef.current.y = Math.sin(angle) * speed
-      }
-
-      // Computer paddle
-      if (
-        ballPosRef.current.x >= canvas.width - PADDLE_WIDTH - BALL_SIZE &&
-        ballPosRef.current.y + BALL_SIZE >= computerPosRef.current &&
-        ballPosRef.current.y <= computerPosRef.current + PADDLE_HEIGHT
-      ) {
-        // Play paddle sound
-        if (paddleSound && soundEnabled) {
-          paddleSound.currentTime = 0
-          paddleSound.play().catch((err) => console.log("Audio playback failed:", err))
-        }
-
-        // Calculate angle based on where ball hits paddle
-        const hitPos = (ballPosRef.current.y - computerPosRef.current) / PADDLE_HEIGHT
-        const angle = ((hitPos - 0.5) * Math.PI) / 3 // -30 to 30 degrees
-
-        rallyRef.current++
-        const speed = Math.min(6 + rallyRef.current * 0.25, 11)
-        ballSpeedRef.current.x = -Math.cos(angle) * speed
-        ballSpeedRef.current.y = Math.sin(angle) * speed
-      }
+      trailRef.current.push({ x: ballPosRef.current.x, y: ballPosRef.current.y })
+      if (trailRef.current.length > TRAIL_LENGTH) trailRef.current.shift()
 
       // Ball out of bounds - scoring. A new point starts a fresh rally.
       if (ballPosRef.current.x < 0 || ballPosRef.current.x > canvas.width) rallyRef.current = 0
@@ -289,9 +341,10 @@ export default function Pong({ onReturn }: PongProps) {
         }
 
         ballSpeedRef.current = {
-          x: -5,
-          y: Math.random() * 4 - 2,
+          x: -SERVE_SPEED,
+          y: Math.random() * 240 - 120,
         }
+        trailRef.current = []
       } else if (ballPosRef.current.x > canvas.width) {
         // Play score sound
         if (scoreSound && soundEnabled) {
@@ -326,9 +379,10 @@ export default function Pong({ onReturn }: PongProps) {
         }
 
         ballSpeedRef.current = {
-          x: 5,
-          y: Math.random() * 4 - 2,
+          x: SERVE_SPEED,
+          y: Math.random() * 240 - 120,
         }
+        trailRef.current = []
       }
 
       // Computer AI - follow the ball with difficulty-based speed
@@ -336,24 +390,24 @@ export default function Pong({ onReturn }: PongProps) {
       const ballCenter = ballPosRef.current.y + BALL_SIZE / 2
 
       // Set computer speed based on difficulty
-      let computerSpeed = 4 // Default medium
+      let computerSpeed = 240 // Default medium
 
       switch (difficultyRef.current) {
         case "easy":
-          computerSpeed = 3
+          computerSpeed = 180
           break
         case "medium":
-          computerSpeed = 4
+          computerSpeed = 240
           break
         case "hard":
-          computerSpeed = 5.5
+          computerSpeed = 330
           break
       }
 
       if (computerCenter < ballCenter - 10) {
-        computerPosRef.current += computerSpeed
+        computerPosRef.current += computerSpeed * dt
       } else if (computerCenter > ballCenter + 10) {
-        computerPosRef.current -= computerSpeed
+        computerPosRef.current -= computerSpeed * dt
       }
 
       // Keep computer paddle in bounds
@@ -385,11 +439,31 @@ export default function Pong({ onReturn }: PongProps) {
     // Computer paddle
     ctx.fillRect(canvas.width - PADDLE_WIDTH, computerPosRef.current, PADDLE_WIDTH, PADDLE_HEIGHT)
 
-    // Draw ball with neon glow
+    // Draw the streak the ball left behind, oldest and faintest first
+    if (!reducedMotionRef.current) {
+      ctx.shadowBlur = 0
+      trailRef.current.forEach((point, i) => {
+        const age = (i + 1) / (trailRef.current.length + 1)
+        ctx.fillStyle = `rgba(0, 255, 255, ${age * 0.4})`
+        const inset = (1 - age) * 3
+        ctx.fillRect(point.x + inset, point.y + inset, BALL_SIZE - inset * 2, BALL_SIZE - inset * 2)
+      })
+    }
+
+    // Draw ball with neon glow. It flattens against the paddle on impact and
+    // springs back over the next few frames.
     ctx.shadowBlur = 20
     ctx.shadowColor = "#00ffff"
     ctx.fillStyle = "#00ffff"
-    ctx.fillRect(ballPosRef.current.x, ballPosRef.current.y, BALL_SIZE, BALL_SIZE)
+    const squash = reducedMotionRef.current ? 0 : squashRef.current / SQUASH_TIME
+    const ballW = BALL_SIZE * (1 - squash * 0.45)
+    const ballH = BALL_SIZE * (1 + squash * 0.45)
+    ctx.fillRect(
+      ballPosRef.current.x + (BALL_SIZE - ballW) / 2,
+      ballPosRef.current.y + (BALL_SIZE - ballH) / 2,
+      ballW,
+      ballH,
+    )
 
     // Reset shadow
     ctx.shadowBlur = 0
@@ -459,6 +533,9 @@ export default function Pong({ onReturn }: PongProps) {
 
   // Toggle pause
   const togglePause = () => {
+    // Drop the accumulated frame time, or resuming would replay the whole pause
+    // as one enormous step.
+    lastFrameRef.current = performance.now()
     setPaused(!paused)
   }
 
@@ -470,7 +547,15 @@ export default function Pong({ onReturn }: PongProps) {
       canvasRef.current.height = 400
     }
 
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    reducedMotionRef.current = motion.matches
+    const onMotionChange = (e: MediaQueryListEvent) => {
+      reducedMotionRef.current = e.matches
+    }
+    motion.addEventListener("change", onMotionChange)
+
     return () => {
+      motion.removeEventListener("change", onMotionChange)
       cancelAnimationFrame(animationRef.current)
     }
   }, [])
@@ -680,9 +765,14 @@ export default function Pong({ onReturn }: PongProps) {
 
       {/* Game Area */}
       <div className="flex-1 flex justify-center items-center p-4 bg-[#808080]">
-        <div className="relative">
+        {/*
+          The score and status panels used to hang outside this column on
+          negative offsets, which put them straight over the New Game and Pause
+          buttons and swallowed the clicks. They sit in the flow now.
+        */}
+        <div className="flex flex-col gap-2">
           {/* Score Display */}
-          <div className="absolute top-[-40px] left-0 right-0 flex justify-between px-4">
+          <div className="flex justify-between px-4">
             <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
               <span className="text-sm font-bold">Player: {score.player}</span>
             </div>
@@ -697,7 +787,7 @@ export default function Pong({ onReturn }: PongProps) {
           </div>
 
           {/* Game Status */}
-          <div className="absolute bottom-[-40px] left-0 right-0 flex justify-center">
+          <div className="flex justify-center">
             <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
               <span className="text-sm">
                 {!gameStarted
