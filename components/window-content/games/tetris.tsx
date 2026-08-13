@@ -114,7 +114,16 @@ export default function Tetris({ onReturn }: TetrisProps) {
   // Game state
   const [board, setBoard] = useState(createEmptyBoard())
   const [currentPiece, setCurrentPiece] = useState(randomTetromino())
-  const [nextPiece, setNextPiece] = useState(randomTetromino())
+  /**
+   * The next three pieces, not one.
+   *
+   * Seeing only the next piece makes stacking guesswork; three is what every
+   * version after the original settled on and what makes the game readable.
+   */
+  const [queue, setQueue] = useState<Tetromino[]>(() => [randomTetromino(), randomTetromino(), randomTetromino()])
+  /** The piece parked in the hold slot, and whether hold is available. */
+  const [held, setHeld] = useState<Tetromino | null>(null)
+  const [holdUsed, setHoldUsed] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [paused, setPaused] = useState(false)
   const [score, setScore] = useState(0)
@@ -241,6 +250,14 @@ export default function Tetris({ onReturn }: TetrisProps) {
   )
 
   // Rotate piece
+  /**
+   * Rotate, nudging the piece out of the way if it will not fit.
+   *
+   * Without kicks a rotation against a wall or on top of the stack simply fails
+   * and the piece feels stuck, which is the single most common complaint about
+   * a home-made Tetris. Trying a one-cell shift left, right and up covers
+   * almost every case, and the I piece needs two.
+   */
   const rotatePiece = useCallback(() => {
     if (paused || gameOver) return
 
@@ -249,11 +266,44 @@ export default function Tetris({ onReturn }: TetrisProps) {
       shape: currentPiece.shape[0].map((_, i) => currentPiece.shape.map((row) => row[i])).reverse(),
     }
 
-    if (!checkCollision(rotated, currentPiece.position)) {
-      setCurrentPiece(rotated)
-      playSound(rotateSound)
+    const kicks = [0, -1, 1, -2, 2]
+    for (const dx of kicks) {
+      const position = { ...currentPiece.position, x: currentPiece.position.x + dx }
+      if (!checkCollision(rotated, position)) {
+        setCurrentPiece({ ...rotated, position })
+        playSound(rotateSound)
+        return
+      }
+      // Floor kick: a piece rotating off the bottom lifts a row instead.
+      const lifted = { ...position, y: position.y - 1 }
+      if (!checkCollision(rotated, lifted)) {
+        setCurrentPiece({ ...rotated, position: lifted })
+        playSound(rotateSound)
+        return
+      }
     }
   }, [currentPiece, checkCollision, paused, gameOver, playSound])
+
+  /**
+   * Hold: park the current piece and take whatever was parked before.
+   *
+   * Allowed once per piece, so it cannot be used to stall indefinitely.
+   */
+  const holdPiece = useCallback(() => {
+    if (paused || gameOver || holdUsed) return
+
+    const parked = { ...currentPiece, position: { x: 3, y: 0 } }
+    if (held) {
+      setCurrentPiece({ ...held, position: { x: 3, y: 0 } })
+    } else {
+      setCurrentPiece(queue[0])
+      setQueue((q) => [...q.slice(1), randomTetromino()])
+    }
+    setHeld(parked)
+    setHoldUsed(true)
+    lastStepRef.current = performance.now()
+    playSound(rotateSound)
+  }, [currentPiece, held, queue, holdUsed, paused, gameOver, playSound])
 
   // Move piece
   const movePiece = useCallback(
@@ -336,8 +386,9 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
         setClearingRows([])
         setBoard(updatedBoard)
-        setCurrentPiece(nextPiece)
-        setNextPiece(randomTetromino())
+        setCurrentPiece(queue[0])
+        setQueue((q) => [...q.slice(1), randomTetromino()])
+        setHoldUsed(false)
         lastStepRef.current = performance.now()
       }
 
@@ -355,7 +406,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
       if (fullRows.length === 0) playSound(dropSound)
       collapse()
     },
-    [board, nextPiece, score, level, lines, playSound],
+    [board, queue, score, level, lines, playSound],
   )
 
   // Drop piece
@@ -387,6 +438,9 @@ export default function Tetris({ onReturn }: TetrisProps) {
       newY++
     }
 
+    // Two points a row for a hard drop against one for a soft drop, so
+    // committing to a placement pays better than nudging it down.
+    setScore((prev) => prev + (newY - currentPiece.position.y) * 2)
     lockPiece({ ...currentPiece, position: { ...currentPiece.position, y: newY } })
   }, [currentPiece, checkCollision, lockPiece, paused, gameOver])
 
@@ -416,6 +470,12 @@ export default function Tetris({ onReturn }: TetrisProps) {
           e.preventDefault() // Prevent scrolling
           hardDrop()
           break
+        case "c":
+        case "C":
+        case "Shift":
+          e.preventDefault()
+          holdPiece()
+          break
         case "p":
         case "P":
           togglePause()
@@ -429,7 +489,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [gameStarted, movePiece, dropPiece, rotatePiece, hardDrop, showHelp, showHighScores])
+  }, [gameStarted, movePiece, dropPiece, rotatePiece, hardDrop, holdPiece, showHelp, showHighScores])
 
   // Game loop
   useEffect(() => {
@@ -466,7 +526,9 @@ export default function Tetris({ onReturn }: TetrisProps) {
   const startNewGame = useCallback(() => {
     setBoard(createEmptyBoard())
     setCurrentPiece(randomTetromino())
-    setNextPiece(randomTetromino())
+    setQueue([randomTetromino(), randomTetromino(), randomTetromino()])
+    setHeld(null)
+    setHoldUsed(false)
     setGameOver(false)
     setPaused(false)
     setScore(0)
@@ -601,6 +663,9 @@ export default function Tetris({ onReturn }: TetrisProps) {
             <div
               ref={pieceLayerRef}
               data-piece
+              // The shape as a string, so its rotation state is observable.
+              data-piece-shape={currentPiece.shape.map((row) => row.join("")).join("/")}
+              data-piece-x={currentPiece.position.x}
               className="pointer-events-none absolute"
               style={{ left: 2, top: 2, willChange: "transform" }}
             >
@@ -641,45 +706,59 @@ export default function Tetris({ onReturn }: TetrisProps) {
     )
   }
 
-  // Render next piece preview
-  const renderNextPiece = () => {
-    const shape = nextPiece.shape
-    const color = nextPiece.color
-    const width = shape[0].length
-    const height = shape.length
+  /** A small board showing one piece, used for the queue and the hold slot. */
+  const renderPiece = (piece: Tetromino | null, size = 14) => (
+    <div
+      className="flex items-center justify-center"
+      style={{
+        width: size * 4 + 8,
+        height: size * 2 + 8,
+        backgroundColor: "#000",
+        boxShadow: "inset 2px 2px 0px #fff, inset -2px -2px 0px #888",
+      }}
+    >
+      {piece && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateRows: `repeat(${piece.shape.length}, ${size}px)`,
+            gridTemplateColumns: `repeat(${piece.shape[0].length}, ${size}px)`,
+            gap: "1px",
+          }}
+        >
+          {piece.shape.map((row, y) =>
+            row.map((cell, x) => (
+              <div
+                key={`p-${y}-${x}`}
+                style={{
+                  backgroundColor: cell ? piece.color : "transparent",
+                  border: cell ? "1px solid rgba(255, 255, 255, 0.3)" : "none",
+                  boxShadow: cell
+                    ? "inset 2px 2px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px rgba(0, 0, 0, 0.4)"
+                    : "none",
+                }}
+              />
+            )),
+          )}
+        </div>
+      )}
+    </div>
+  )
 
-    return (
-      <div
-        className="next-piece-preview border-2 border-gray-400 bg-gray-800 p-2"
-        style={{
-          display: "grid",
-          gridTemplateRows: `repeat(${height}, ${BLOCK_SIZE}px)`,
-          gridTemplateColumns: `repeat(${width}, ${BLOCK_SIZE}px)`,
-          gap: "1px",
-          justifyContent: "center",
-          alignContent: "center",
-          padding: "10px",
-          backgroundColor: "#000",
-          boxShadow: "inset 2px 2px 0px #fff, inset -2px -2px 0px #888",
-        }}
-      >
-        {shape.map((row, y) =>
-          row.map((cell, x) => (
-            <div
-              key={`next-${y}-${x}`}
-              style={{
-                backgroundColor: cell ? color : "transparent",
-                border: cell ? "1px solid rgba(255, 255, 255, 0.3)" : "none",
-                boxShadow: cell
-                  ? "inset 2px 2px 0px rgba(255, 255, 255, 0.4), inset -2px -2px 0px rgba(0, 0, 0, 0.4)"
-                  : "none",
-              }}
-            />
-          )),
-        )}
+  // Render next piece preview: three deep, plus whatever is being held.
+  const renderNextPiece = () => (
+    <div data-queue className="flex flex-col gap-2">
+      {queue.map((piece, i) => (
+        <div key={`q-${i}`} data-queue-slot={i} data-slot-shape={piece.shape.map((row) => row.join("")).join("/")}>
+          {renderPiece(piece, i === 0 ? 16 : 11)}
+        </div>
+      ))}
+      <div className="mt-1 text-xs">Hold (C)</div>
+      <div data-hold data-hold-empty={held ? undefined : ""} style={{ opacity: holdUsed ? 0.5 : 1 }}>
+        {renderPiece(held, 11)}
       </div>
-    )
-  }
+    </div>
+  )
 
   // Render game controls
   const renderControls = () => (

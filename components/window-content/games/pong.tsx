@@ -59,6 +59,8 @@ export default function Pong({ onReturn }: PongProps) {
    * makes the ball cross the table in the same wall-clock time everywhere.
    */
   const SERVE_SPEED = 300
+  /** How long the table sits still between a point and the next serve. */
+  const SERVE_PAUSE = 0.9
   const RALLY_BASE = 360
   const RALLY_STEP = 15
   const RALLY_MAX = 660
@@ -82,6 +84,19 @@ export default function Pong({ onReturn }: PongProps) {
   /** Timestamp of the previous frame, so motion can be measured in seconds. */
   const lastFrameRef = useRef(0)
   const reducedMotionRef = useRef(false)
+  /** Seconds left before the next serve, so a point does not run straight on. */
+  const serveDelayRef = useRef(0)
+  /** Which side serves next; it alternates rather than always favouring one. */
+  const serveToRef = useRef(1)
+  /**
+   * Where the computer currently believes the ball is heading.
+   *
+   * Tracking the ball exactly makes a paddle that never misses, which is not a
+   * game. It re-reads the ball on a delay instead, so it is beatable by putting
+   * the ball somewhere it has not looked yet.
+   */
+  const cpuTargetRef = useRef(0)
+  const cpuLatencyRef = useRef(0)
   const pausedRef = useRef(paused)
   const gameOverRef = useRef(gameOver)
   const difficultyRef = useRef(difficulty)
@@ -148,12 +163,13 @@ export default function Pong({ onReturn }: PongProps) {
     // Set initial ball speed
     const angle = (Math.random() * Math.PI) / 4 - Math.PI / 8 // Random angle between -22.5 and 22.5 degrees
     const direction = Math.random() > 0.5 ? 1 : -1 // Random initial direction
-    ballSpeedRef.current = {
-      x: Math.cos(angle) * SERVE_SPEED * direction,
-      y: Math.sin(angle) * SERVE_SPEED,
-    }
+    ballSpeedRef.current = { x: 0, y: 0 }
+    serveDelayRef.current = SERVE_PAUSE
+    serveToRef.current = direction
     trailRef.current = []
     squashRef.current = 0
+    cpuTargetRef.current = canvas.height / 2
+    cpuLatencyRef.current = 0
 
     setScore({ player: 0, computer: 0 })
     setGameOver(false)
@@ -288,6 +304,20 @@ export default function Pong({ onReturn }: PongProps) {
       ctx.stroke()
     }
 
+    if (!pausedRef.current && !gameOverRef.current && serveDelayRef.current > 0) {
+      // Between points the ball waits at the centre line. Play resumes when
+      // the pause runs out, serving away from whoever just conceded.
+      serveDelayRef.current -= dt
+      if (serveDelayRef.current <= 0) {
+        serveDelayRef.current = 0
+        const angle = (Math.random() * Math.PI) / 4 - Math.PI / 8
+        ballSpeedRef.current = {
+          x: Math.cos(angle) * SERVE_SPEED * serveToRef.current,
+          y: Math.sin(angle) * SERVE_SPEED,
+        }
+      }
+    }
+
     if (!pausedRef.current && !gameOverRef.current) {
       // Advance in slices no longer than a few pixels. At full rally speed a
       // single 60Hz step is longer than the paddle is wide, so one test per
@@ -340,10 +370,9 @@ export default function Pong({ onReturn }: PongProps) {
           y: canvas.height / 2,
         }
 
-        ballSpeedRef.current = {
-          x: -SERVE_SPEED,
-          y: Math.random() * 240 - 120,
-        }
+        serveDelayRef.current = SERVE_PAUSE
+        serveToRef.current = -1
+        ballSpeedRef.current = { x: 0, y: 0 }
         trailRef.current = []
       } else if (ballPosRef.current.x > canvas.width) {
         // Play score sound
@@ -378,35 +407,44 @@ export default function Pong({ onReturn }: PongProps) {
           y: canvas.height / 2,
         }
 
-        ballSpeedRef.current = {
-          x: SERVE_SPEED,
-          y: Math.random() * 240 - 120,
-        }
+        serveDelayRef.current = SERVE_PAUSE
+        serveToRef.current = 1
+        ballSpeedRef.current = { x: 0, y: 0 }
         trailRef.current = []
       }
 
-      // Computer AI - follow the ball with difficulty-based speed
+      // The computer re-reads the ball on a delay rather than tracking it
+      // continuously, so it can be wrong-footed. Difficulty sets both how
+      // often it looks and how fast it can move.
       const computerCenter = computerPosRef.current + PADDLE_HEIGHT / 2
-      const ballCenter = ballPosRef.current.y + BALL_SIZE / 2
 
-      // Set computer speed based on difficulty
-      let computerSpeed = 240 // Default medium
-
+      let computerSpeed = 240
+      let reaction = 0.12
       switch (difficultyRef.current) {
         case "easy":
           computerSpeed = 180
+          reaction = 0.26
           break
         case "medium":
           computerSpeed = 240
+          reaction = 0.14
           break
         case "hard":
           computerSpeed = 330
+          reaction = 0.06
           break
       }
 
-      if (computerCenter < ballCenter - 10) {
+      cpuLatencyRef.current -= dt
+      if (cpuLatencyRef.current <= 0) {
+        cpuLatencyRef.current = reaction
+        cpuTargetRef.current = ballPosRef.current.y + BALL_SIZE / 2
+      }
+
+      const target = cpuTargetRef.current
+      if (computerCenter < target - 10) {
         computerPosRef.current += computerSpeed * dt
-      } else if (computerCenter > ballCenter + 10) {
+      } else if (computerCenter > target + 10) {
         computerPosRef.current -= computerSpeed * dt
       }
 
