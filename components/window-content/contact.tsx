@@ -863,6 +863,169 @@ start with the window manager. everything else needs it.`,
   },
 ]
 
+/**
+ * What Joel has sent.
+ *
+ * Each is a reply to something in the inbox, so a visitor who reads both
+ * folders sees one conversation rather than two unrelated piles. Anything the
+ * visitor sends with Compose is appended to this list.
+ */
+const SENT: Message[] = [
+  {
+    id: 101,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: Stripe - Infrastructure New Grad, next steps",
+    date: "8/11/2026 2:03 PM",
+    read: true,
+    body: `Hi Priya,
+
+The week of the 24th works. Monday or Tuesday would be ideal, any time after 11.
+
+Thanks for the quick turnaround, and glad the right-sizing discussion landed. Happy to go deeper on the p50 point in the systems rounds.
+
+Joel`,
+  },
+  {
+    id: 102,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: Following up on your application",
+    date: "8/10/2026 9:40 AM",
+    read: true,
+    body: `Hi Marcus,
+
+Thirty minutes next week sounds great. Wednesday or Thursday afternoon are both open.
+
+And thanks for reading past the desktop gimmick to the Prisma schema. The 20 tables are doing real work, I promise.
+
+Joel`,
+  },
+  {
+    id: 103,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: Handing over the chapter",
+    date: "8/05/2026 8:12 PM",
+    read: true,
+    body: `Put me down for the alumni panel.
+
+One ask for the transition doc: keep the employer contact sheet current. Half the value of the chapter is that list, and it goes stale in a semester if nobody owns it.
+
+Four people in a library corner. Look at it now.`,
+  },
+  {
+    id: 104,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: NyumatFlix - can you take a look at a PR?",
+    date: "7/14/2026 8:30 AM",
+    read: true,
+    body: `Looked at it over coffee.
+
+It is the prefetch window. You are prefetching against the manifest's advertised bitrate, but under throttling the player has already stepped down, so you fetch segments it will never play. Clamp the prefetch to the currently selected rendition and the buffer maths works again.
+
+Left the same thing as a review comment with a suggested diff.`,
+  },
+  {
+    id: 105,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: Recommendation letter - sent",
+    date: "7/28/2026 12:15 PM",
+    read: true,
+    body: `Thank you, Professor. For the letter and for the benchmarking habit, which it turns out interviewers ask about more than the coursework.
+
+Spring guest slot: yes, gladly. I will bring the cold-cache numbers you wanted.
+
+Joel`,
+  },
+]
+
+/**
+ * What has been thrown away.
+ *
+ * Deleted Items is where the least-believable mail goes, which is its own kind
+ * of characterisation: the lottery win was read and binned.
+ */
+const DELETED: Message[] = [
+  {
+    id: 201,
+    fromName: "CONGRATULATIONS WINNER",
+    from: "claims@international-lottery-board.org",
+    subject: "You have won 850,000 EUR",
+    date: "2/06/2025 3:21 AM",
+    read: true,
+    body: `ATTENTION LUCKY WINNER,
+
+Your email address was selected at random in our INTERNATIONAL EMAIL LOTTERY held in Madrid, Spain. You have won EIGHT HUNDRED AND FIFTY THOUSAND EUROS.
+
+Reference: ES/9420/2005
+Batch: 074/05/ZY369
+
+To claim, contact our fiduciary agent with your full name, address, telephone number and a copy of your identification. A processing fee of 450 EUR applies.
+
+Note: you may not have entered this lottery. Entries are drawn from a database of email addresses.`,
+  },
+  {
+    id: 202,
+    fromName: "HOT SINGLES IN YOUR AREA",
+    from: "connect@meet-tonight-network.biz",
+    subject: "Someone viewed your profile 47 times",
+    date: "9/03/2024 4:44 AM",
+    read: true,
+    body: `Hi!
+
+I saw your profile and I could not stop looking. I am new in your area and looking to meet someone genuine.
+
+Click here to see my pictures and chat with me now. I am online RIGHT NOW.
+
+You do not have a profile? That is okay, we made one for you!`,
+  },
+  {
+    id: 203,
+    fromName: "Baruch Dining Services",
+    from: "dining@baruch.cuny.edu",
+    subject: "Your feedback matters! (5 minute survey)",
+    date: "5/02/2026 11:00 AM",
+    read: true,
+    body: `Dear student,
+
+You recently visited a campus dining location. We would love to hear about your experience!
+
+This survey takes approximately 5 minutes and covers 34 questions about food quality, ambience, and staff friendliness.
+
+As a thank you, you will be entered into a drawing for a $5 dining credit.`,
+  },
+  {
+    id: 204,
+    fromName: "Weekly Career Newsletter",
+    from: "digest@career-compass-weekly.com",
+    subject: "10 resume mistakes that make recruiters cringe (number 7 will shock you)",
+    date: "3/22/2026 6:00 AM",
+    read: false,
+    body: `This week in Career Compass:
+
+- 10 resume mistakes that make recruiters cringe
+- Why your cover letter needs a hook
+- Networking: it is not what you know
+- Dress for the job you want
+
+You are receiving this because you attended a career fair in 2024. To unsubscribe, reply UNSUBSCRIBE (this does not work).`,
+  },
+  {
+    id: 205,
+    fromName: "IT Helpdesk",
+    from: "helpdesk@baruch.cuny.edu",
+    subject: "REMINDER: Password expiring in 6 days",
+    date: "1/20/2026 8:00 AM",
+    read: true,
+    body: `Your CUNYfirst password will expire on January 26.
+
+This is a reminder of the reminder sent yesterday. You will receive one reminder per day until the password is changed.`,
+  },
+]
+
 type FolderId = "inbox" | "outbox" | "sent" | "deleted" | "drafts"
 
 const FOLDERS: { id: FolderId; label: string; icon: string }[] = [
@@ -909,7 +1072,7 @@ export default function Contact() {
   const [messages, setMessages] = useState<Message[]>(INBOX)
   const [selected, setSelected] = useState<number | null>(INBOX[0].id)
   const [composing, setComposing] = useState(false)
-  const [sent, setSent] = useState<Message[]>([])
+  const [sent, setSent] = useState<Message[]>(SENT)
 
   const [to] = useState("Joel Vasquez")
   const [subject, setSubject] = useState("")
@@ -919,7 +1082,8 @@ export default function Contact() {
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const shown = folder === "inbox" ? messages : folder === "sent" ? sent : []
+  const shown =
+    folder === "inbox" ? messages : folder === "sent" ? sent : folder === "deleted" ? DELETED : []
   const current = shown.find((m) => m.id === selected) ?? null
   const unread = messages.filter((m) => !m.read).length
 
@@ -1013,7 +1177,10 @@ export default function Contact() {
           </div>
           <ul className="ml-6">
             {FOLDERS.map((f) => {
-              const count = f.id === "inbox" ? unread : f.id === "sent" ? 0 : 0
+              // Outlook bolded a folder count only for unread mail. Deleted
+              // Items carries one unread newsletter, which is accurate.
+              const count =
+                f.id === "inbox" ? unread : f.id === "deleted" ? DELETED.filter((m) => !m.read).length : 0
               return (
                 <li key={f.id}>
                   <button
