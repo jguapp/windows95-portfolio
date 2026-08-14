@@ -66,13 +66,20 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
       <div className="flex h-full">
         {/* The sidebar banner. Windows anchored it at the bottom and let it
             grow upward; centring it vertically was never the look. */}
-        <div className="flex w-[30px] flex-col items-center justify-end bg-[#808080] pb-1">
+        {/* The sidebar: a dark band with Windows95 reading bottom to top,
+            flush against the bottom, exactly as the original set it. */}
+        <div className="relative w-[26px] bg-[#7f7f7f]">
           <span
-            className="whitespace-nowrap font-bold text-lg leading-none"
-            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+            className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-white"
+            style={{
+              writingMode: "vertical-rl",
+              transform: "translateX(-50%) rotate(180deg)",
+              fontSize: 18,
+              letterSpacing: 1,
+              fontFamily: '"Franklin Gothic Medium", "Arial Narrow", sans-serif',
+            }}
           >
-            <span className="text-[#c0c0c0]">Windows</span>
-            <span className="text-white">95</span>
+            Windows<span className="font-normal">95</span>
           </span>
         </div>
 

@@ -156,7 +156,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Constants for icon positioning
   // The Windows 95 desktop grid: a 75px cell with the icon at the top and up to
   // two lines of label under it.
-  const ICON_SPACING_Y = 92
+  const ICON_SPACING_Y = 78
   /** The taskbar, which icons must not sit under. */
   const TASKBAR_H = 34
   const FIRST_COLUMN_X = 12

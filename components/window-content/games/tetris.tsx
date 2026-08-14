@@ -1129,7 +1129,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className={`px-2 py-[2px] ${showMenu === "game" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "game" ? null : "game")}
           >
-            Game
+            <span className="underline">G</span>ame
           </button>
           {showMenu === "game" && (
             <div className="absolute left-0 top-full bg-gray-200 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 w-48 z-10">
@@ -1180,7 +1180,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className={`px-2 py-[2px] ${showMenu === "options" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "options" ? null : "options")}
           >
-            Options
+            <span className="underline">O</span>ptions
           </button>
           {showMenu === "options" && (
             <div className="absolute left-0 top-full bg-gray-200 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 w-48 z-10">
@@ -1201,7 +1201,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
             className={`px-2 py-[2px] ${showMenu === "help" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "help" ? null : "help")}
           >
-            Help
+            <span className="underline">H</span>elp
           </button>
           {showMenu === "help" && (
             <div className="absolute left-0 top-full bg-gray-200 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 w-48 z-10">

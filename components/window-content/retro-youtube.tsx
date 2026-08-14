@@ -150,19 +150,6 @@ Reading that quicksort is O(n log n) and watching it tear through a thousand bar
     tags: ["python", "algorithms", "visualisation", "pygame"],
     repo: "https://github.com/jguapp/sorting-algorithm-visualizer",
   },
-  {
-    id: "nyumatflix",
-    title: "NyumatFlix - Open Source Film and Television",
-    description: `An open-source streaming front end built on TMDB and AniList metadata, with browse rows, a hero, and playback that resolves through pluggable video sources.
-
-This is the codebase Sportsflix was shaped from: the same browse patterns, pointed at film and television rather than live sport.`,
-    views: 2038,
-    added: "7/08/2025",
-    rating: 4,
-    ratings: 37,
-    tags: ["typescript", "nextjs", "tmdb", "anilist", "open-source"],
-    repo: "https://github.com/jguapp/NyumatFlix",
-  },
 ]
 
 interface Comment {
@@ -438,21 +425,6 @@ const COMMENTS: Record<string, Comment[]> = {
           when: "4 months ago",
           owner: true,
           text: "Entirely the point. You can read O(n squared) and nod, or you can watch it still working on the first fifty bars while quicksort has finished and gone home.",
-        },
-      ],
-    },
-  ],
-  nyumatflix: [
-    {
-      name: "stream_sleuth",
-      when: "5 months ago",
-      text: "Is this the same codebase Sportsflix came out of?",
-      replies: [
-        {
-          name: "jguapp",
-          when: "5 months ago",
-          owner: true,
-          text: "Same shape, yes. Browse rows, hero, pluggable sources. Sportsflix swapped the catalogue for live sport and the genres for leagues.",
         },
       ],
     },
