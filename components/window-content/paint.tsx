@@ -1185,7 +1185,7 @@ export default function Paint() {
           repeating the same class string, which is why several of them disagreed
           about what "selected" looked like.
         */}
-        <div className="toolbar flex w-[58px] shrink-0 flex-col gap-1 border-r border-[#808080] bg-[#c0c0c0] p-1">
+        <div className="toolbar flex w-[102px] shrink-0 flex-col gap-1 border-r border-[#808080] bg-[#c0c0c0] p-1">
           <div className="grid grid-cols-2 gap-[2px]" data-tools>
             {TOOLS.map((entry) => (
               <button
@@ -1196,7 +1196,7 @@ export default function Paint() {
                 data-tool={entry.id}
                 data-selected={tool === entry.id ? "" : undefined}
                 onClick={() => handleToolSelect(entry.id)}
-                className="flex h-[25px] w-[25px] items-center justify-center bg-[#c0c0c0]"
+                className="flex h-[44px] w-[44px] items-center justify-center bg-[#c0c0c0]"
                 style={{
                   boxShadow:
                     tool === entry.id

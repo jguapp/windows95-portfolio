@@ -45,6 +45,8 @@ const DEFAULT_MIN: Size = { width: 320, height: 200 }
 /** Windows that cannot be maximised, as their originals could not. The real
  *  Calculator had no maximise button at all: the keypad is a fixed slab and
  *  a full screen of it means nothing. */
+/** Windows whose maximise button is present but disabled, drawn in grey the
+ *  way Windows 95 disabled a control instead of hiding it. */
 const NEVER_MAXIMIZE = new Set(["calculator"])
 
 /** The games and editors draw to fixed boards, so they get a floor that keeps
@@ -430,10 +432,11 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
             >
               <MinimizeIcon />
             </button>
-            {!narrow && !NEVER_MAXIMIZE.has(id) && (
+            {!narrow && (
             <button
-              className={controlButtonClass}
+              className={`${controlButtonClass} disabled:text-[#808080]`}
               aria-label={isMaximized ? "Restore" : "Maximize"}
+              disabled={NEVER_MAXIMIZE.has(id)}
               onClick={(e) => {
                 e.stopPropagation()
                 toggleMaximize()

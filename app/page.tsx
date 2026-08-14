@@ -126,13 +126,13 @@ export default function Home() {
   /*
     The Run dialog.
 
-    Windows+R opened it from anywhere, so it is bound globally rather than to
-    the Start menu that also offers it. The browser does not reserve that
-    combination, unlike most Windows-key shortcuts, so it is safe to take.
+    It cannot live on Windows+R: the operating system claims that combination
+    before the browser ever sees it, so pressing it opened the visitor's own
+    Run box. Ctrl+Alt+R is free on every platform.
   */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "r" && e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (e.key.toLowerCase() === "r" && e.ctrlKey && e.altKey && !e.metaKey) {
         e.preventDefault()
         setShowRun(true)
       }

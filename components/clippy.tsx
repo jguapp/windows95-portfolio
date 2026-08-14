@@ -47,7 +47,7 @@ const TIPS: Record<string, string[]> = {
 
 const GENERAL_TIPS = [
   "It looks like you're exploring a desktop from 1995. Would you like help with that?",
-  "Try Windows+R. Old habits work here.",
+  "Try Ctrl+Alt+R. The Run box answers to it.",
   "Single-click the clock. Go on.",
   "Right-click the desktop and open Properties. The screensavers are real.",
   "There is a Konami code. I have said too much.",

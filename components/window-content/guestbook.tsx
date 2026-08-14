@@ -34,8 +34,8 @@ const BUTTON =
   "min-w-[80px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white disabled:text-[#808080]"
 
 /** The sketch pad, at the size the entries display it. */
-const PAD_W = 240
-const PAD_H = 120
+const PAD_W = 480
+const PAD_H = 160
 
 export default function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
@@ -65,7 +65,11 @@ export default function Guestbook() {
     const canvas = padRef.current
     if (!canvas) return null
     const rect = canvas.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    // The element is stretched to the form's width; map back to canvas pixels.
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    }
   }
 
   const strokeTo = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -203,7 +207,7 @@ export default function Guestbook() {
             data-pad
             width={PAD_W}
             height={PAD_H}
-            className="cursor-crosshair border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white"
+            className="w-full cursor-crosshair border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white"
             onMouseDown={(e) => {
               const ctx = padRef.current?.getContext("2d")
               const point = padPoint(e)

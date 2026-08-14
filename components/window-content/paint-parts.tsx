@@ -99,11 +99,11 @@ const TOOL_BITMAPS: Partial<Record<PaintTool, string>> = {
 export function ToolGlyph({ tool }: { tool: PaintTool }) {
   const bitmap = TOOL_BITMAPS[tool]
   if (bitmap) {
-    return <img src={bitmap} alt="" width={16} height={16} style={{ imageRendering: "pixelated" }} aria-hidden />
+    return <img src={bitmap} alt="" width={32} height={32} style={{ imageRendering: "pixelated" }} aria-hidden />
   }
   const ink = "#000000"
   const box = (children: React.ReactNode) => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill={ink} {...grid}>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill={ink} {...grid}>
       {children}
     </svg>
   )

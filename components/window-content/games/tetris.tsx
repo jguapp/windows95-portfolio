@@ -1233,7 +1233,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
   // Main render
   return (
-    <div className="tetris-game h-full flex flex-col">
+    <div className="win95-type tetris-game h-full flex flex-col" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
       {/* Menu bar. The Games window carries the title bar. */}
       {renderMenuBar()}
 

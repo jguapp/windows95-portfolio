@@ -669,9 +669,9 @@ export default function Pong({ onReturn }: PongProps) {
   ]
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#c0c0c0] overflow-auto">
+    <div className="win95-type w-full h-full flex flex-col bg-[#c0c0c0] overflow-auto" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
       {/* Menu bar, in the style every game shares. */}
-      <div className="flex border-b border-[#808080] bg-[#c0c0c0] px-1 text-sm" onMouseLeave={() => setOpenMenu(null)}>
+      <div className="flex border-b border-[#808080] bg-[#c0c0c0] px-1" onMouseLeave={() => setOpenMenu(null)}>
         {(
           [
             ["Game", gameMenuOptions],
