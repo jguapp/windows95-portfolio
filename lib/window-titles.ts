@@ -17,6 +17,7 @@ const TITLES: Record<string, string> = {
   projects: "My Projects",
   resume: "Resume - Microsoft Word",
   contact: "Inbox - Outlook Express",
+  "patch-notes": "Release Notes",
 }
 
 /** Short form for the taskbar button, which has far less room. */

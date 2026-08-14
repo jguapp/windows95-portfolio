@@ -18,6 +18,7 @@ import Notepad from "./window-content/notepad"
 import MsDos from "./window-content/ms-dos"
 import Explorer from "./window-content/explorer"
 import RecycleBinWindow from "./window-content/recycle-bin"
+import PatchNotes from "./window-content/patch-notes"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -74,6 +75,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   contact: { width: 740, height: 580 },
   gallery: { width: 800, height: 600 },
   games: { width: 900, height: 680 },
+  "patch-notes": { width: 640, height: 560 },
 }
 
 const CURSOR: Record<ResizeEdge, string> = {
@@ -154,6 +156,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <RecycleBinWindow />
       case "guestbook":
         return <Guestbook />
+      case "patch-notes":
+        return <PatchNotes />
       default:
         return <div>Content not available</div>
     }
