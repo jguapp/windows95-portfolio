@@ -73,15 +73,18 @@ export default function Screensaver() {
     resize()
     window.addEventListener("resize", resize)
 
-    // A visitor who has asked for less movement gets the black screen a real
-    // saver would have shown, without the motion.
+    /*
+      Reduced motion gets a still image of the chosen saver rather than a
+      bare black rectangle, which read as "the screensaver is broken". A few
+      settling steps give the field something to show, then it holds.
+    */
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const saver = makeSaver(settings.saver)
 
     let frame = 0
-    if (!still) {
-      const saver = makeSaver(settings.saver)
+    if (still) {
+      for (let i = 0; i < 40; i++) saver.step(ctx, canvas.width, canvas.height, 1 / 30)
+    } else {
       let last = performance.now()
       const loop = (now: number) => {
         const dt = Math.min(0.1, (now - last) / 1000)

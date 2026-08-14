@@ -378,13 +378,17 @@ export interface SaverSettings {
 export const SAVER_CHANGE_EVENT = "win95-screensaver-change"
 
 export function readSaverSettings(): SaverSettings {
-  if (typeof window === "undefined") return { saver: "starfield", waitMinutes: 2 }
+  if (typeof window === "undefined") return { saver: "starfield", waitMinutes: 15 }
   const saved = localStorage.getItem("win95-screensaver")
-  const wait = Number.parseInt(localStorage.getItem("win95-screensaver-wait") ?? "", 10)
+  let wait = Number.parseInt(localStorage.getItem("win95-screensaver-wait") ?? "", 10)
+  // An earlier build shipped a two-minute default, which cut in while people
+  // were reading. Anyone still carrying that stored default moves to fifteen
+  // minutes, the wait Windows itself suggested.
+  if (wait === 2) wait = 15
   const valid = SAVERS.some((s) => s.id === saved)
   return {
     saver: saved === "none" ? "none" : valid ? (saved as SaverId) : "starfield",
-    waitMinutes: Number.isFinite(wait) && wait >= 1 ? wait : 2,
+    waitMinutes: Number.isFinite(wait) && wait >= 1 ? wait : 15,
   }
 }
 
