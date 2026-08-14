@@ -63,7 +63,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   msdos: { width: 660, height: 420 },
   explorer: { width: 720, height: 460 },
   "recycle-bin": { width: 560, height: 340 },
-  resume: { width: 800, height: 620 },
+  resume: { width: 1180, height: 660 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
   contact: { width: 740, height: 580 },

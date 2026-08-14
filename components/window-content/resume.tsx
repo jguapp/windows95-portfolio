@@ -553,7 +553,7 @@ const MenuDropdown = ({
  * where the text starts, which it did: it was drawing one-inch margins over a
  * page padded by 40.
  */
-const PAGE_WIDTH = 1000
+const PAGE_WIDTH = 1120
 const PAGE_PADDING = 44
 const PAGE_MARGIN = PAGE_PADDING
 
@@ -1679,7 +1679,7 @@ export default function Resume() {
       >
         {/* We're not using contentEditable on the parent div anymore */}
 
-        <div className="max-w-4xl mx-auto">
+        <div className="mx-auto">
           <h1 className="text-center text-xl font-bold mb-1" contentEditable suppressContentEditableWarning>
             Joel Vasquez
           </h1>
@@ -1726,12 +1726,12 @@ export default function Resume() {
                 <em>Bachelor of Science in Computer Science, Minor in Mathematics</em>
                 <span>Expected May 2027</span>
               </p>
-              {/* Two lines. A resume that spills onto a third looks like it was
-                  never proofread, so the list is cut to the courses that back
-                  up the backend and infrastructure work above it. */}
+              {/* Two lines, kept there by the page width rather than by
+                  trimming the list. */}
               <p>
-                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Computer Architecture, Computer
-                Networking, Database Management, Cloud Computing, Object-Oriented Programming
+                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
+                Computer Networking, Data Warehousing, Object-Oriented Programming, Computer Architecture, Systems
+                Analysis & Design, Web Development
               </p>
             </div>
           </div>
