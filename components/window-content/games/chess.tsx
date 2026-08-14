@@ -1275,14 +1275,6 @@ export default function Chess({ onReturn }: ChessProps) {
             </div>
           )}
 
-          <div className="mt-6 text-center">
-            <button
-              className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] px-4 py-2 hover:bg-gray-300 active:border-t-[#5a5a5a] active:border-l-[#5a5a5a] active:border-r-white active:border-b-white"
-              onClick={onReturn}
-            >
-              Return to Games
-            </button>
-          </div>
         </div>
       </div>
     )
@@ -1290,20 +1282,6 @@ export default function Chess({ onReturn }: ChessProps) {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Windows 95 Title Bar */}
-      <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
-        <div className="flex items-center">
-          <img src="/images/win95/chess-32.png" alt="Chess" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
-          <span className="font-bold">Chess</span>
-        </div>
-        <button
-          onClick={onReturn}
-          className="bg-[#c0c0c0] text-black px-2 py-0.5 rounded-sm border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] hover:bg-[#d0d0d0] text-xs"
-        >
-          X
-        </button>
-      </div>
-
       {/* Menu Bar */}
       <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
         <div className="relative">
@@ -1662,12 +1640,6 @@ export default function Chess({ onReturn }: ChessProps) {
                 className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
               >
                 New Game
-              </button>
-              <button
-                onClick={onReturn}
-                className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-              >
-                Return to Games
               </button>
             </div>
           </div>

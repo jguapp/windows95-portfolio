@@ -749,20 +749,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Windows 95 Title Bar */}
-      <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
-        <div className="flex items-center">
-          <img src="/images/win95/solitaire-32.png" alt="Solitaire" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
-          <span className="font-bold">Solitaire</span>
-        </div>
-        <button
-          onClick={onReturn}
-          className="bg-[#c0c0c0] text-black px-2 py-0.5 rounded-sm border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] hover:bg-[#d0d0d0] text-xs"
-        >
-          X
-        </button>
-      </div>
-
       {/* Menu Bar */}
       <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
         <div className="relative">
@@ -867,12 +853,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
           >
             Sound: {soundEnabled ? "On" : "Off"}
-          </button>
-          <button
-            onClick={onReturn}
-            className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-          >
-            Return to Games
           </button>
         </div>
         <div className="flex items-center space-x-4">
@@ -1062,12 +1042,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             {gameWon ? "Game Won!" : "Drag cards to move them. Double-click to send to foundation."}
           </span>
         </div>
-        <button
-          onClick={onReturn}
-          className="px-4 py-2 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-        >
-          Exit Game
-        </button>
       </div>
 
       {/* Win message, held back until the cascade has had its moment */}

@@ -638,20 +638,6 @@ export default function Pong({ onReturn }: PongProps) {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Windows 95 Title Bar */}
-      <div className="w-full bg-[#000080] text-white px-2 py-1 flex justify-between items-center">
-        <div className="flex items-center">
-          <img src="/images/win95/pong-32.png" alt="Pong" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
-          <span className="font-bold">Pong</span>
-        </div>
-        <button
-          onClick={onReturn}
-          className="bg-[#c0c0c0] text-black px-2 py-0.5 rounded-sm border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] hover:bg-[#d0d0d0] text-xs"
-        >
-          X
-        </button>
-      </div>
-
       {/* Menu Bar */}
       <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
         <div className="relative">
@@ -819,14 +805,6 @@ export default function Pong({ onReturn }: PongProps) {
             <li>First to {WINNING_SCORE} points wins!</li>
             <li>Press P to pause the game</li>
           </ul>
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={onReturn}
-            className="px-4 py-2 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-          >
-            Exit Game
-          </button>
         </div>
       </div>
 

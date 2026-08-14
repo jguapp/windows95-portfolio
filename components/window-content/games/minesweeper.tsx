@@ -18,6 +18,10 @@ const MINE_FLASH_MS = 420
 /** Windows 95 drew Minesweeper cells at 16x16. */
 const CELL_PX = 16
 
+/** Everything on the panel is drawn at the sizes Windows used, then doubled.
+ *  An exact 2x keeps every pixel square, so the art stays crisp. */
+const BOARD_ZOOM = 2
+
 /** The three boards Windows 95 shipped, with their mine counts. */
 const BOARDS: Record<Difficulty, { rows: number; cols: number; mines: number }> = {
   easy: { rows: 9, cols: 9, mines: 10 },
@@ -560,10 +564,12 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       {/* The board sizes itself; the window does not stretch it. */}
       <div className="flex flex-1 items-start justify-center overflow-auto p-3" onClick={() => setMenu(null)}>
         <div
+          data-panel
           className="p-[6px]"
           style={{
             backgroundColor: "#c0c0c0",
             boxShadow: "inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #ffffff, inset -3px -3px 0 0 #808080, inset 3px 3px 0 0 #ffffff",
+            zoom: BOARD_ZOOM,
           }}
         >
           {/* Counter panel */}
@@ -680,12 +686,12 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
         </div>
       )}
 
-      {/* Instructions and Exit */}
-      <div className="mt-4 flex flex-col items-center">
-        <p className="text-sm text-gray-700 mb-2">Left-click: Reveal | Right-click: Flag</p>
-        <button onClick={onReturn} className="win95-button mt-2 px-6">
-          Return to Games
-        </button>
+      {/* Status bar, as Minesweeper had along the bottom. */}
+      <div className="flex gap-4 border-t border-t-white bg-[#c0c0c0] px-2 py-[3px]">
+        <span className="flex-1">Left-click to reveal, right-click to flag.</span>
+        <span>
+          {gridSize.cols} x {gridSize.rows}, {mineCount} mines
+        </span>
       </div>
 
       {/* Help Modal */}

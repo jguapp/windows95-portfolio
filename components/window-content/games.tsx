@@ -20,7 +20,6 @@ export default function Games() {
   const [selectSound, setSelectSound] = useState<SynthAudio | null>(null)
   const [hoverSound, setHoverSound] = useState<SynthAudio | null>(null)
   const [bgMusic, setBgMusic] = useState<SynthAudio | null>(null)
-  const [hoveredGame, setHoveredGame] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"all" | "arcade" | "board" | "puzzle">("all")
   /** The icon with the selection box round it, as in any Explorer window. */
   const [selected, setSelected] = useState<string | null>(null)
@@ -291,14 +290,14 @@ export default function Games() {
             setMenu(null)
           }}
         >
-          <div className="flex flex-wrap content-start gap-1">
+          <div className="flex flex-wrap content-start gap-2">
             {shown.map((game) => (
               <button
                 key={game.id}
                 type="button"
                 data-game={game.id}
                 title={game.description}
-                className={`flex w-[92px] flex-col items-center gap-1 p-2 text-center ${
+                className={`flex w-[112px] flex-col items-center gap-2 p-2 text-center ${
                   selected === game.id ? "bg-[#000080] text-white" : "text-black"
                 }`}
                 onClick={(e) => {
@@ -315,7 +314,7 @@ export default function Games() {
                 <img
                   src={game.image}
                   alt=""
-                  className="h-8 w-8"
+                  className="h-16 w-16"
                   style={{ imageRendering: "pixelated" }}
                 />
                 <span className="break-words leading-tight">{game.name}</span>
@@ -335,10 +334,41 @@ export default function Games() {
     )
   }
 
+  const open = games.find((g) => g.id === currentGame)
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* One strip, shared by every game.
+          Chess, Pong and Solitaire each drew their own navy title bar inside a
+          window that already had one, and the other five offered no way back
+          except an Exit buried in a menu. This replaces both: a grey toolbar,
+          so it does not read as a second title bar, with the way out on it. */}
+      {open && (
+        <div
+          data-game-bar
+          className="win95-type flex items-center gap-2 border-b border-b-[#808080] bg-[#c0c0c0] px-2 py-1"
+          style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+        >
+          <button
+            type="button"
+            data-return
+            onClick={returnToLauncher}
+            className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[2px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+          >
+            &#9664; Return to Games
+          </button>
+          <img
+            src={open.image}
+            alt=""
+            className="h-4 w-4"
+            style={{ imageRendering: "pixelated" }}
+          />
+          <span className="font-bold">{open.name}</span>
+        </div>
+      )}
+
       {/* Game Content - Full window */}
-      <div className="flex-1 overflow-auto w-full h-full">{renderGame()}</div>
+      <div className="min-h-0 flex-1 overflow-auto w-full">{renderGame()}</div>
     </div>
   )
 }
