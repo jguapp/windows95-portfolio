@@ -125,13 +125,20 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 
 | | |
 | --- | --- |
+| **Winamp** | the real 2.9 skin engine, whipping the llama, with a synthesised opening track |
+| **Internet Explorer** | carries its own little internet, hit counter included |
 | **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle |
+| **Windows+R** | Run takes the real names: `calc`, `winmine`, `sol`, `mspaint`, `iexplore` |
+| **Display Properties** | wallpapers, colour schemes, five real screen savers, and a Desktop area slider that changes the resolution |
+| **Clippy** | bottom right, contextual, dismissible for good |
+| **Shut Down** | ends on the amber it's-now-safe screen; Restart reboots the machine |
+| **Accessories** | WordPad to Disk Defragmenter, present and accounted for |
 | **MS-DOS Prompt** | fourteen commands over a virtual `C:\` drive |
 | **Notepad** | opens and saves to that same drive, and DOS can read what you wrote |
 | **Blue Screen of Death** | it's in there, and it's faithful |
-| **Display Properties** | five wallpapers and working screen savers |
 | **Drag to the Recycle Bin** | and File > Restore puts it back where it was |
-| **The tray speaker** | a volume slider that governs every sound |
+| **The clock** | click it for Date/Time Properties, ticking analogue face and all |
+| **Release Notes** | Start > Documents, the whole history of the desktop in the desktop |
 | **Right-click** | the desktop, the icons, the Solitaire table, everywhere |
 
 </div>

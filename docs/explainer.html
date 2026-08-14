@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Windows 95 Portfolio, explained</title>
+<style>
+  :root { --ink: #1a1a1a; --dim: #555; --line: #d8d8d8; --accent: #008080; --code-bg: #f4f4f4; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; color: var(--ink); line-height: 1.65;
+         max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 6rem; background: #fff; }
+  h1, h2, h3 { font-family: Verdana, Geneva, sans-serif; line-height: 1.25; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid var(--accent); padding-bottom: .4rem; }
+  h2 { font-size: 1.35rem; margin-top: 3rem; border-bottom: 1px solid var(--line); padding-bottom: .3rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.8rem; }
+  code, pre { font-family: Consolas, "Courier New", monospace; font-size: .92em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  pre { background: var(--code-bg); padding: .9rem 1rem; overflow-x: auto; border-left: 4px solid var(--accent); }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95em; }
+  th, td { border: 1px solid var(--line); padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #f0f0f0; font-family: Verdana, sans-serif; font-size: .85em; }
+  .toc { background: #f7f7f7; border: 1px solid var(--line); padding: 1rem 1.5rem; margin: 1.5rem 0; }
+  .toc ol { margin: .3rem 0; padding-left: 1.4rem; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .meta { color: var(--dim); font-size: .9em; }
+  .note { background: #fffbe6; border: 1px solid #e6d98a; padding: .7rem 1rem; margin: 1rem 0; }
+  .verified { color: #0a6b0a; }
+  dt { font-weight: bold; margin-top: .7rem; }
+  dd { margin-left: 1.2rem; }
+</style>
+</head>
+<body>
+
+<h1>Windows 95 Portfolio, explained</h1>
+<p class="meta">
+  Project: windows95-portfolio &nbsp;|&nbsp; Repository: github.com/jguapp/windows95-portfolio
+  &nbsp;|&nbsp; Live: builtbyjoel.dev<br>
+  Document generated: August 14, 2026 &nbsp;|&nbsp;
+  Audience: any smart reader, no prior knowledge assumed.
+</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ol>
+  <li><a href="#how">How to use this document</a></li>
+  <li><a href="#plain">Part I. The project in plain English</a></li>
+  <li><a href="#background">Part II. Background concepts</a></li>
+  <li><a href="#architecture">Part III. System architecture</a></li>
+  <li><a href="#built">Part IV. How it was built</a></li>
+  <li><a href="#tour">Part V. Repository tour</a></li>
+  <li><a href="#logic">Part VI. Core logic in depth</a></li>
+  <li><a href="#contracts">Part VII. Data contracts</a></li>
+  <li><a href="#deps">Part VIII. Dependencies</a></li>
+  <li><a href="#security">Part IX. Security and governance</a></li>
+  <li><a href="#running">Part X. Running the project</a></li>
+  <li><a href="#worked">Part XI. A worked example</a></li>
+  <li><a href="#limits">Part XII. Limitations and future work</a></li>
+  <li><a href="#trouble">Part XIII. Troubleshooting</a></li>
+  <li><a href="#glossary">Part XIV. Glossary</a></li>
+  <li><a href="#learning">Part XV. Learning path</a></li>
+</ol>
+</div>
+
+<h2 id="how">How to use this document</h2>
+<p>If you are new to web development, read straight through. Part II defines every term
+before it is used. If you are an experienced engineer, skim Part I, jump to Part III for
+the architecture, Part VI for the interesting algorithms, and Part V when you need to
+find a file.</p>
+
+<h2 id="plain">Part I. The project in plain English</h2>
+<p><strong>One sentence:</strong> this is a personal portfolio website that looks and
+behaves like a Windows 95 computer, with working programs instead of web pages.</p>
+<p><strong>An analogy:</strong> most portfolios are a brochure. This one is an office you
+walk into. The resume is a document open on the desk. The projects play on a television
+in the corner. The mail is in the mail program. You do not scroll; you double-click.</p>
+<p><strong>The problem it solves:</strong> a portfolio has one job, to be remembered.
+Every scrolling single-page portfolio looks like every other. A desktop you can actually
+use is remembered.</p>
+<p><strong>What it does:</strong> boots to a teal desktop with draggable icons, a Start
+menu, a taskbar with a live clock and volume control, and windows that open, move,
+resize, minimise and maximise. Inside those windows: a resume in a recreated Microsoft
+Word, an About page styled as a 2005 profile site, a projects page styled as 2005
+YouTube, mail in a recreated Outlook Express with 59 messages, a photo gallery, a
+guestbook backed by Postgres, MS Paint, Notepad, an MS-DOS prompt, a calculator, a file
+explorer, a recycle bin, Internet Explorer with its own built-in pages, a real Winamp,
+and eight playable games. Around them: five screensavers, wallpaper and resolution
+switching that actually apply, a sound scheme, Clippy, a shutdown sequence, and one
+secret behind a famous ten-key code.</p>
+<p><strong>What it does not do:</strong> it does not persist visitor changes between
+reloads except the guestbook, wallpaper, screensaver and resolution choices. It does not
+run real DOS software. Its Internet Explorer cannot load external websites. It is not a
+Windows emulator; every program is a purpose-built recreation.</p>
+
+<h2 id="background">Part II. Background concepts</h2>
+<dl>
+  <dt>Web page and browser</dt>
+  <dd>A browser downloads documents written in HTML, styles them with CSS and runs
+  JavaScript to make them interactive. This whole project is one page whose JavaScript
+  redraws everything.</dd>
+  <dt>React</dt>
+  <dd>A JavaScript library for building interfaces out of components. A component is a
+  function that returns markup and re-runs when its data changes. Every window, icon and
+  menu here is a component.</dd>
+  <dt>Next.js</dt>
+  <dd>A framework around React that handles routing, building and server code. This
+  project uses one route, the desktop, plus server actions for the two forms.</dd>
+  <dt>Server action</dt>
+  <dd>A Next.js function that runs on the server but is called like a local function
+  from the page. The contact form and guestbook write through server actions, which is
+  what keeps secrets off the client.</dd>
+  <dt>TypeScript</dt>
+  <dd>JavaScript with type annotations, checked before the code runs.</dd>
+  <dt>Tailwind CSS</dt>
+  <dd>A styling system of small utility classes composed in markup, used for almost all
+  styling here alongside a hand-written <code>globals.css</code>.</dd>
+  <dt>Canvas</dt>
+  <dd>A drawing surface the page paints pixel by pixel from JavaScript. Pong, Paint,
+  the screensavers and the Solitaire win animation draw on canvases.</dd>
+  <dt>Web Audio API</dt>
+  <dd>The browser's sound synthesiser. Every sound on this desktop is generated from
+  oscillators at play time; the repository ships no audio files.</dd>
+  <dt>localStorage</dt>
+  <dd>A small key-value store the browser keeps per site. Wallpaper, screensaver and
+  resolution choices live there.</dd>
+  <dt>Postgres</dt>
+  <dd>A relational database. The guestbook keeps its entries in one, reached through a
+  pooled connection string in an environment variable.</dd>
+  <dt>Windows 95</dt>
+  <dd>Microsoft's 1995 operating system: the teal desktop, the grey bevelled windows,
+  the Start button. The visual grammar this project recreates: raised edges are
+  light-top-left dark-bottom-right, pressed edges are the reverse, and the system
+  palette leans on #c0c0c0 grey, #000080 navy and #008080 teal.</dd>
+</dl>
+
+<h2 id="architecture">Part III. System architecture</h2>
+<pre><code>Browser
+└── app/page.tsx            one route, owns the window list
+    ├── BootSequence        shown once, then never again
+    ├── Desktop             icons, wallpaper, selection marquee, context menus
+    │     └── DesktopItem   one icon: drag, rename, open
+    ├── Window (per open id)
+    │     └── window-content/*   the program inside the frame
+    ├── Taskbar             Start button, running windows, tray, clock
+    ├── StartMenu           cascades: Programs, Accessories, Documents...
+    ├── Screensaver         watches idle time and the stored choice
+    ├── Clippy              watches the active window
+    ├── Winamp              webamp, loaded only when opened
+    ├── Shutdown, RunDialog, MessageBoxHost, PokemonBattle
+    └── window-titles / sound / screensavers / resolution   shared lib
+
+Server (only two paths leave the page)
+├── actions/send-email.ts   contact form -> Web3Forms, rate limited
+└── actions/guestbook.ts    guestbook -> Postgres via DATABASE_URL</code></pre>
+<p><strong>Principles.</strong> One page owns the truth: <code>app/page.tsx</code> keeps
+the list of open, minimised and focused windows and passes callbacks down. Windows talk
+back through DOM custom events (<code>openWindow</code>, <code>windowAction</code>,
+<code>openRun</code>, <code>openShutdown</code>) so any component can open any program
+without prop drilling. Everything visual is drawn, not shipped: icons are pixel-grid
+SVG or generated PNG, sounds are synthesised, the one exception being photographs and
+the licensed critter sprites. Server code exists only where a secret or shared state
+demands it.</p>
+<p><strong>Runtime paths that differ.</strong> On screens narrower than 768px windows
+open maximised and lose the maximise control. With <code>DATABASE_URL</code> unset the
+guestbook falls back to an in-process list and says so. With
+<code>prefers-reduced-motion</code> set, animations and screensaver motion are
+suppressed.</p>
+
+<h2 id="built">Part IV. How the project was built</h2>
+<p>The commit history tells the story in eras, which the desktop's own Release Notes
+window (Start, Documents, Release Notes) retells. First boot in July 2025: desktop,
+windows, the core programs. A resume content pass in February 2026. Then, in August
+2026, a long series of authenticity and depth passes: the games grew from five to
+eight, the guestbook moved onto Postgres, the shell gained Run, Date/Time, Properties,
+screensavers, sounds, Clippy, Winamp, Internet Explorer, a working Display Properties,
+and a phone layout. The plan was never written down in advance; the constant was a rule
+of thumb, that anything on screen should behave the way 1995 did, and where the original
+was worse than useless (an unwinnable Pong bot, a title bar inside a title bar) the fix
+follows what Windows would have done.</p>
+
+<h2 id="tour">Part V. Repository tour</h2>
+<table>
+<tr><th>Path</th><th>What it is</th></tr>
+<tr><td><code>app/page.tsx</code></td><td>The one route. Window list state, boot flag, global shortcuts, hosts every overlay.</td></tr>
+<tr><td><code>app/globals.css</code></td><td>The Win95 look: bevels, scrollbars, cursors, the type scale, the blanket font rule and its <code>.win95-mono</code> escape hatch.</td></tr>
+<tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell and the social preview image.</td></tr>
+<tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
+<tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>
+<tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore.</td></tr>
+<tr><td><code>components/window.tsx</code></td><td>The window frame: drag, eight resize grips, minimise, maximise rules, per-app sizes, the id-to-content switch.</td></tr>
+<tr><td><code>components/taskbar.tsx</code></td><td>Start button, window buttons, quick launch, volume slider, single-click clock.</td></tr>
+<tr><td><code>components/start-menu.tsx</code></td><td>The menu and its cascades, including Accessories.</td></tr>
+<tr><td><code>components/win95-dialog.tsx</code></td><td>Message boxes: queue, drawn glyphs, per-icon sounds, the bubbling-keydown guard.</td></tr>
+<tr><td><code>components/display-properties.tsx</code></td><td>Background, Screen Saver, Appearance and Settings tabs, all of which apply.</td></tr>
+<tr><td><code>components/screensaver.tsx</code>, <code>components/saver-preview.tsx</code>, <code>lib/screensavers.ts</code></td><td>Idle watcher, the preview monitor, and the five renderers they share.</td></tr>
+<tr><td><code>components/clippy.tsx</code></td><td>The assistant: contextual tips, dismissal for good.</td></tr>
+<tr><td><code>components/winamp.tsx</code></td><td>Webamp host plus the synthesised opening track.</td></tr>
+<tr><td><code>components/shutdown.tsx</code>, <code>run-dialog.tsx</code>, <code>date-time-properties.tsx</code>, <code>item-properties.tsx</code></td><td>The shell dialogs.</td></tr>
+<tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites and synthesised cries.</td></tr>
+<tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, stub-app, and <code>games/</code> with the eight games.</td></tr>
+<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
+<tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
+<tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
+</table>
+
+<h2 id="logic">Part VI. Core logic in depth</h2>
+<h3>Window management</h3>
+<p><code>app/page.tsx</code> holds <code>openWindows</code>, <code>minimizedWindows</code>
+and <code>activeWindow</code>. Focus raises z-index from 100 to 200. Each app has a
+default and minimum size table in <code>window.tsx</code>; Calculator resizes its own
+window when switching Standard and Scientific by dispatching
+<code>windowAction {action:"resize"}</code>, and is in the <code>NEVER_MAXIMIZE</code>
+set because the real one had no maximise button.</p>
+<h3>The FreeCell deal</h3>
+<p>Deals are numbered like the original because they use Microsoft's actual generator,
+a linear congruential generator: <code>seed = seed * 214013 + 2531011</code>, take
+<code>(seed &gt;&gt; 16) &amp; 0x7fff</code>, swap cards down the deck. Deal 11982 is
+still unwinnable.</p>
+<h3>The Pong opponent</h3>
+<p>The bot re-reads the ball on a delay rather than tracking continuously, and its read
+lands off-centre by a per-difficulty error: Easy is 130 px/s of paddle speed, a 0.42 s
+stale read and up to 42 px of error; Medium 195, 0.22, 20; Hard 300, 0.09, 5. When the
+ball moves away it drifts to centre, which opens angles. This replaced a bot that could
+reach every ball, verified by a test that tracks the ball and must score on Easy inside
+a minute.</p>
+<h3>Chess</h3>
+<p>Easy plays a random legal move. Medium scores every legal move by material and takes
+the best. Hard subtracts the opponent's best reply, one ply of lookahead.</p>
+<h3>The sound synthesiser</h3>
+<p><code>lib/sound.ts</code> builds every effect from oscillator primitives:
+<code>tone</code>, <code>sequence</code>, <code>noise</code> and <code>knock</code> (the
+chess set models the modern chess.com shape, one wooden impact with layers). Message box
+sounds follow the icon: information dings, errors get the four-note falling chord. The
+startup chime arms itself on the first user gesture because browsers refuse audio before
+one.</p>
+<h3>Screensavers</h3>
+<p><code>lib/screensavers.ts</code> exposes each saver as a <code>step(ctx, w, h, dt)</code>
+renderer so the full-screen saver and the Settings preview run identical code. 3D Pipes
+grows through a grid, takes any open neighbour preferring straight ahead, and only dies
+boxed in. The idle watcher rearms on any input and honours reduced motion.</p>
+<h3>The resolution simulation</h3>
+<p>Choosing 640x480 sets a CSS zoom of <code>innerWidth / 640</code> on the shell root,
+never below 1, since a lower resolution over the same glass made everything larger.</p>
+<h3>The 28-colour palette</h3>
+<p>Paint's colour box is exactly MS Paint's 28, stored as fourteen dark-light pairs, and
+the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted to a
+28x28 grid.</p>
+
+<h2 id="contracts">Part VII. Data contracts</h2>
+<table>
+<tr><th>Contract</th><th>Fields</th></tr>
+<tr><td>Guestbook row (Postgres, table created on first use)</td>
+    <td><code>id serial</code>, <code>name text</code>, <code>message text</code>,
+        <code>site text null</code>, <code>drawing text null</code> (data URL),
+        <code>created_at timestamptz</code></td></tr>
+<tr><td>Contact form (server action input)</td>
+    <td><code>name</code>, <code>email</code>, <code>message</code>, honeypot
+        <code>company_website</code> which must be empty; zod enforces lengths.</td></tr>
+<tr><td><code>Message</code> (Outlook, in code)</td>
+    <td><code>id, fromName, from, subject, date, read, body</code></td></tr>
+<tr><td><code>Species</code> (battle)</td>
+    <td><code>name, level, maxHp, moves[], cry{from,to,duration,wave,grit}, sprite[28 rows]</code></td></tr>
+<tr><td><code>Saver</code></td><td><code>step(ctx, w, h, dt)</code></td></tr>
+<tr><td><code>StubProgram</code></td><td><code>id, name, icon, was, instead?</code></td></tr>
+<tr><td>localStorage keys</td>
+    <td><code>win95-background-image</code>, <code>win95-background-pattern</code>,
+        <code>win95-color-scheme</code>, <code>win95-screensaver</code>,
+        <code>win95-screensaver-wait</code>, <code>win95-resolution</code></td></tr>
+</table>
+
+<h2 id="deps">Part VIII. Dependencies</h2>
+<table>
+<tr><th>Package</th><th>Why it is here</th></tr>
+<tr><td>next 15, react 19, react-dom</td><td>The framework and renderer.</td></tr>
+<tr><td>typescript 5, eslint 9</td><td>Checking.</td></tr>
+<tr><td>tailwindcss 3.4, tailwind-merge, tailwindcss-animate, clsx, postcss</td><td>Styling.</td></tr>
+<tr><td>@radix-ui/react-tabs</td><td>The tab primitive under Display Properties.</td></tr>
+<tr><td>postgres</td><td>Guestbook driver, configured for serverless with <code>max: 1, prepare: false</code>.</td></tr>
+<tr><td>zod</td><td>Validating the two form inputs on the server.</td></tr>
+<tr><td>webamp</td><td>The real Winamp 2.9 skin engine, MIT licensed, dynamically imported so only visitors who open it pay for it.</td></tr>
+<tr><td>@vercel/analytics</td><td>Page analytics on the host.</td></tr>
+<tr><td>styled-components</td><td>Present in package.json from the project's early era; the components use Tailwind. A candidate for removal.</td></tr>
+</table>
+
+<h2 id="security">Part IX. Security and governance</h2>
+<p>Secrets live in environment variables, documented in <code>.env.example</code>, never
+in the repository. The two write paths are server actions: the contact form validates
+with zod, carries a honeypot field and an in-memory rate limit
+(<code>lib/rate-limit.ts</code>); the guestbook caps lengths and rate limits by IP. The
+Postgres client uses a pooled connection string. <code>next.config.mjs</code> sets a
+content security policy. The <code>public/images/win95/NOTICE.md</code> file records
+icon provenance, and the battle sprites are CC0 with the source linked in
+<code>pokemon-roster.ts</code>. One historical note: an earlier Web3Forms access key
+appeared in the repository's git history, and rotating it is tracked as issue #10.</p>
+
+<h2 id="running">Part X. Running the project</h2>
+<pre><code>pnpm install
+cp .env.example .env.local   # fill in WEB3FORMS_ACCESS_KEY and DATABASE_URL, both optional locally
+pnpm dev                     # http://localhost:3000
+pnpm typecheck && pnpm lint  # checks
+pnpm build && pnpm start     # production</code></pre>
+<p>Without the env vars the site runs fully; the contact form reports itself unavailable
+and the guestbook uses its in-process fallback.</p>
+
+<h2 id="worked">Part XI. A worked example: signing the guestbook</h2>
+<ol>
+  <li>Double-click Guestbook. <code>page.tsx</code> adds <code>"guestbook"</code> to
+      <code>openWindows</code>; <code>window.tsx</code> renders the frame at 600x640 and
+      mounts <code>window-content/guestbook.tsx</code>.</li>
+  <li>You type a name and message and draw something on the canvas. Submitting calls the
+      server action with the fields plus the canvas as a data URL.</li>
+  <li>The action checks the honeypot is empty, zod checks lengths, the rate limiter
+      checks your IP has not signed in the last window.</li>
+  <li><code>lib/guestbook.ts</code> ensures the table exists (a cached promise guards
+      the DDL) and inserts the row over the pooled connection.</li>
+  <li>The window re-reads the list and your entry renders, drawing included. On a
+      machine with no <code>DATABASE_URL</code> the same flow lands in the in-process
+      list and the window says entries are temporary.</li>
+</ol>
+
+<h2 id="limits">Part XII. Limitations and future improvements</h2>
+<ul>
+  <li>Visitor state largely resets on reload by design; only display settings and the
+      guestbook persist.</li>
+  <li>Internet Explorer carries built-in pages only, since external sites refuse
+      framing.</li>
+  <li>Keyboard access to the desktop itself is thin: icons are not tabbable and there
+      is no Alt+Tab.</li>
+  <li>The Playwright checks that verify behaviour (around 350 assertions at last full
+      run) live outside the repository in a scratch directory; moving them into
+      <code>tests/</code> with a config would make them part of the definition of
+      done.</li>
+  <li>styled-components is declared but unused and could be dropped.</li>
+  <li>Most valuable next: persistence for Notepad and Paint saves, and in-repo
+      tests.</li>
+</ul>
+
+<h2 id="trouble">Part XIII. Troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause and fix</th></tr>
+<tr><td>"The guestbook is running without a database"</td>
+    <td><code>DATABASE_URL</code> is unset or unreachable. Set the pooled connection
+        string and restart.</td></tr>
+<tr><td>Contact form says delivery is unavailable</td>
+    <td><code>WEB3FORMS_ACCESS_KEY</code> is unset.</td></tr>
+<tr><td>No sound until you click</td>
+    <td>Browsers block audio before a user gesture. The startup chime arms itself and
+        fires on your first click or keypress. This is expected.</td></tr>
+<tr><td>MIME type errors and a broken page in dev</td>
+    <td>A production build overwrote <code>.next</code> under a running dev server.
+        Stop the server, delete <code>.next</code>, run <code>pnpm dev</code>.</td></tr>
+<tr><td>Port 3000 already in use</td>
+    <td>A previous server still holds it. On Windows:
+        <code>Get-NetTCPConnection -LocalPort 3000</code> then stop the process.</td></tr>
+<tr><td>Guestbook rejects a second entry</td>
+    <td>The rate limit working as intended. Wait out the window.</td></tr>
+</table>
+
+<h2 id="glossary">Part XIV. Glossary</h2>
+<dl>
+  <dt>Bevel</dt><dd>The two-tone edge that makes Win95 controls look raised or pressed.</dd>
+  <dt>Canvas</dt><dd>A pixel drawing surface scripted from JavaScript.</dd>
+  <dt>Cascade</dt><dd>A submenu that opens beside its parent menu item.</dd>
+  <dt>CC0</dt><dd>A licence that places work in the public domain; the battle sprites use it.</dd>
+  <dt>Custom event</dt><dd>A named DOM message any component can dispatch or listen for.</dd>
+  <dt>Honeypot</dt><dd>A hidden form field only robots fill in; entries with it filled are dropped.</dd>
+  <dt>LCG</dt><dd>Linear congruential generator, the tiny random number recipe behind FreeCell's numbered deals.</dd>
+  <dt>Marquee selection</dt><dd>The dotted rectangle drawn while dragging over the desktop.</dd>
+  <dt>Pooled connection</dt><dd>A shared database connection endpoint that survives many short-lived serverless instances.</dd>
+  <dt>Rate limit</dt><dd>A cap on how often one client may perform an action.</dd>
+  <dt>Server action</dt><dd>Next.js server function callable from the page.</dd>
+  <dt>Webamp</dt><dd>The open-source reimplementation of Winamp 2.9 used for the Winamp window.</dd>
+  <dt>Zod</dt><dd>A schema library that validates input shapes at runtime.</dd>
+  <dt>Zoom (CSS)</dt><dd>A style that scales an element and its layout, used to simulate resolutions.</dd>
+</dl>
+
+<h2 id="learning">Part XV. Learning path</h2>
+<p>Read in this order: <code>app/page.tsx</code> (the spine), then
+<code>components/window.tsx</code>, <code>desktop.tsx</code> and
+<code>taskbar.tsx</code> (the shell), then one simple program
+(<code>window-content/notepad.tsx</code>), one hard one
+(<code>window-content/resume.tsx</code>), one game
+(<code>games/minesweeper.tsx</code>), then the shared libs
+(<code>lib/sound.ts</code>, <code>lib/screensavers.ts</code>,
+<code>lib/guestbook.ts</code>).</p>
+<p>Afterwards you should be able to answer: where does the list of open windows live?
+How does a program ask the shell to open another program? Why is there no audio file in
+the repository? What stops the guestbook being spammed? Why does the calculator have no
+maximise button, and how does it resize its own window? How does the same screensaver
+code run in the little preview monitor and full screen? What makes FreeCell's deal
+numbers match the original's?</p>
+
+</body>
+</html>
