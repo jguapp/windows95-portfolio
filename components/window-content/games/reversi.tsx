@@ -272,7 +272,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
             display: "grid",
             gridTemplateColumns: `repeat(${SIZE}, ${CELL}px)`,
             gridTemplateRows: `repeat(${SIZE}, ${CELL}px)`,
-            backgroundColor: "#008000",
+            backgroundColor: "#c0c0c0",
           }}
         >
           {board.map((square, i) => {
@@ -286,7 +286,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
                 className="relative flex items-center justify-center"
                 style={{
                   boxSizing: "border-box",
-                  border: "1px solid #005000",
+                  border: "1px solid #808080",
                   cursor: turn === 1 && !over && moves.has(i) ? "pointer" : "default",
                   backgroundColor: lastPlaced === i ? "#009900" : undefined,
                 }}
