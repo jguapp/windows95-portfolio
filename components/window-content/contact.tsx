@@ -4,6 +4,22 @@ import type React from "react"
 import { useRef, useState } from "react"
 import { sendEmail } from "@/actions/send-email"
 import { CloseIcon } from "@/components/win95-controls"
+import {
+  AddressBookIcon,
+  AttachIcon,
+  ComposeIcon,
+  CopyIcon,
+  CutIcon,
+  DeleteIcon,
+  ForwardIcon,
+  MailReadIcon,
+  MailUnreadIcon,
+  PasteIcon,
+  ReplyAllIcon,
+  ReplyIcon,
+  SendIcon,
+  SendReceiveIcon,
+} from "./outlook-icons"
 
 /**
  * The Contact window, as Outlook Express.
@@ -96,6 +112,124 @@ Keep up the excellent work.
 Alex Rivera
 Senior Developer Mentor`,
   },
+  {
+    id: 5,
+    fromName: "ColorStack Baruch",
+    from: "eboard@colorstackbaruch.org",
+    subject: "RE: Spring workshop schedule",
+    date: "4/09/2025 6:20 PM",
+    read: true,
+    body: `Joel,
+
+Room is booked for the intro to cloud workshop. Facilities says we can have it until 9.
+
+Last one had 70 people and we ran out of chairs, so I've asked for the bigger room this time. Bloomberg confirmed for the panel in May.
+
+See you Thursday.`,
+  },
+  {
+    id: 6,
+    fromName: "Liberty Mutual Recruiting",
+    from: "university@libertymutual.com",
+    subject: "Your internship start date",
+    date: "3/28/2025 11:15 AM",
+    read: true,
+    body: `Hi Joel,
+
+Confirming your start date of June 2nd in Portsmouth. Your laptop will be waiting at the desk on your first morning, and your manager will reach out the week before with your onboarding schedule.
+
+Welcome to the team.`,
+  },
+  {
+    id: 7,
+    fromName: "MAKE MONEY FAST",
+    from: "opportunity@wealth-systems-online.net",
+    subject: "!!! CONGRATULATIONS YOU HAVE BEEN SELECTED !!!",
+    date: "3/14/2025 3:02 AM",
+    read: false,
+    body: `Dear Friend,
+
+You have been SELECTED to receive our EXCLUSIVE work-from-home opportunity!!! Our associates are earning $4,000 - $7,000 PER WEEK from the comfort of their own home using nothing but a COMPUTER and the INTERNET.
+
+No experience necessary!!! No selling!!! We provide EVERYTHING!!!
+
+Simply send $39.95 for your STARTER KIT to the address below and begin earning IMMEDIATELY.
+
+ACT NOW - this offer expires SOON!!!
+
+P.S. Do not delete this message. Sharon from Ohio deleted it and she regrets it EVERY DAY.`,
+  },
+  {
+    id: 8,
+    fromName: "System Administrator",
+    from: "admin@your-1sp-billing.com",
+    subject: "URGENT: Your account will be terminated",
+    date: "3/11/2025 4:41 AM",
+    read: false,
+    body: `ATTENTION USER,
+
+Our records indicate that your internet account has EXCEEDED its allocation of megabytes for this month. Failure to respond within 24 HOURS will result in PERMANENT TERMINATION of your service.
+
+To verify your account, simply reply to this message with your username, password, and credit card number for our records.
+
+This is an automated message. Do not reply to this message.
+
+Thank you for your cooperation,
+The Administrator`,
+  },
+  {
+    id: 9,
+    fromName: "Y2K Preparedness Council",
+    from: "info@y2k-readiness-alliance.org",
+    subject: "Is YOUR computer ready for the year 2000?",
+    date: "2/27/2025 9:58 PM",
+    read: false,
+    body: `Concerned citizen,
+
+On January 1st, 2000, computers worldwide may FAIL TO RECOGNISE the date. Banking systems. Traffic lights. Your microwave.
+
+Our 400-page manual, "SURVIVING THE MILLENNIUM BUG", tells you everything the government will not. Includes a chapter on canned goods.
+
+Only $89.95 plus shipping. Supplies are limited because demand is UNPRECEDENTED.
+
+Do not wait until December.`,
+  },
+  {
+    id: 10,
+    fromName: "Nigel Ashworth-Pemberton III",
+    from: "n.ashworth.pemberton@private-banking-intl.com",
+    subject: "CONFIDENTIAL BUSINESS PROPOSAL",
+    date: "2/19/2025 2:14 AM",
+    read: false,
+    body: `DEAR SIR/MADAM,
+
+I am writing to you in the STRICTEST CONFIDENCE regarding a matter of some delicacy. I am the executor of an estate valued at US$14,500,000.00 (FOURTEEN MILLION FIVE HUNDRED THOUSAND UNITED STATES DOLLARS) belonging to a client who shares your surname and who sadly passed without heirs.
+
+I require only a trustworthy partner to receive these funds. For your assistance you shall retain 30% of the total sum.
+
+Please respond with your full banking details at your EARLIEST CONVENIENCE. Time is of the essence as the bank intends to confiscate the funds.
+
+Yours in anticipation,
+N. Ashworth-Pemberton III, Esq.`,
+  },
+  {
+    id: 11,
+    fromName: "WebRing Administrator",
+    from: "noreply@geocities-webring.com",
+    subject: "Your site has been approved for the Retro Computing WebRing",
+    date: "2/02/2025 1:30 PM",
+    read: true,
+    body: `Congratulations!
+
+Your site has been APPROVED for membership in the Retro Computing WebRing.
+
+Please add the ring navigation banner to the bottom of your homepage within 14 days or your membership will be revoked. The HTML is attached below. Do not modify the code.
+
+Remember: sites with animated banners get 40% more traffic!
+
+Happy surfing,
+The WebRing Team`,
+  },
 ]
 
 type FolderId = "inbox" | "outbox" | "sent" | "deleted" | "drafts"
@@ -108,15 +242,21 @@ const FOLDERS: { id: FolderId; label: string; icon: string }[] = [
   { id: "drafts", label: "Drafts", icon: "/images/win95/folder-closed-16.png" },
 ]
 
-/** Toolbar button: large glyph over a label, as Outlook Express had. */
+/**
+ * Toolbar button: icon over a label, as Outlook Express had.
+ *
+ * The icon is a drawn component rather than an emoji, because an emoji is a
+ * different picture on every platform and none of them look like anything
+ * Microsoft shipped.
+ */
 function ToolButton({
   label,
-  glyph,
+  icon,
   onClick,
   disabled,
 }: {
   label: string
-  glyph: string
+  icon: React.ReactNode
   onClick?: () => void
   disabled?: boolean
 }) {
@@ -127,7 +267,7 @@ function ToolButton({
       disabled={disabled}
       className="t9 flex w-[78px] flex-col items-center gap-[2px] border-2 border-transparent px-1 py-[2px] leading-none enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] enabled:active:border-t-[#404040] enabled:active:border-l-[#404040] enabled:active:border-r-white enabled:active:border-b-white disabled:text-[#808080]"
     >
-      <span className="t16 leading-none">{glyph}</span>
+      <span className="flex h-[20px] items-center leading-none">{icon}</span>
       <span className="whitespace-nowrap">{label}</span>
     </button>
   )
@@ -210,16 +350,15 @@ export default function Contact() {
 
       {/* Toolbar */}
       <div className="flex items-center gap-1 border-b border-[#808080] px-1 py-1">
-        <ToolButton label="Compose" glyph="✉" onClick={() => setComposing(true)} />
-        <ToolButton label="Send/Recv" glyph="📨" onClick={() => setNotice({ ok: true, text: "No new messages." })} />
+        <ToolButton label="Compose" icon={<ComposeIcon />} onClick={() => setComposing(true)} />
+        <ToolButton label="Send/Recv" icon={<SendReceiveIcon />} onClick={() => setNotice({ ok: true, text: "No new messages." })} />
         <div className="mx-1 h-[34px] w-[2px] border-l border-l-[#808080] border-r border-r-white" />
-        <ToolButton label="Reply" glyph="↩" onClick={() => setComposing(true)} disabled={!current} />
-        <ToolButton label="Reply All" glyph="↪" onClick={() => setComposing(true)} disabled={!current} />
-        <ToolButton label="Forward" glyph="➡" disabled={!current} />
+        <ToolButton label="Reply" icon={<ReplyIcon />} onClick={() => setComposing(true)} disabled={!current} />
+        <ToolButton label="Reply All" icon={<ReplyAllIcon />} onClick={() => setComposing(true)} disabled={!current} />
+        <ToolButton label="Forward" icon={<ForwardIcon />} disabled={!current} />
         <div className="mx-1 h-[34px] w-[2px] border-l border-l-[#808080] border-r border-r-white" />
         <ToolButton
-          label="Delete"
-          glyph="🗑"
+          label="Delete" icon={<DeleteIcon />}
           disabled={!current}
           onClick={() => {
             if (!current) return
@@ -227,7 +366,7 @@ export default function Contact() {
             setSelected(null)
           }}
         />
-        <ToolButton label="Address Book" glyph="📕" />
+        <ToolButton label="Address Book" icon={<AddressBookIcon />} />
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -270,13 +409,13 @@ export default function Contact() {
 
         {/* Message list over preview pane */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div data-list className="h-[40%] overflow-auto border-b border-[#808080] bg-white">
+          <div data-list className="h-[45%] overflow-auto border-b border-[#808080] bg-white">
             <table className="w-full text-xs">
               <thead>
                 <tr>
-                  {["From", "Subject", "Received"].map((h) => (
+                  {["", "From", "Subject", "Received"].map((h) => (
                     <th
-                      key={h}
+                      key={h || "icon"}
                       className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-1 py-[1px] text-left font-normal"
                     >
                       {h}
@@ -287,7 +426,7 @@ export default function Contact() {
               <tbody>
                 {shown.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-2 py-2 text-xs text-[#808080]">
+                    <td colSpan={4} className="px-2 py-2 text-xs text-[#808080]">
                       There are no items in this view.
                     </td>
                   </tr>
@@ -300,6 +439,9 @@ export default function Contact() {
                         m.read ? "" : "font-bold"
                       }`}
                     >
+                      <td className="w-[20px] px-1 align-middle">
+                        {m.read ? <MailReadIcon /> : <MailUnreadIcon />}
+                      </td>
                       <td className="px-1">{m.fromName}</td>
                       <td className="px-1">{m.subject}</td>
                       <td className="whitespace-nowrap px-1">{m.date}</td>
@@ -374,13 +516,13 @@ export default function Contact() {
               />
 
               <div className="flex items-center gap-1 border-b border-[#808080] px-1 py-1">
-                <ToolButton label="Send" glyph="📤" />
+                <ToolButton label="Send" icon={<SendIcon />} />
                 <div className="mx-1 h-[34px] w-[2px] border-l border-l-[#808080] border-r border-r-white" />
-                <ToolButton label="Cut" glyph="✂" />
-                <ToolButton label="Copy" glyph="⧉" />
-                <ToolButton label="Paste" glyph="📋" />
+                <ToolButton label="Cut" icon={<CutIcon />} />
+                <ToolButton label="Copy" icon={<CopyIcon />} />
+                <ToolButton label="Paste" icon={<PasteIcon />} />
                 <div className="mx-1 h-[34px] w-[2px] border-l border-l-[#808080] border-r border-r-white" />
-                <ToolButton label="Attach" glyph="📎" />
+                <ToolButton label="Attach" icon={<AttachIcon />} />
               </div>
 
               <div className="p-2">
