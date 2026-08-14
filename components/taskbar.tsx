@@ -149,12 +149,12 @@ export default function Taskbar({
           id="sound-button"
           aria-label="Volume"
           onClick={() => setShowVolume((v) => !v)}
-          className="flex items-center justify-center w-[36px] h-full bg-[#c0c0c0]"
+          className="flex items-center justify-center w-[22px] h-full bg-[#c0c0c0]"
         >
           <img
             src="/images/blob/sound.png"
             alt=""
-            className="w-[36px] h-[28px] object-contain"
+            className="w-[16px] h-[16px] object-contain"
             style={{ opacity: muted || volume === 0 ? 0.4 : 1 }}
           />
         </button>
@@ -204,8 +204,7 @@ export default function Taskbar({
             year: "numeric",
           })}
           onClick={() => setShowDateTime(true)}
-          className="text-[13px] text-black bg-[#c0c0c0] px-2 h-full flex items-center justify-center"
-          style={{ textShadow: "1px 1px 0 #ffffff" }}
+          className="text-[11px] text-black bg-[#c0c0c0] pl-1 pr-2 h-full flex items-center justify-center"
         >
           {time}
         </button>

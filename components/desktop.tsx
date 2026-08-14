@@ -1166,7 +1166,9 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         {/* Selection Box */}
         {selectionBox.isSelecting && (
           <div
-            className="absolute border border-white bg-blue-600 bg-opacity-30 z-50"
+            // Windows 95 drew a dotted marquee, nothing filled. The blue wash
+            // is XP's look, a whole OS too late.
+            className="absolute z-50 border border-dotted border-white mix-blend-difference"
             style={{
               left: Math.min(selectionBox.startX, selectionBox.endX),
               top: Math.min(selectionBox.startY, selectionBox.endY),

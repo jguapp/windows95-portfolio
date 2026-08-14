@@ -60,10 +60,16 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
       className="absolute bottom-[28px] left-0 w-[250px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[200] text-sm"
     >
       <div className="flex h-full">
-        <div className="w-[30px] bg-[#808080] flex flex-col justify-center items-center">
-          <div className="rotate-[270deg] whitespace-nowrap text-white font-bold text-sm uppercase origin-center tracking-widest">
-            Windows 95
-          </div>
+        {/* The sidebar banner. Windows anchored it at the bottom and let it
+            grow upward; centring it vertically was never the look. */}
+        <div className="flex w-[30px] flex-col items-center justify-end bg-[#808080] pb-1">
+          <span
+            className="whitespace-nowrap font-bold text-lg leading-none"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          >
+            <span className="text-[#c0c0c0]">Windows</span>
+            <span className="text-white">95</span>
+          </span>
         </div>
 
         <ul className="list-none m-0 p-0 flex-1 relative">
@@ -206,7 +212,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/controls-folder.ico"
                         alt="Control Panel"
-                        className="mr-2 w-7 h-7"
+                        className="mr-2 w-4 h-4"
                       />
                       <span className="text-sm">Control Panel</span>
                     </div>
@@ -216,7 +222,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/printers-folder.ico"
                         alt="Printers"
-                        className="mr-2 w-7 h-7"
+                        className="mr-2 w-4 h-4"
                       />
                       <span className="text-sm">Printers</span>
                     </div>
@@ -226,7 +232,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/windows-logo-without-text.ico"
                         alt="Windows Setup"
-                        className="mr-2 w-7 h-7"
+                        className="mr-2 w-4 h-4"
                       />
                       <span className="text-sm">Windows Setup</span>
                     </div>
@@ -252,7 +258,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 <ul className="list-none m-0 p-0">
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("explorer")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
-                      <img src="/images/find-icon.png" alt="Files or Folders" className="mr-2 w-5 h-5" />
+                      <img src="/images/find-icon.png" alt="Files or Folders" className="mr-2 w-7 h-7" />
                       <span className="text-sm">Files or Folders...</span>
                     </div>
                   </li>
