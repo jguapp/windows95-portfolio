@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { CloseIcon } from "@/components/win95-controls"
 
 /**
  * Clippit, at the bottom right.
@@ -95,7 +96,7 @@ export default function Clippy({ activeWindow }: ClippyProps) {
   if (dismissed) return null
 
   return (
-    <div data-clippy className="fixed bottom-[42px] right-3 z-[950] flex flex-col items-end">
+    <div data-clippy className="fixed bottom-[42px] right-3 z-[850] flex flex-col items-end">
       {tip && (
         <div
           data-clippy-tip
@@ -120,7 +121,7 @@ export default function Clippy({ activeWindow }: ClippyProps) {
           }}
           className="absolute -right-1 -top-1 z-10 flex h-[15px] w-[15px] items-center justify-center border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-[9px] leading-none text-black active:border-t-[#404040] active:border-l-[#404040]"
         >
-          &#10005;
+          <CloseIcon />
         </button>
         <button
           type="button"

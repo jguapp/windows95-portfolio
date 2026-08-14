@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import { eventCategories, galleryImages, type GalleryImage } from "./gallery-data"
 import { CloseIcon } from "@/components/win95-controls"
 import { messageBox } from "@/components/win95-dialog"
@@ -370,7 +371,8 @@ export default function Gallery() {
 
       {/* Viewer */}
 
-      {current && (
+      {current &&
+        createPortal(
         <div
           className="fixed inset-x-0 top-0 bottom-[34px] z-[900] flex items-center justify-center bg-[#808080] p-6"
           data-viewer
@@ -447,8 +449,9 @@ export default function Gallery() {
               />
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </div>
   )
 }
