@@ -87,7 +87,7 @@ function Key({
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`h-[26px] ${wide ? "col-span-2" : ""} bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white disabled:text-[#808080] font-bold leading-none select-none`}
+      className={`h-[32px] ${wide ? "col-span-2" : ""} bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white disabled:text-[#808080] font-bold leading-none select-none`}
       style={{ color: disabled ? "#808080" : color }}
     >
       {label}
@@ -141,31 +141,39 @@ export default function Calculator() {
     setDisplay("0")
   }, [radix])
 
+  /*
+    Entry decides on the value it has and sets the display outright.
+
+    These used to read and clear fresh.current inside a setDisplay updater.
+    An updater has to be a pure function of the previous state, because React
+    is free to call it more than once, and it does. The second call saw
+    fresh.current already cleared and appended instead of replacing, so
+    2 + 3 + 4 = came out as 59: the 4 landed on the running total of 5 and the
+    calculator added 5 + 54.
+  */
   const inputDigit = useCallback(
     (d: string) => {
       if (error) return
       if (!DIGITS_BY_RADIX[radix].includes(d)) return
-      setDisplay((prev) => {
-        if (fresh.current) {
-          fresh.current = false
-          return d
-        }
-        return prev === "0" ? d : prev + d
-      })
+      if (fresh.current) {
+        fresh.current = false
+        setDisplay(d)
+        return
+      }
+      setDisplay(display === "0" ? d : display + d)
     },
-    [error, radix],
+    [display, error, radix],
   )
 
   const inputPoint = useCallback(() => {
     if (error || radix !== "dec") return
-    setDisplay((prev) => {
-      if (fresh.current) {
-        fresh.current = false
-        return "0."
-      }
-      return prev.includes(".") ? prev : `${prev}.`
-    })
-  }, [error, radix])
+    if (fresh.current) {
+      fresh.current = false
+      setDisplay("0.")
+      return
+    }
+    if (!display.includes(".")) setDisplay(`${display}.`)
+  }, [display, error, radix])
 
   const backspace = useCallback(() => {
     if (error) return
@@ -277,6 +285,18 @@ export default function Calculator() {
     Help: [{ label: "About Calculator", action: () => messageBox({ title: "About Calculator", text: "Calculator\n\nWindows 95 recreation.", icon: "information" }) }],
   }
 
+  /*
+    Windows 95 Calculator could not be resized: switching to Scientific grew the
+    window to fit the wider pad, and switching back shrank it again. The window
+    here is resizable, so the calculator asks for the size each mode needs.
+  */
+  useEffect(() => {
+    const size = mode === "scientific" ? { width: 596, height: 440 } : { width: 316, height: 304 }
+    window.dispatchEvent(
+      new CustomEvent("windowAction", { detail: { action: "resize", id: "calculator", size } }),
+    )
+  }, [mode])
+
   return (
     <div
       className="flex h-full w-full flex-col bg-[#c0c0c0] p-0 select-none"
@@ -317,12 +337,15 @@ export default function Calculator() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-1 p-2">
+      <div
+        data-calc-body
+        className={`flex flex-col gap-1 p-2 ${mode === "scientific" ? "w-[560px]" : "w-[280px]"} max-w-full`}
+      >
         {/* Display */}
         <div
           data-calc-display
           className="mb-1 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-2 py-1 text-right font-bold"
-          style={{ fontSize: 16, minHeight: 26 }}
+          style={{ fontSize: 18, minHeight: 32 }}
         >
           {error || radix !== "dec" || display.includes(".") ? display : `${display}.`}
         </div>
@@ -359,8 +382,8 @@ export default function Calculator() {
 
         <div className="flex gap-1">
           {/* Memory column */}
-          <div className="flex w-[36px] flex-col gap-1">
-            <div className="h-[26px] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#c0c0c0] text-center text-xs leading-[22px]">
+          <div className="flex w-[44px] flex-col gap-1">
+            <div className="h-[32px] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#c0c0c0] text-center text-xs leading-[28px]">
               {memActive ? "M" : ""}
             </div>
             <Key label="MC" color="#800000" onClick={() => setMemory(null)} />

@@ -47,7 +47,7 @@ const MIN_SIZE: Record<string, Size> = {
   projects: { width: 620, height: 440 },
   contact: { width: 560, height: 400 },
   gallery: { width: 520, height: 380 },
-  calculator: { width: 300, height: 260 },
+  calculator: { width: 300, height: 290 },
   notepad: { width: 400, height: 300 },
   msdos: { width: 420, height: 280 },
   explorer: { width: 520, height: 340 },
@@ -56,7 +56,7 @@ const MIN_SIZE: Record<string, Size> = {
 
 const DEFAULT_SIZE: Record<string, Size> = {
   guestbook: { width: 600, height: 640 },
-  calculator: { width: 320, height: 280 },
+  calculator: { width: 316, height: 304 },
   notepad: { width: 620, height: 480 },
   msdos: { width: 660, height: 420 },
   explorer: { width: 720, height: 460 },
@@ -64,6 +64,9 @@ const DEFAULT_SIZE: Record<string, Size> = {
   resume: { width: 800, height: 620 },
   projects: { width: 760, height: 580 },
   paint: { width: 720, height: 560 },
+  contact: { width: 740, height: 580 },
+  gallery: { width: 800, height: 600 },
+  games: { width: 900, height: 680 },
 }
 
 const CURSOR: Record<ResizeEdge, string> = {
@@ -304,6 +307,18 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
       if (windowId === id && action === "maximize") {
         setIsMaximized((prev) => !prev)
       }
+
+      // Some apps are a fixed slab and know their own size. Calculator resized
+      // itself when you switched between Standard and Scientific, so it asks
+      // for the size it needs rather than being stretched to the window.
+      if (windowId === id && action === "resize" && event.detail.size) {
+        const want = event.detail.size as Size
+        setIsMaximized(false)
+        setSize({
+          width: Math.max(want.width, minSize.width),
+          height: Math.max(want.height, minSize.height),
+        })
+      }
     }
 
     window.addEventListener("windowAction", handleWindowAction as EventListener)
@@ -311,7 +326,7 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
     return () => {
       window.removeEventListener("windowAction", handleWindowAction as EventListener)
     }
-  }, [id])
+  }, [id, minSize.height, minSize.width])
 
   if (isMinimized) {
     return null
