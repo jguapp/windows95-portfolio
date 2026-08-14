@@ -237,21 +237,22 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           <div className="win95-content p-[10px_20px] max-h-[300px] overflow-auto">
             <h2 className="text-sm font-bold mb-2">Recent Updates</h2>
             <ul className="list-disc pl-5 text-xs mb-4">
-              <li className="mb-1">Redrew the title bar buttons to match the Windows 95 bitmaps</li>
-              <li className="mb-1">Cut page weight by 90%, so the desktop loads much faster</li>
-              <li className="mb-1">Refreshed the résumé with current experience and projects</li>
-              <li className="mb-1">Fixed the Starfield screen saver, which never drew any stars</li>
-              <li className="mb-1">Welcome screen now opens centred instead of jumping in</li>
+              <li className="mb-1">Winamp, the real thing, with a synthesised opening track</li>
+              <li className="mb-1">Internet Explorer serves the actual web of 1996, by way of the archive</li>
+              <li className="mb-1">Clippit is back, dismissible, and can be summoned from the desktop</li>
+              <li className="mb-1">Five screen savers and a wallpaper picker that really apply</li>
+              <li className="mb-1">The Windows 95 sound scheme, synthesised rather than sampled</li>
+              <li className="mb-1">Release Notes, under Start &gt; Documents, covering the whole history</li>
+              <li className="mb-1">The desktop works on a phone: windows open full screen</li>
             </ul>
 
             <h2 className="text-sm font-bold mb-2">Planned Features</h2>
             <ul className="list-disc pl-5 text-xs">
-              <li className="mb-1">MS-DOS Prompt with working commands</li>
-              <li className="mb-1">Windows Explorer for browsing the C:\ drive</li>
-              <li className="mb-1">Notepad, and Calculator in both Standard and Scientific</li>
-              <li className="mb-1">Resizable windows you can drag by any edge or corner</li>
-              <li className="mb-1">Recycle Bin that restores what you delete</li>
-              <li className="mb-1">Close Program dialog on Ctrl+Alt+Del</li>
+              <li className="mb-1">Saving your Notepad and Paint files between visits</li>
+              <li className="mb-1">Keyboard control of the desktop, and Alt+Tab between windows</li>
+              <li className="mb-1">Find that actually searches the C:\ drive</li>
+              <li className="mb-1">Sound Properties, so the scheme can be heard and changed</li>
+              <li className="mb-1">A Properties sheet for files inside Explorer</li>
             </ul>
           </div>
 
