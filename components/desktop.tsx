@@ -7,7 +7,7 @@ import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
 import ItemProperties from "./item-properties"
 import BlueScreenOfDeath from "./blue-screen-of-death"
-import { getItems, isEmpty, recycle, subscribe, type RecycledItem } from "@/lib/recycle-bin"
+import { isEmpty, recycle, subscribe, type RecycledItem } from "@/lib/recycle-bin"
 import { MessageBoxHost, messageBox } from "@/components/win95-dialog"
 
 // Add IconPosition type export

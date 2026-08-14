@@ -123,12 +123,14 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
   }))
   const [selected, setSelected] = useState<Spot | null>(null)
   const [moves, setMoves] = useState(0)
+  // Undo stack; read only through functional updates, so the value binding
+  // goes unused on purpose.
+  const [, setHistory] = useState<Board[]>([])
   const [status, setStatus] = useState("")
   const [menu, setMenu] = useState<string | null>(null)
   const [askNumber, setAskNumber] = useState(false)
   const [numberInput, setNumberInput] = useState("")
   const [won, setWon] = useState(false)
-  const [history, setHistory] = useState<Board[]>([])
 
   const deal = useCallback((n: number) => {
     const clamped = Math.min(32000, Math.max(1, Math.floor(n) || 1))

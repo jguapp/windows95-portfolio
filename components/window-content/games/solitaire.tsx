@@ -107,7 +107,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   const [deck, setDeck] = useState(0)
   const [showDeckPicker, setShowDeckPicker] = useState(false)
   /** The cards turned over by the last draw, so Draw Three can fan them. */
-  const [wasteShown, setWasteShown] = useState(1)
 
   const gameAreaRef = useRef<HTMLDivElement>(null)
 
@@ -281,7 +280,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       if (waste.length > 0) {
         setStock([...waste].reverse().map((card) => ({ ...card, faceUp: false })))
         setWaste([])
-        setWasteShown(1)
         setMoves(moves + 1)
         // Vegas charges you for going back through the deck; Standard does not.
         if (vegas) setScore((sc) => sc - 5)
@@ -305,7 +303,6 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     if (drawn.length > 0) {
       setStock(newStock)
       setWaste([...waste, ...drawn])
-      setWasteShown(drawn.length)
       setMoves(moves + 1)
       playFlipSound()
     }

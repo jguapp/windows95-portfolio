@@ -159,9 +159,9 @@ export default function Pong({ onReturn }: PongProps) {
       y: canvas.height / 2,
     }
 
-    // Set initial ball speed
-    const angle = (Math.random() * Math.PI) / 4 - Math.PI / 8 // Random angle between -22.5 and 22.5 degrees
-    const direction = Math.random() > 0.5 ? 1 : -1 // Random initial direction
+    // The serve pause picks its own angle when it fires; only the direction
+    // of the first serve is decided here.
+    const direction = Math.random() > 0.5 ? 1 : -1
     ballSpeedRef.current = { x: 0, y: 0 }
     serveDelayRef.current = SERVE_PAUSE
     serveToRef.current = direction

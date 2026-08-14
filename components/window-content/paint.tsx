@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { PALETTE, TOOLS, ToolGlyph } from "./paint-parts"
 import type React from "react"
-import Image from "next/image"
 import { messageBox } from "@/components/win95-dialog"
 
 type Tool =
@@ -232,15 +231,7 @@ export default function Paint() {
   }
 
   // Handle line width selection
-  const handleLineWidthSelect = (width: number) => {
-    setLineWidth(width)
-  }
-
   // Handle fill style selection
-  const handleFillStyleSelect = (style: "solid" | "transparent") => {
-    setFillStyle(style)
-  }
-
   // Fill algorithm (flood fill)
   const floodFill = (startX: number, startY: number, fillColor: string) => {
     const canvas = canvasRef.current

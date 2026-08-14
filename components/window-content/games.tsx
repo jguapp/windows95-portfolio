@@ -156,9 +156,6 @@ export default function Games() {
     },
   ]
 
-  // Filter games by category
-  const filteredGames = activeTab === "all" ? games : games.filter((game) => game.category === activeTab)
-
   // Render the selected game or the launcher
   const renderGame = () => {
     switch (currentGame) {
