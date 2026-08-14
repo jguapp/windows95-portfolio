@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { eventCategories, galleryImages, type GalleryImage } from "./gallery-data"
 import { CloseIcon } from "@/components/win95-controls"
 import { messageBox } from "@/components/win95-dialog"
@@ -71,6 +71,26 @@ export default function Gallery() {
     if (slideshow && opened === null && shown.length > 0) setOpened(shown[0].id)
   }, [slideshow, opened, shown])
 
+  /** Where the open photo sits in the folder, or -1 when nothing is open. */
+  const position = opened === null ? -1 : shown.findIndex((i) => i.id === opened)
+
+  /**
+   * Step through the open folder, wrapping at both ends.
+   *
+   * @param by -1 for the previous photo, 1 for the next one.
+   */
+  const step = useCallback(
+    (by: number) => {
+      setOpened((prev) => {
+        if (prev === null || shown.length === 0) return prev
+        const at = shown.findIndex((i) => i.id === prev)
+        if (at === -1) return shown[0].id
+        return shown[(at + by + shown.length) % shown.length].id
+      })
+    },
+    [shown],
+  )
+
   // Escape closes the viewer, and the arrows step through the folder.
   useEffect(() => {
     if (opened === null) return
@@ -80,14 +100,13 @@ export default function Gallery() {
         setSlideshow(false)
       }
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-        const at = shown.findIndex((i) => i.id === opened)
-        const next = (at + (e.key === "ArrowRight" ? 1 : shown.length - 1)) % shown.length
-        setOpened(shown[next].id)
+        e.preventDefault()
+        step(e.key === "ArrowRight" ? 1 : -1)
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [opened, shown])
+  }, [opened, step])
 
   const menus: Record<string, { label: string; action: () => void; checked?: boolean; sep?: boolean }[]> = {
     File: [
@@ -347,9 +366,10 @@ export default function Gallery() {
       </div>
 
       {/* Viewer */}
+
       {current && (
         <div
-          className="absolute inset-0 z-40 flex items-center justify-center bg-[#808080] p-4"
+          className="fixed inset-x-0 top-0 bottom-[34px] z-[900] flex items-center justify-center bg-[#808080] p-6"
           data-viewer
           onClick={() => {
             setOpened(null)
@@ -357,11 +377,12 @@ export default function Gallery() {
           }}
         >
           <div
-            className="flex max-h-full flex-col border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]"
+            data-viewer-window
+            className="flex h-full w-full flex-col border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between bg-[#000080] px-1 py-[2px] text-white">
-              <span className="px-1 font-bold">{fileName(current)}</span>
+              <span className="px-1 font-bold">{fileName(current)} - Imaging</span>
               <button
                 type="button"
                 aria-label="Close"
@@ -374,24 +395,88 @@ export default function Gallery() {
                 <CloseIcon />
               </button>
             </div>
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-black p-2">
+
+            <div className="flex min-h-0 flex-1 items-center justify-center border-2 border-t-[#404040] border-l-[#404040] border-r-white border-b-white bg-black p-2">
               <img
+                key={current.src}
                 src={current.src}
                 alt={current.title}
-                className="max-h-full max-w-full object-contain"
-                style={{ maxHeight: "60vh" }}
+                data-viewer-image
+                /* Fit to window, which is what Imaging did: a small photo is
+                   scaled up to the frame rather than sitting in the middle of
+                   it, and object-contain keeps the aspect ratio. */
+                className="h-full w-full object-contain"
               />
             </div>
-            <div className="px-2 py-1">
-              <div className="font-bold">{current.title}</div>
-              <div>{current.description}</div>
-              <div>
+
+            {/* Caption, then the controls. Both are fixed height so the photo
+                gets every remaining pixel. */}
+            <div className="flex items-baseline gap-2 px-2 py-1">
+              <span className="font-bold">{current.title}</span>
+              <span className="flex-1 truncate">{current.description}</span>
+              <span className="whitespace-nowrap text-[#404040]">
                 {formatDate(current.date)} &mdash; {folderOf(current.event)}
-              </div>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 border-t border-white px-2 py-2">
+              <ViewerButton
+                label="<< Previous"
+                onClick={() => step(-1)}
+                disabled={shown.length < 2}
+              />
+              <ViewerButton label="Next >>" onClick={() => step(1)} disabled={shown.length < 2} />
+              <span data-viewer-position className="px-2">
+                {position + 1} of {shown.length}
+              </span>
+              <div className="flex-1" />
+              <ViewerButton
+                label={slideshow ? "Stop Slide Show" : "Slide Show"}
+                onClick={() => setSlideshow((v) => !v)}
+                disabled={shown.length < 2}
+              />
+              <ViewerButton
+                label="Close"
+                onClick={() => {
+                  setOpened(null)
+                  setSlideshow(false)
+                }}
+              />
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * A raised Windows 95 push button for the viewer's control strip.
+ *
+ * @param label  Text on the face.
+ * @param onClick  What pressing it does.
+ * @param disabled  Greys the face and blocks the press, used when a folder has
+ *                  a single photo and there is nowhere to step to.
+ */
+function ViewerButton({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`min-w-[92px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white ${
+        disabled ? "text-[#808080]" : "text-black"
+      }`}
+    >
+      {label}
+    </button>
   )
 }
