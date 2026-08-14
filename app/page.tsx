@@ -40,6 +40,22 @@ export default function Home() {
   const [showRun, setShowRun] = useState(false)
   const [showWinamp, setShowWinamp] = useState(false)
   const [showShutdown, setShowShutdown] = useState(false)
+  /** Ids of windows currently maximised, reported by the windows themselves. */
+  const [maximizedWindows, setMaximizedWindows] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const onMax = (e: Event) => {
+      const { id, maximized } = (e as CustomEvent).detail as { id: string; maximized: boolean }
+      setMaximizedWindows((prev) => {
+        const next = new Set(prev)
+        if (maximized) next.add(id)
+        else next.delete(id)
+        return next
+      })
+    }
+    window.addEventListener("windowMaximized", onMax)
+    return () => window.removeEventListener("windowMaximized", onMax)
+  }, [])
 
   /*
     The startup chime.
@@ -296,8 +312,8 @@ export default function Home() {
       {/* The screensaver chosen in Display Properties, after the wait it sets. */}
       <Screensaver />
 
-      {/* The Office Assistant, on the desktop only and entirely dismissible. */}
-      <Clippy desktopVisible={openWindows.every((w) => minimizedWindows.includes(w))} />
+      {/* The Office Assistant: beside your windows, behind none of them. */}
+      <Clippy activeWindow={activeWindow} hidden={maximizedWindows.size > 0} />
 
       {/* Winamp, loaded on first open */}
       {showWinamp && <Winamp onClose={() => setShowWinamp(false)} />}

@@ -322,6 +322,25 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
   }, [])
 
   /*
+    The shell wants to know which windows are maximised: the assistant hides
+    behind a full-screen window but stays beside a floating one. Announced as
+    an event because maximise state lives here, per window, and lifting it
+    would thread one boolean through everything.
+  */
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("windowMaximized", { detail: { id, maximized: isMaximized && !isMinimized } }),
+    )
+  }, [id, isMaximized, isMinimized])
+
+  useEffect(
+    () => () => {
+      window.dispatchEvent(new CustomEvent("windowMaximized", { detail: { id, maximized: false } }))
+    },
+    [id],
+  )
+
+  /*
     On a phone the window manager gets out of the way.
 
     There is nowhere to drag a window to, no second window worth showing at

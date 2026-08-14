@@ -904,6 +904,15 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
           divider: true,
         },
         {
+          label: "Office Assistant",
+          labelWithUnderline: "Office Assistant",
+          action: () => {
+            window.dispatchEvent(new CustomEvent("summonClippy"))
+            closeContextMenu()
+          },
+          divider: true,
+        },
+        {
           label: "Properties",
           labelWithUnderline: "Properties",
           action: handleProperties,

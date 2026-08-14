@@ -14,8 +14,10 @@ import { CloseIcon } from "@/components/win95-controls"
  * behaviour of all.
  */
 interface ClippyProps {
-  /** True when no window is open on screen, which is when he may appear. */
-  desktopVisible: boolean
+  /** The window in front, so his tips can be about what you are doing. */
+  activeWindow: string | null
+  /** True while any window is maximised; he stays out of full-screen work. */
+  hidden: boolean
 }
 
 const GIF = (n: number) => `/images/clippy/clippyani${n}.gif`
@@ -39,12 +41,35 @@ const PHRASES: { phrase: string; animation: string }[] = [
 
 const INTERRUPTION = { phrase: "Please, do not interrupt me!", animation: NO_GIF }
 
+/** What he says about the window you are actually in. */
+const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
+  resume: [
+    { phrase: "It looks like you're reading a resume. It is all editable. Click anywhere.", animation: GIF(3) },
+    { phrase: "The zoom control in Word actually zooms. Try 75%.", animation: GIF(4) },
+  ],
+  projects: [{ phrase: "Every project here has its source on GitHub. The related videos work too.", animation: GIF(2) }],
+  contact: [
+    { phrase: "It looks like you're writing a letter. Compose really sends.", animation: GIF(1) },
+    { phrase: "Read the Drafts folder. Honesty lives there.", animation: GIF(7) },
+  ],
+  games: [
+    { phrase: "It looks like you're avoiding work. Expert is 99 mines, if you are serious.", animation: GIF(5) },
+    { phrase: "The Solitaire cascade at the end is worth winning for.", animation: GIF(6) },
+  ],
+  gallery: [{ phrase: "The arrow keys step through the photos.", animation: GIF(4) }],
+  paint: [{ phrase: "It looks like you're making art. It saves to the desktop, genuinely.", animation: GIF(2) }],
+  guestbook: [{ phrase: "Drawings are allowed in the guestbook. Encouraged, even.", animation: GIF(5) }],
+  "internet-explorer": [{ phrase: "It is 1996 in that address bar. Try yahoo.com.", animation: GIF(6) }],
+  calculator: [{ phrase: "2 + 3 + 4 equals 9 here. That was not always true.", animation: GIF(3) }],
+  "about-me": [{ phrase: "It looks like you're reading about Joel. The wall posts are the good part.", animation: GIF(1) }],
+}
+
 /** How long a phrase and its animation stay up. */
 const SPEECH_MS = 9_000
 /** How long he waits between unprompted appearances. */
 const QUIET_MS = 45_000
 
-export default function Clippy({ desktopVisible }: ClippyProps) {
+export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const [dismissed, setDismissed] = useState(false)
   const [line, setLine] = useState<{ phrase: string; animation: string } | null>(null)
   const saidRef = useRef<Set<string>>(new Set())
@@ -62,27 +87,36 @@ export default function Clippy({ desktopVisible }: ClippyProps) {
   }, [])
 
   const speakFresh = useCallback(() => {
-    const fresh = PHRASES.filter((p) => !saidRef.current.has(p.phrase))
-    const pool = fresh.length ? fresh : PHRASES
-    const pick = pool[Math.floor(Math.random() * pool.length)]
+    // Tips about the window in front come first; the general chatter fills in.
+    const pool = [...(activeWindow ? WINDOW_TIPS[activeWindow] ?? [] : []), ...PHRASES]
+    const fresh = pool.filter((p) => !saidRef.current.has(p.phrase))
+    const pickFrom = fresh.length ? fresh : pool
+    const pick = pickFrom[Math.floor(Math.random() * pickFrom.length)]
     saidRef.current.add(pick.phrase)
     speak(pick)
-  }, [speak])
+  }, [activeWindow, speak])
 
-  // He pops up on his own, but only while the desktop is showing.
+  // He pops up on his own whenever he is on stage.
   useEffect(() => {
-    if (dismissed || !desktopVisible) return
+    if (dismissed || hidden) return
     const first = setTimeout(speakFresh, 4_000)
     const timer = setInterval(speakFresh, QUIET_MS)
     return () => {
       clearTimeout(first)
       clearInterval(timer)
     }
-  }, [dismissed, desktopVisible, speakFresh])
+  }, [dismissed, hidden, speakFresh])
+
+  // Dismissal is not exile: the desktop menu can summon him back.
+  useEffect(() => {
+    const summon = () => setDismissed(false)
+    window.addEventListener("summonClippy", summon)
+    return () => window.removeEventListener("summonClippy", summon)
+  }, [])
 
   useEffect(() => () => clearTimeout(hideTimer.current), [])
 
-  if (dismissed || !desktopVisible) return null
+  if (dismissed || hidden) return null
 
   return (
     <div data-clippy className="fixed bottom-[42px] right-3 z-[850] flex flex-col items-end">
