@@ -1730,8 +1730,7 @@ export default function Resume() {
                   trimming the list. */}
               <p>
                 <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
-                Computer Networking, Data Warehousing, Object-Oriented Programming, Computer Architecture, Systems
-                Analysis & Design, Web Development
+                Computer Networking, Data Warehousing, Systems Analysis & Design, Object-Oriented Programming, Computer Architecture, Web Development
               </p>
             </div>
           </div>
@@ -1864,7 +1863,7 @@ export default function Resume() {
               <div className="flex justify-between">
                 <p>
                   <strong>Booklet — Read-It-Later API & Sync Platform</strong> |{" "}
-                  <em>TypeScript, Node.js, PostgreSQL</em>
+                  <em>TypeScript, Node.js, PostgreSQL, ONNX</em>
                 </p>
                 <a
                   href="https://github.com/jguapp"
@@ -1896,7 +1895,7 @@ export default function Resume() {
             <div className="mb-3" contentEditable suppressContentEditableWarning>
               <div className="flex justify-between">
                 <p>
-                  <strong>Calligraphy — Distributed Task Queue System</strong> | <em>Docker, Grafana, gRPC</em>
+                  <strong>Calligraphy — Distributed Task Queue System</strong> | <em>Go, Redis, gRPC, Docker</em>
                 </p>
                 <a
                   href="https://github.com/jguapp"
