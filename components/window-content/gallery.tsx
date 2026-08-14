@@ -287,6 +287,9 @@ export default function Gallery() {
                 </tr>
               </thead>
               <tbody>
+                {shown.length === 0 && (
+                  <div className="px-2 py-2 text-[#808080]">There are no items in this view.</div>
+                )}
                 {shown.map((image) => (
                   <tr
                     key={image.id}

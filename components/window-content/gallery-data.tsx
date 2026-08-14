@@ -19,6 +19,7 @@ export const eventCategories: EventCategory[] = [
   { id: "nsbe", name: "NSBE Convention 2025" },
   { id: "fall2025", name: "Club Events - Fall 2025" },
   { id: "spring2026", name: "Club Events - Spring 2026" },
+  { id: "fall2026", name: "Club Events - Fall 2026" },
 ]
 
 // Updated gallery images - removed Fall 2024 events
