@@ -35,7 +35,7 @@ export interface GuestbookEntry {
 
 const MAX_ENTRIES = 200
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = (process.env.DATABASE_URL ?? process.env.POSTGRES_URL)
 
 export function isPersistent(): boolean {
   return Boolean(connectionString)
