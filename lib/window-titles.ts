@@ -16,10 +16,12 @@ const TITLES: Record<string, string> = {
   guestbook: "Guestbook",
   projects: "My Projects",
   resume: "Resume - Microsoft Word",
+  contact: "Inbox - Outlook Express",
 }
 
 /** Short form for the taskbar button, which has far less room. */
 const TASKBAR_TITLES: Record<string, string> = {
+  contact: "Inbox",
   notepad: "Readme.txt - Notepad",
   resume: "Resume",
   explorer: "Exploring - C:",

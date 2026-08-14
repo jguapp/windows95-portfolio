@@ -52,7 +52,7 @@ const DEFAULT_ICONS: DesktopItemData[] = [
   },
   {
     id: "contact",
-    label: "Contact Me",
+    label: "Mail",
     icon: "/images/win95/contact-32.png", // Updated Contact icon
     type: "application",
   },
@@ -66,6 +66,12 @@ const DEFAULT_ICONS: DesktopItemData[] = [
     id: "games",
     label: "Games",
     icon: "/images/win95/games-32.png", // Updated Games icon
+    type: "application",
+  },
+  {
+    id: "winamp",
+    label: "Winamp",
+    icon: "/images/win95/winamp-32.png",
     type: "application",
   },
   {
@@ -169,6 +175,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       "contact",
       "gallery",
       "games",
+      "winamp",
       "paint",
       "calculator",
       "guestbook",

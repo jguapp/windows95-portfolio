@@ -15,13 +15,9 @@ const SUBMENU_CLOSE_MS = 250
 export default function StartMenu({ onOpenWindow }: StartMenuProps) {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
 
+  // The shutdown flow lives in its own component; the menu only asks for it.
   const handleShutDown = () => {
-    // Close the website
-    window.close()
-    // If window.close() doesn't work (most browsers block it), show a message
-    setTimeout(() => {
-      messageBox({ title: "Shut Down Windows", text: "This would shut down Windows in a real Windows 95 environment.\n\nThanks for visiting.", icon: "question" })
-    }, 100)
+    window.dispatchEvent(new CustomEvent("openShutdown"))
   }
 
   /**
@@ -106,8 +102,8 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("contact")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
-                      <img src="/images/win95/contact-16.png" alt="Contact Me" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
-                      <span className="text-sm">Contact Me</span>
+                      <img src="/images/win95/contact-16.png" alt="Mail" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
+                      <span className="text-sm">Mail</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("gallery")}>
