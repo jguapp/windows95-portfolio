@@ -194,7 +194,7 @@ export function MessageBoxHost() {
       cancelAnimationFrame(frame)
       window.removeEventListener("keydown", onKey)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [current])
 
   if (!mounted || !current) return null

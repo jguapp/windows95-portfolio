@@ -192,7 +192,7 @@ export default function MsDos() {
           setBusy(true)
           write("", `Pinging ${host} with 32 bytes of data:`, "")
           for (let i = 0; i < 4; i++) {
-            // eslint-disable-next-line no-await-in-loop
+             
             await new Promise((r) => setTimeout(r, 320))
             const ms = 18 + Math.floor(Math.random() * 22)
             write(`Reply from ${host}: bytes=32 time=${ms}ms TTL=115`)
