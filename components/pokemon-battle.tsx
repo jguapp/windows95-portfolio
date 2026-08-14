@@ -48,12 +48,18 @@ const SCREEN_H = 144
 const MOVE_TOP = 113
 const MOVE_STEP = 8
 
+/** Six party rows have to fit between the text box's frame lines at 104 and
+ *  144. Starting where the two move rows start put the sixth name on the
+ *  bottom edge, so the list starts higher and steps tighter. */
+const PARTY_TOP = 110
+const PARTY_STEP = 6
+
 /**
  * Sprites are 28x28 grids drawn at two logical pixels each, filling the 56x56
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-import { FOE_TEAM, PLAYER_TEAM, SPECIES, type Move, type Species } from "./pokemon-roster"
+import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, type Move, type Species } from "./pokemon-roster"
 
 /** A creature in play: its species, plus the health and PP it has left. */
 interface Fighter {
@@ -139,6 +145,60 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
         )}
     </>
   )
+}
+
+/**
+ * Where a sprite's painted pixels actually sit inside its 28x28 grid.
+ *
+ * The species are not the same size or shape. A squat one fills the bottom
+ * rows; a tall one with antennae reaches the top row and leaves its feet well
+ * short of the bottom. One hard-coded platform position therefore fitted one
+ * of them and left the rest standing beside their disc rather than on it.
+ */
+function inkBounds(grid: string[]) {
+  let minX = SPRITE_SIZE
+  let maxX = -1
+  let maxY = -1
+  grid.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === ".") continue
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y > maxY) maxY = y
+    }
+  })
+  return { minX, maxX, maxY }
+}
+
+/**
+ * The disc under a fighter, measured from the fighter rather than guessed.
+ *
+ * @param grid  The sprite the disc goes under.
+ * @param x     Where that sprite is drawn, in screen units.
+ * @param y     Likewise, vertically.
+ * @param rx    Half-width of the disc. The opponent's is small and the
+ *              player's wide, which is most of what sells the distance.
+ * @param ry    Half-height.
+ */
+function Ground({
+  grid,
+  x,
+  y,
+  rx,
+  ry,
+}: {
+  grid: string[]
+  x: number
+  y: number
+  rx: number
+  ry: number
+}) {
+  const { minX, maxX, maxY } = inkBounds(grid)
+  // Sprites are drawn at scale 2, so one grid cell is two screen units.
+  const cx = x + (minX + maxX + 1)
+  const feet = y + (maxY + 1) * 2
+  // Seat the feet just inside the top of the disc rather than on top of it.
+  return <Platform cx={cx} cy={feet - ry} rx={rx} ry={ry} />
 }
 
 /** A flat disc for a fighter to stand on, drawn a row at a time. */
@@ -436,8 +496,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             player's wider and low, which is most of what makes the two look
             like they are standing at different distances rather than floating.
           */}
-          <Platform cx={110} cy={44} rx={30} ry={6} />
-          <Platform cx={38} cy={98} rx={34} ry={8} />
+          <Ground grid={foe.species.sprite} x={96} y={0} rx={30} ry={6} />
+          <Ground grid={player.species.sprite} x={10} y={46} rx={34} ry={8} />
 
           {/* Opponent: front sprite upper right, status box upper left */}
           <Sprite grid={foe.species.sprite} x={96} y={0} />
@@ -522,14 +582,14 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {team.map((f, i) => (
                 <g key={f.name}>
                   {cursor === i && (
-                    <Label x={4} y={MOVE_TOP + i * 6} size={5}>
+                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={11} y={MOVE_TOP + i * 6} size={5}>
+                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                     {`${f.name}${i === active ? " *" : ""}`}
                   </Label>
-                  <Label x={104} y={MOVE_TOP + i * 6} size={5}>
+                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                     {f.hp === 0 ? "FNT" : `${f.hp}/${f.maxHp}`}
                   </Label>
                 </g>
