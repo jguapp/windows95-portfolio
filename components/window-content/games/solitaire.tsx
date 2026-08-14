@@ -79,9 +79,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   const [moves, setMoves] = useState(0)
   const [score, setScore] = useState(0)
   const [gameWon, setGameWon] = useState(false)
-  const [showGameMenu, setShowGameMenu] = useState(false)
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false)
-  const [showHelpMenu, setShowHelpMenu] = useState(false)
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [dealSound, setDealSound] = useState<SynthAudio | null>(null)
   const [flipSound, setFlipSound] = useState<SynthAudio | null>(null)
   const [winSound, setWinSound] = useState<SynthAudio | null>(null)
@@ -749,123 +747,44 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Menu Bar */}
-      <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowGameMenu(!showGameMenu)
-              setShowOptionsMenu(false)
-              setShowHelpMenu(false)
-            }}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Game
-          </button>
-          {showGameMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {gameMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowGameMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowOptionsMenu(!showOptionsMenu)
-              setShowGameMenu(false)
-              setShowHelpMenu(false)
-            }}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Options
-          </button>
-          {showOptionsMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {optionsMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowOptionsMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowHelpMenu(!showHelpMenu)
-              setShowGameMenu(false)
-              setShowOptionsMenu(false)
-            }}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Help
-          </button>
-          {showHelpMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {helpMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowHelpMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Game Controls */}
-      <div className="w-full bg-[#c0c0c0] p-2 flex justify-between items-center border-b border-[#5a5a5a]">
-        <div className="flex space-x-2">
-          <button
-            onClick={initGame}
-            className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-          >
-            New Game
-          </button>
-          <button
-            onClick={toggleSound}
-            className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-          >
-            Sound: {soundEnabled ? "On" : "Off"}
-          </button>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="bg-[#c0c0c0] border border-[#5a5a5a] border-r-white border-b-white px-3 py-1">
-            <span className="text-sm">Score: {score}</span>
+      {/* Menu bar, in the style every game shares. */}
+      <div className="flex border-b border-[#808080] bg-[#c0c0c0] px-1 text-sm" onMouseLeave={() => setOpenMenu(null)}>
+        {(
+          [
+            ["Game", gameMenuOptions],
+            ["Options", optionsMenuOptions],
+            ["Help", helpMenuOptions],
+          ] as const
+        ).map(([name, options]) => (
+          <div key={name} className="relative">
+            <button
+              type="button"
+              className={`px-2 py-[2px] ${openMenu === name ? "bg-[#000080] text-white" : ""}`}
+              onClick={() => setOpenMenu(openMenu === name ? null : name)}
+              onMouseEnter={() => openMenu && setOpenMenu(name)}
+            >
+              <span className="underline">{name[0]}</span>
+              {name.slice(1)}
+            </button>
+            {openMenu === name && (
+              <div className="absolute left-0 top-full z-50 min-w-[170px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                {options.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    className="flex w-full items-center px-3 py-[2px] text-left hover:bg-[#000080] hover:text-white"
+                    onClick={() => {
+                      option.action()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="bg-[#c0c0c0] border border-[#5a5a5a] border-r-white border-b-white px-3 py-1">
-            <span className="text-sm">Time: {formatTime(timeElapsed)}</span>
-          </div>
-          <div className="bg-[#c0c0c0] border border-[#5a5a5a] border-r-white border-b-white px-3 py-1">
-            <span className="text-sm">Moves: {moves}</span>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Game area */}
@@ -881,8 +800,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
           sendAllHome()
         }}
       >
-        {/* Top row: Stock, Waste, and Foundations */}
-        <div className="flex gap-4 mb-6">
+        {/* Top row: Stock, Waste, and Foundations, spread as the original
+            spread them. The spacer sits where the seventh station would be. */}
+        <div className="mb-6 flex w-full max-w-[980px] justify-between gap-2 mx-auto">
           {/* Stock pile */}
           <div
             className="w-16 h-24 rounded border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] bg-green-800 relative"
@@ -944,7 +864,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
         </div>
 
         {/* Tableau piles */}
-        <div className="flex gap-4">
+        <div className="flex w-full max-w-[980px] justify-between gap-2 mx-auto">
           {tableau.map((pile, i) => (
             <div
               key={`tableau-${i}`}
@@ -1036,12 +956,13 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       </div>
 
       {/* Game status and controls */}
-      <div className="w-full bg-[#c0c0c0] p-2 border-t border-white flex justify-between items-center">
-        <div>
-          <span className="text-sm">
-            {gameWon ? "Game Won!" : "Drag cards to move them. Double-click to send to foundation."}
-          </span>
-        </div>
+      <div className="w-full bg-[#c0c0c0] px-2 py-1 border-t border-white flex justify-between items-center text-sm">
+        <span>{gameWon ? "Game Won!" : "Drag cards to move them. Double-click to send to foundation."}</span>
+        <span className="flex gap-4">
+          <span>Score: {score}</span>
+          <span>Time: {formatTime(timeElapsed)}</span>
+          <span>Moves: {moves}</span>
+        </span>
       </div>
 
       {/* Win message, held back until the cascade has had its moment */}

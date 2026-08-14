@@ -41,9 +41,7 @@ export default function Pong({ onReturn }: PongProps) {
   ])
   const [playerName, setPlayerName] = useState("")
   const [showNameInput, setShowNameInput] = useState(false)
-  const [showGameMenu, setShowGameMenu] = useState(false)
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false)
-  const [showHelpMenu, setShowHelpMenu] = useState(false)
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
 
   // Game constants
   const PADDLE_HEIGHT = 80
@@ -409,27 +407,50 @@ export default function Pong({ onReturn }: PongProps) {
       // often it looks and how fast it can move.
       const computerCenter = computerPosRef.current + PADDLE_HEIGHT / 2
 
+      /*
+        Three honest difficulties.
+
+        The old bot only varied how often it looked and how fast it slid, and
+        both settings were generous enough that it reached every ball: the
+        game could not be won. Three things vary now, and Easy's numbers are
+        deliberately worse than a middling human:
+
+          speed     how fast the paddle can travel
+          reaction  how stale its read of the ball is allowed to be
+          error     how far off its read can land
+
+        And when the ball is moving away, the bot drifts back to the centre
+        instead of camping on the ball's line, which is what opens the angles
+        a winning shot needs.
+      */
       let computerSpeed = 240
       let reaction = 0.12
+      let error = 0
       switch (difficultyRef.current) {
         case "easy":
-          computerSpeed = 180
-          reaction = 0.26
+          computerSpeed = 130
+          reaction = 0.42
+          error = 42
           break
         case "medium":
-          computerSpeed = 240
-          reaction = 0.14
+          computerSpeed = 195
+          reaction = 0.22
+          error = 20
           break
         case "hard":
-          computerSpeed = 330
-          reaction = 0.06
+          computerSpeed = 300
+          reaction = 0.09
+          error = 5
           break
       }
 
       cpuLatencyRef.current -= dt
       if (cpuLatencyRef.current <= 0) {
         cpuLatencyRef.current = reaction
-        cpuTargetRef.current = ballPosRef.current.y + BALL_SIZE / 2
+        const ballComing = ballSpeedRef.current.x > 0
+        cpuTargetRef.current = ballComing
+          ? ballPosRef.current.y + BALL_SIZE / 2 + (Math.random() * 2 - 1) * error
+          : canvas.height / 2
       }
 
       const target = cpuTargetRef.current
@@ -552,9 +573,11 @@ export default function Pong({ onReturn }: PongProps) {
   // Toggle pause
   const togglePause = () => {
     // Drop the accumulated frame time, or resuming would replay the whole pause
-    // as one enormous step.
+    // as one enormous step. Functional update, because the P-key listener is
+    // registered once and its closure held the first render's `paused`, which
+    // meant P could pause but never resume.
     lastFrameRef.current = performance.now()
-    setPaused(!paused)
+    setPaused((prev) => !prev)
   }
 
   // Start/stop game loop on mount/unmount
@@ -600,6 +623,11 @@ export default function Pong({ onReturn }: PongProps) {
       action: initGame,
     },
     {
+      label: paused ? "RESUME" : "PAUSE",
+      action: togglePause,
+      disabled: !gameStarted || gameOver,
+    },
+    {
       label: "HIGH SCORES",
       action: () => setShowHighScores(true),
     },
@@ -642,129 +670,45 @@ export default function Pong({ onReturn }: PongProps) {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Menu Bar */}
-      <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
-        <div className="relative">
-          <button
-            onClick={() => setShowGameMenu(!showGameMenu)}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Game
-          </button>
-          {showGameMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {gameMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowGameMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Options
-          </button>
-          {showOptionsMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {optionsMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowOptionsMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => setShowHelpMenu(!showHelpMenu)}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Help
-          </button>
-          {showHelpMenu && (
-            <div className="absolute top-full left-0 bg-[#c0c0c0] border border-black shadow-md z-50 w-40">
-              {helpMenuOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    option.action()
-                    setShowHelpMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-1 hover:bg-[#000080] hover:text-white text-sm border-b border-[#efefef] last:border-b-0"
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Game Controls */}
-      <div className="w-full bg-[#c0c0c0] p-2 flex justify-between items-center border-b border-[#5a5a5a]">
-        <div className="flex space-x-2">
-          <button
-            onClick={initGame}
-            className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-          >
-            New Game
-          </button>
-          <button
-            onClick={togglePause}
-            disabled={!gameStarted || gameOver}
-            className={`px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white ${
-              !gameStarted || gameOver ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {paused ? "Resume" : "Pause"}
-          </button>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <span className="text-sm mr-2">Difficulty:</span>
-            <select
-              value={difficulty}
-              onChange={(e) => setGameDifficulty(e.target.value as "easy" | "medium" | "hard")}
-              className="px-2 py-1 bg-white border border-[#5a5a5a] text-sm"
-            >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <span className="text-sm mr-2">Sound:</span>
+      {/* Menu bar, in the style every game shares. */}
+      <div className="flex border-b border-[#808080] bg-[#c0c0c0] px-1 text-sm" onMouseLeave={() => setOpenMenu(null)}>
+        {(
+          [
+            ["Game", gameMenuOptions],
+            ["Options", optionsMenuOptions],
+            ["Help", helpMenuOptions],
+          ] as const
+        ).map(([name, options]) => (
+          <div key={name} className="relative">
             <button
-              onClick={toggleSound}
-              className="px-3 py-1 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
+              type="button"
+              className={`px-2 py-[2px] ${openMenu === name ? "bg-[#000080] text-white" : ""}`}
+              onClick={() => setOpenMenu(openMenu === name ? null : name)}
+              onMouseEnter={() => openMenu && setOpenMenu(name)}
             >
-              {soundEnabled ? "On" : "Off"}
+              <span className="underline">{name[0]}</span>
+              {name.slice(1)}
             </button>
+            {openMenu === name && (
+              <div className="absolute left-0 top-full z-50 min-w-[160px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                {options.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    className="flex w-full items-center px-3 py-[2px] text-left hover:bg-[#000080] hover:text-white disabled:text-[#808080]"
+                    disabled={option.disabled}
+                    onClick={() => {
+                      option.action()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        ))}
       </div>
 
       {/* Game Area */}

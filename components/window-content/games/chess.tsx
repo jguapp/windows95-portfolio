@@ -100,6 +100,7 @@ export default function Chess({ onReturn }: ChessProps) {
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const boardRef = useRef<HTMLDivElement>(null)
   const [showThemeSelector, setShowThemeSelector] = useState<boolean>(false)
+  const [openBarMenu, setOpenBarMenu] = useState<string | null>(null)
   const [boardFlipped, setBoardFlipped] = useState<boolean>(false)
   const [playerColor, setPlayerColor] = useState<PieceColor>("white")
   const [gameMode, setGameMode] = useState<GameMode>(null)
@@ -1319,39 +1320,62 @@ export default function Chess({ onReturn }: ChessProps) {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#c0c0c0] overflow-auto">
-      {/* Menu Bar */}
-      <div className="w-full bg-[#c0c0c0] border-b border-[#5a5a5a] px-2 py-1 flex space-x-4">
-        <div className="relative">
-          <button
-            onClick={() => setShowStartScreen(true)}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            New Game
-          </button>
-        </div>
-        <div className="relative">
-          <button onClick={undoMove} className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm">
-            Undo
-          </button>
-        </div>
-        <div className="relative">
-          <button onClick={flipBoard} className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm">
-            Flip Board
-          </button>
-        </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowThemeSelector(!showThemeSelector)}
-            className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm"
-          >
-            Theme
-          </button>
-        </div>
-        <div className="relative">
-          <button onClick={onReturn} className="px-2 py-0.5 hover:bg-[#000080] hover:text-white text-sm">
-            Exit
-          </button>
-        </div>
+      {/* Menu bar, in the style every game shares. */}
+      <div className="flex border-b border-[#808080] bg-[#c0c0c0] px-1 text-sm" onMouseLeave={() => setOpenBarMenu(null)}>
+        {(
+          [
+            [
+              "Game",
+              [
+                { label: "New Game", action: () => setShowStartScreen(true) },
+                { label: "Undo", action: undoMove },
+                { label: "Flip Board", action: flipBoard },
+                { label: "Exit", action: onReturn },
+              ],
+            ],
+            [
+              "Options",
+              [
+                { label: "Theme...", action: () => setShowThemeSelector(true) },
+                ...(["easy", "medium", "hard"] as const).map((level) => ({
+                  label: `${difficulty === level ? "\u2713 " : "\u00a0\u00a0 "}${
+                    level === "easy" ? "Easy" : level === "medium" ? "Medium" : "Hard"
+                  }`,
+                  action: () => setDifficulty(level),
+                })),
+              ],
+            ],
+          ] as const
+        ).map(([name, options]) => (
+          <div key={name} className="relative">
+            <button
+              type="button"
+              className={`px-2 py-[2px] ${openBarMenu === name ? "bg-[#000080] text-white" : ""}`}
+              onClick={() => setOpenBarMenu(openBarMenu === name ? null : name)}
+              onMouseEnter={() => openBarMenu && setOpenBarMenu(name)}
+            >
+              <span className="underline">{name[0]}</span>
+              {name.slice(1)}
+            </button>
+            {openBarMenu === name && (
+              <div className="absolute left-0 top-full z-50 min-w-[160px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_4px_rgba(0,0,0,0.4)]">
+                {options.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    className="flex w-full items-center px-3 py-[2px] text-left hover:bg-[#000080] hover:text-white"
+                    onClick={() => {
+                      option.action()
+                      setOpenBarMenu(null)
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {showStartScreen ? (

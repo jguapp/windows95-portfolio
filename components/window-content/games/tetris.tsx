@@ -1122,11 +1122,11 @@ export default function Tetris({ onReturn }: TetrisProps) {
 
   // Render menu bar
   const renderMenuBar = () => (
-    <div className="menu-bar bg-gray-200 border-b border-gray-400">
+    <div className="menu-bar flex border-b border-[#808080] bg-[#c0c0c0] px-1">
       <div className="flex">
         <div className="relative">
           <button
-            className={`px-4 py-1 ${showMenu === "game" ? "bg-gray-300" : "hover:bg-gray-300"}`}
+            className={`px-2 py-[2px] ${showMenu === "game" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "game" ? null : "game")}
           >
             Game
@@ -1177,7 +1177,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
         </div>
         <div className="relative">
           <button
-            className={`px-4 py-1 ${showMenu === "options" ? "bg-gray-300" : "hover:bg-gray-300"}`}
+            className={`px-2 py-[2px] ${showMenu === "options" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "options" ? null : "options")}
           >
             Options
@@ -1198,7 +1198,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
         </div>
         <div className="relative">
           <button
-            className={`px-4 py-1 ${showMenu === "help" ? "bg-gray-300" : "hover:bg-gray-300"}`}
+            className={`px-2 py-[2px] ${showMenu === "help" ? "bg-[#000080] text-white" : ""}`}
             onClick={() => setShowMenu(showMenu === "help" ? null : "help")}
           >
             Help
@@ -1234,29 +1234,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
   // Main render
   return (
     <div className="tetris-game h-full flex flex-col">
-      {/* Title bar */}
-      <div className="window-title bg-blue-900 text-white p-1 flex justify-between items-center">
-        <div className="flex items-center">
-          <img src="/images/win95/tetris-32.png" alt="Tetris" className="w-4 h-4 mr-2" style={{ imageRendering: "pixelated" }} />
-          <span>Tetris</span>
-        </div>
-        <div className="flex">
-          <button
-            className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black mr-1"
-            onClick={() => onReturn()}
-          >
-            _
-          </button>
-          <button
-            className="w-5 h-5 bg-gray-300 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 flex items-center justify-center text-black"
-            onClick={() => onReturn()}
-          >
-            <CloseIcon />
-          </button>
-        </div>
-      </div>
-
-      {/* Menu bar */}
+      {/* Menu bar. The Games window carries the title bar. */}
       {renderMenuBar()}
 
       {/* Game content */}
