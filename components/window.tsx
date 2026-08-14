@@ -39,6 +39,11 @@ const EDGES: ResizeEdge[] = ["n", "s", "e", "w", "ne", "nw", "se", "sw"]
 const TASKBAR_HEIGHT = 34
 const DEFAULT_MIN: Size = { width: 320, height: 200 }
 
+/** Windows that cannot be maximised, as their originals could not. The real
+ *  Calculator had no maximise button at all: the keypad is a fixed slab and
+ *  a full screen of it means nothing. */
+const NEVER_MAXIMIZE = new Set(["calculator"])
+
 /** The games and editors draw to fixed boards, so they get a floor that keeps
  *  the board intact rather than letting the window crop it. */
 const MIN_SIZE: Record<string, Size> = {
@@ -402,7 +407,7 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
             >
               <MinimizeIcon />
             </button>
-            {!narrow && (
+            {!narrow && !NEVER_MAXIMIZE.has(id) && (
             <button
               className={controlButtonClass}
               aria-label={isMaximized ? "Restore" : "Maximize"}
