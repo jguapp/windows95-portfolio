@@ -53,6 +53,8 @@ export const TOOLS: { id: PaintTool; label: string }[] = [
  * it. Reading down each column gives the pair Paint showed together.
  */
 export const PALETTE: string[] = [
+  // The 28 colours MS Paint shipped, stored column-wise: each pair is the
+  // top-row colour then the one below it, left to right across the box.
   "#000000", "#ffffff",
   "#808080", "#c0c0c0",
   "#800000", "#ff0000",
@@ -65,22 +67,8 @@ export const PALETTE: string[] = [
   "#004040", "#00ff80",
   "#0080ff", "#80ffff",
   "#004080", "#8080ff",
-  "#8000ff", "#ff0080",
+  "#4000ff", "#ff0080",
   "#804000", "#ff8040",
-  "#404040", "#dfdfdf",
-  "#400000", "#ff8080",
-  "#404000", "#ffff40",
-  "#004000", "#80ff00",
-  "#400040", "#ff80ff",
-  "#400080", "#8000c0",
-  "#000040", "#4000ff",
-  "#804040", "#c08040",
-  "#008040", "#40ff80",
-  "#0040ff", "#40c0ff",
-  "#8080c0", "#c0c0ff",
-  "#c08080", "#ffc0c0",
-  "#40c0c0", "#c0ffff",
-  "#c0c080", "#ffffc0",
 ]
 
 const grid = {
@@ -89,8 +77,30 @@ const grid = {
   focusable: false,
 }
 
-/** A 16x16 glyph for each tool, drawn rather than shipped. */
+/** Tools with a bitmap icon from the original set. The simple shapes
+ *  (select, line, rectangle, ellipse, rounded rectangle) stay drawn, since
+ *  they are bare geometry either way. */
+const TOOL_BITMAPS: Partial<Record<PaintTool, string>> = {
+  freeform: "/images/paint/freeform.png",
+  eraser: "/images/paint/eraser.png",
+  fill: "/images/paint/fill.png",
+  eyedropper: "/images/paint/eyedropper.png",
+  magnifier: "/images/paint/magnifier.png",
+  pencil: "/images/paint/pencil.png",
+  brush: "/images/paint/brush.png",
+  airbrush: "/images/paint/airbrush.png",
+  text: "/images/paint/text.png",
+  curve: "/images/paint/curve.png",
+  polygon: "/images/paint/polygon.png",
+}
+
+/** A 16x16 glyph for each tool: the original bitmap where one exists, drawn
+ *  geometry otherwise. */
 export function ToolGlyph({ tool }: { tool: PaintTool }) {
+  const bitmap = TOOL_BITMAPS[tool]
+  if (bitmap) {
+    return <img src={bitmap} alt="" width={16} height={16} style={{ imageRendering: "pixelated" }} aria-hidden />
+  }
   const ink = "#000000"
   const box = (children: React.ReactNode) => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill={ink} {...grid}>
