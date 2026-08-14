@@ -223,6 +223,34 @@ export const sfx = {
   // Windows 95 startup: a four-note rising chord, not the real recording.
   startup: () => sequence([[392, 0, 0.5], [523.25, 0.12, 0.5], [659.25, 0.24, 0.55], [783.99, 0.36, 0.7]], "triangle", 0.06),
 
+  /*
+    The system sounds.
+
+    Windows 95 shipped a scheme where the message box you got told you what
+    had happened before you read it: a bright two-note ding for information, a
+    heavy falling chord for a critical stop, a short rise for a question, and
+    a flat pair for a warning. The dialog picks between these by its icon.
+
+    These are synthesised. The originals are Microsoft's recordings.
+  */
+  /** Asterisk. Information, and the one people remember. */
+  ding: () => sequence([[1046.5, 0, 0.16], [1567.98, 0.07, 0.3]], "sine", 0.05),
+  /** Critical Stop. Four notes falling, the sound of having done something wrong. */
+  chord: () =>
+    sequence([[440, 0, 0.5], [349.23, 0.14, 0.5], [293.66, 0.28, 0.5], [220, 0.42, 0.75]], "triangle", 0.055),
+  /** Question. Rising, because it is waiting for an answer. */
+  question: () => sequence([[587.33, 0, 0.18], [880, 0.09, 0.34]], "sine", 0.045),
+  /** Exclamation. Two of the same note, which reads as a nudge rather than a fall. */
+  exclamation: () => sequence([[698.46, 0, 0.14], [698.46, 0.11, 0.26]], "triangle", 0.05),
+  /** Window opening and closing, the quiet pair under everything else. */
+  windowOpen: () => tone({ freq: 620, duration: 0.05, gain: 0.025, slideTo: 880, wave: "sine" }),
+  windowClose: () => tone({ freq: 880, duration: 0.05, gain: 0.025, slideTo: 560, wave: "sine" }),
+  /** Minimising and restoring, sweeping the way the animation does. */
+  minimize: () => tone({ freq: 760, duration: 0.09, gain: 0.03, slideTo: 260, wave: "sine" }),
+  maximize: () => tone({ freq: 260, duration: 0.09, gain: 0.03, slideTo: 760, wave: "sine" }),
+  /** Emptying the Recycle Bin: paper going down a chute. */
+  emptyBin: () => noise(0.45, 0.045, 2600),
+
   // Tetris
   move: () => tone({ freq: 330, duration: 0.03, gain: 0.03 }),
   rotate: () => tone({ freq: 520, duration: 0.04, gain: 0.035 }),
@@ -299,6 +327,40 @@ export type SfxName = keyof typeof sfx
 
 export function play(name: SfxName) {
   sfx[name]()
+}
+
+/**
+ * Plays a sound as soon as the browser will allow it.
+ *
+ * The startup chime wants to go off when the desktop appears, but the boot
+ * sequence runs on a timer rather than a click, so at that point there has
+ * been no gesture and the AudioContext is still suspended. Calling play() then
+ * produces silence. This waits for the first real interaction instead, which
+ * is the closest a web page gets to a machine finishing its boot.
+ *
+ * @param name  Which effect to play.
+ * @returns A function that cancels the pending play.
+ */
+export function playWhenAllowed(name: SfxName): () => void {
+  const c = audio()
+  if (c && c.state === "running") {
+    play(name)
+    return () => {}
+  }
+
+  // Capture, because a handler somewhere between the target and window may
+  // stop propagation, and this needs the gesture whatever the page does with it.
+  const events = ["pointerdown", "keydown"] as const
+  const opts = { capture: true } as const
+  const fire = () => {
+    cancel()
+    play(name)
+  }
+  const cancel = () => {
+    for (const e of events) window.removeEventListener(e, fire, opts)
+  }
+  for (const e of events) window.addEventListener(e, fire, opts)
+  return cancel
 }
 
 /** The paths the games were asking for, mapped onto synthesised effects. */

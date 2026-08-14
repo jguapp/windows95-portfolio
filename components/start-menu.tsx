@@ -202,7 +202,10 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <ul className="list-none m-0 p-0">
-                  <li className="hover:bg-[#000080] hover:text-white">
+                  <li
+                    className="hover:bg-[#000080] hover:text-white"
+                    onClick={() => window.dispatchEvent(new CustomEvent("openDisplayProperties"))}
+                  >
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img
                         src="/images/blob/controls-folder.ico"
@@ -251,7 +254,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <ul className="list-none m-0 p-0">
-                  <li className="hover:bg-[#000080] hover:text-white">
+                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("explorer")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img src="/images/find-icon.png" alt="Files or Folders" className="mr-2 w-5 h-5" />
                       <span className="text-sm">Files or Folders...</span>
@@ -261,17 +264,35 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
               </div>
             )}
           </li>
-          <li className="hover:bg-[#000080] hover:text-white">
+          <li
+            className="hover:bg-[#000080] hover:text-white"
+            onClick={() =>
+              void messageBox({
+                title: "Windows Help",
+                text:
+                  "Welcome to Joel's desktop.\n\n" +
+                  "Double-click an icon to open it. Drag windows by the title bar, and drag things onto the Recycle Bin to throw them away.\n\n" +
+                  "Windows+R opens Run. Double-click the clock for the date. The games in Programs all work.\n\n" +
+                  "There is one thing hidden here that this file will not tell you about.",
+                icon: "information",
+              })
+            }
+          >
             <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
               <img src="/images/help-icon.png" alt="Help Icon" className="mr-2 w-7 h-7" />
               <span className="text-sm underline">H</span>
               <span className="text-sm">elp</span>
             </div>
           </li>
-          <li className="hover:bg-[#000080] hover:text-white">
+          <li
+            className="hover:bg-[#000080] hover:text-white"
+            onClick={() => window.dispatchEvent(new CustomEvent("openRun"))}
+          >
             <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
               <img src="/images/run-icon.png" alt="Run Icon" className="mr-2 w-7 h-7" />
-              <span className="text-sm">Run...</span>
+              <span className="text-sm">
+                <span className="underline">R</span>un...
+              </span>
             </div>
           </li>
           <li className="hover:bg-[#000080] hover:text-white">

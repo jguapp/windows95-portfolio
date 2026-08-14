@@ -10,8 +10,10 @@ import BootSequence from "@/components/boot-sequence"
 import CloseProgram from "@/components/close-program"
 import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
+import RunDialog from "@/components/run-dialog"
+import Screensaver from "@/components/screensaver"
+import { playWhenAllowed } from "@/lib/sound"
 import FontChecker from "@/components/font-checker"
-import { createSound, type SynthAudio } from "@/lib/sound"
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -23,32 +25,22 @@ export default function Home() {
   // Ending Explorer from Close Program takes the taskbar away, as it did in 1995.
   const [explorerRunning, setExplorerRunning] = useState(true)
   const [isShutDown, setIsShutDown] = useState(false)
-  const [bootSound, setBootSound] = useState<SynthAudio | null>(null)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
+  const [showRun, setShowRun] = useState(false)
 
-  // Initialize boot sound
-  useEffect(() => {
-    // Synthesised, so there is nothing to preload.
-    setBootSound(createSound("/sounds/win95-startup.mp3"))
+  /*
+    The startup chime.
 
-    return () => {
-      if (bootSound) {
-        bootSound.pause()
-        bootSound.src = ""
-      }
-    }
-  }, [])
-
-  // Handle boot completion
+    The boot sequence finishes on a timer, not a click, so at that moment the
+    browser has had no gesture and will not let anything make a noise. Arming
+    it instead means it goes off on the first thing the visitor does, which is
+    as close as a page gets to a machine coming up.
+  */
   const handleBootComplete = useCallback(() => {
     setIsBooting(false)
-    // Play Windows 95 startup sound with a slight delay
-    setTimeout(() => {
-      if (bootSound) {
-        bootSound.play().catch((err) => console.log("Audio playback failed:", err))
-      }
-    }, 500)
-  }, [bootSound])
+    const cancel = playWhenAllowed("startup")
+    return cancel
+  }, [])
 
   // Handle opening a window
   const handleOpenWindow = useCallback(
@@ -104,6 +96,29 @@ export default function Home() {
   // Handle Konami code entered
   const handleKonamiCodeEntered = useCallback(() => {
     setShowPokemonBattle(true)
+  }, [])
+
+  /*
+    The Run dialog.
+
+    Windows+R opened it from anywhere, so it is bound globally rather than to
+    the Start menu that also offers it. The browser does not reserve that
+    combination, unlike most Windows-key shortcuts, so it is safe to take.
+  */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "r" && e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault()
+        setShowRun(true)
+      }
+    }
+    const onRequest = () => setShowRun(true)
+    window.addEventListener("keydown", onKey)
+    window.addEventListener("openRun", onRequest)
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("openRun", onRequest)
+    }
   }, [])
 
   // Listen for custom openWindow events
@@ -372,6 +387,12 @@ export default function Home() {
 
       {/* Pokemon Battle */}
       {showPokemonBattle && <PokemonBattle onClose={() => setShowPokemonBattle(false)} />}
+
+      {/* Two minutes idle and the starfield takes over, as it did. */}
+      <Screensaver />
+
+      {/* Run dialog, from the Start menu or Windows+R */}
+      {showRun && <RunDialog onClose={() => setShowRun(false)} />}
 
       {/* Font Checker */}
       <FontChecker />

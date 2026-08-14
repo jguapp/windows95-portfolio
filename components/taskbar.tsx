@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { taskbarTitle, windowIcon } from "@/lib/window-titles"
 import { getVolume, isMuted, play, setMuted, setVolume, subscribeVolume } from "@/lib/sound"
+import DateTimeProperties from "@/components/date-time-properties"
 
 interface TaskbarProps {
   openWindows: string[]
@@ -27,6 +28,8 @@ export default function Taskbar({
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
   const [showVolume, setShowVolume] = useState(false)
+  /** Double-clicking the clock opened Date/Time Properties. People try it. */
+  const [showDateTime, setShowDateTime] = useState(false)
   /**
    * Mirrors the sound library so the panel reflects changes made anywhere.
    * The values live outside React because the audio code is not a component.
@@ -190,14 +193,24 @@ export default function Taskbar({
             </label>
           </div>
         )}
-        <div
+        <button
+          type="button"
           id="clock"
+          title={new Date().toLocaleDateString(undefined, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+          onDoubleClick={() => setShowDateTime(true)}
           className="text-[13px] text-black bg-[#c0c0c0] px-2 h-full flex items-center justify-center"
           style={{ textShadow: "1px 1px 0 #ffffff" }}
         >
           {time}
-        </div>
+        </button>
       </div>
+
+      {showDateTime && <DateTimeProperties onClose={() => setShowDateTime(false)} />}
     </div>
   )
 }

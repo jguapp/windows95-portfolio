@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
 import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
+import ItemProperties from "./item-properties"
 import BlueScreenOfDeath from "./blue-screen-of-death"
 import { getItems, isEmpty, recycle, subscribe, type RecycledItem } from "@/lib/recycle-bin"
 import { MessageBoxHost, messageBox } from "@/components/win95-dialog"
@@ -113,6 +114,15 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   const [icons, setIcons] = useState<DesktopItemData[]>(DEFAULT_ICONS)
   const [nextItemId, setNextItemId] = useState(1)
   const [showProperties, setShowProperties] = useState(false)
+  /** The item whose property sheet is open, if any. */
+  const [propertiesFor, setPropertiesFor] = useState<DesktopItemData | null>(null)
+
+  // Control Panel in the Start menu opens the only applet that exists here.
+  useEffect(() => {
+    const open = () => setShowProperties(true)
+    window.addEventListener("openDisplayProperties", open)
+    return () => window.removeEventListener("openDisplayProperties", open)
+  }, [])
   const [showBSOD, setShowBSOD] = useState(false)
   const desktopRef = useRef<HTMLDivElement>(null)
 
@@ -135,24 +145,48 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // The Windows 95 desktop grid: a 75px cell with the icon at the top and up to
   // two lines of label under it.
   const ICON_SPACING_Y = 92
+  /** The taskbar, which icons must not sit under. */
+  const TASKBAR_H = 34
   const FIRST_COLUMN_X = 12
   const FIRST_ROW_Y = 12
 
-  // Initialize icon positions - this defines the default positions
+  /**
+   * Where the icons start out.
+   *
+   * Windows filled the left edge top to bottom and began a second column when
+   * it ran out of screen. This did the first half and not the second, so ten
+   * icons at 92px made a 932px column that ran off the bottom of anything
+   * shorter than a desktop monitor, a phone especially.
+   */
+  const ICON_COLUMN_W = 84
+
   const initializeIconPositions = useCallback(() => {
     const defaultPositions: IconPosition = {}
+    const order = [
+      "about-me",
+      "resume",
+      "projects",
+      "contact",
+      "gallery",
+      "games",
+      "paint",
+      "calculator",
+      "guestbook",
+      "recycle-bin",
+    ]
 
-    // Position icons in a single column with consistent spacing
-    defaultPositions["about-me"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y }
-    defaultPositions["resume"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y }
-    defaultPositions["projects"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 2 }
-    defaultPositions["contact"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 3 }
-    defaultPositions["gallery"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 4 }
-    defaultPositions["games"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 5 }
-    defaultPositions["paint"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 6 }
-    defaultPositions["calculator"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 7 }
-    defaultPositions["guestbook"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 8 }
-    defaultPositions["recycle-bin"] = { x: FIRST_COLUMN_X, y: FIRST_ROW_Y + ICON_SPACING_Y * 9 }
+    // How many fit above the taskbar, with at least one so the maths holds on
+    // a very short window.
+    const available =
+      (typeof window === "undefined" ? 900 : window.innerHeight) - TASKBAR_H - FIRST_ROW_Y
+    const perColumn = Math.max(1, Math.floor(available / ICON_SPACING_Y))
+
+    order.forEach((id, i) => {
+      defaultPositions[id] = {
+        x: FIRST_COLUMN_X + Math.floor(i / perColumn) * ICON_COLUMN_W,
+        y: FIRST_ROW_Y + (i % perColumn) * ICON_SPACING_Y,
+      }
+    })
 
     return defaultPositions
   }, [])
@@ -610,9 +644,16 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     resetToDefaultIcons()
   }
 
+  /** Right-clicking the desktop opens Display Properties, as it did. */
   const handleProperties = () => {
-    const rue = true
-    setShowProperties(rue)
+    setShowProperties(true)
+    closeContextMenu()
+  }
+
+  /** Right-clicking an icon opens that item's own sheet instead. */
+  const handleItemProperties = () => {
+    const item = icons.find((i) => i.id === contextMenu.iconId)
+    if (item) setPropertiesFor(item)
     closeContextMenu()
   }
 
@@ -947,7 +988,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
               P<u>r</u>operties
             </>
           ),
-          action: handleProperties,
+          action: handleItemProperties,
         },
       ]
     }
@@ -1139,6 +1180,9 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
           />
         )}
         {showProperties && <DisplayProperties onClose={() => setShowProperties(false)} />}
+        {propertiesFor && (
+          <ItemProperties item={propertiesFor} onClose={() => setPropertiesFor(null)} />
+        )}
       </div>
 
       {/* Blue Screen of Death */}

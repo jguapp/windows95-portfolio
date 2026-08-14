@@ -156,17 +156,44 @@ export function MessageBoxHost() {
 
   useEffect(() => {
     if (!current) return
-    play(current.icon === "error" ? "lose" : "select")
+    // The scheme Windows used: the sound tells you what kind of box it is
+    // before you have read a word of it.
+    play(
+      current.icon === "error"
+        ? "chord"
+        : current.icon === "warning"
+          ? "exclamation"
+          : current.icon === "question"
+            ? "question"
+            : "ding",
+    )
   }, [current])
 
+  /*
+    Enter and Escape dismiss the box, but not the keypress that opened it.
+
+    React flushes effects for a discrete event synchronously, and it does so
+    while that event is still travelling up the tree. A box opened from an
+    Enter handler therefore had its own listener attached in time to receive
+    the very same keydown on its way to window, and closed instantly. Waiting
+    a frame puts the listener safely after the event that caused it.
+  */
   useEffect(() => {
     if (!current) return
+    let live = false
+    const frame = requestAnimationFrame(() => {
+      live = true
+    })
     const onKey = (e: KeyboardEvent) => {
+      if (!live) return
       if (e.key === "Enter") close(true)
       if (e.key === "Escape") close(false)
     }
     window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener("keydown", onKey)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current])
 
