@@ -1726,10 +1726,12 @@ export default function Resume() {
                 <em>Bachelor of Science in Computer Science, Minor in Mathematics</em>
                 <span>Expected May 2027</span>
               </p>
+              {/* Two lines. A resume that spills onto a third looks like it was
+                  never proofread, so the list is cut to the courses that back
+                  up the backend and infrastructure work above it. */}
               <p>
-                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Cloud Computing, Database Management,
-                Computer Networking, Data Warehousing, Systems Analysis & Design, Object-Oriented Programming, Computer
-                Architecture, Web Development
+                <strong>Relevant Coursework:</strong> Data Structures & Algorithms, Computer Architecture, Computer
+                Networking, Database Management, Cloud Computing, Object-Oriented Programming
               </p>
             </div>
           </div>

@@ -23,8 +23,10 @@ import { useState } from "react"
  * default non-theatre player is 640 wide, and the related rail beside it is
  * wide enough to read a title in two lines rather than five.
  */
+/** The floor for the player column. It grows past this to fill the window. */
 const PLAYER_W = 640
-const PLAYER_H = 360
+/** The rail is the fixed column now, wide enough for a 120px thumbnail and a
+ *  title in two lines. */
 const RAIL_W = 320
 const RAIL_THUMB_W = 120
 const RAIL_THUMB_H = 90
@@ -577,11 +579,23 @@ export default function RetroYoutube() {
 
       <div className="flex gap-3 p-3" style={{ alignItems: "flex-start" }}>
         {/* Main column */}
-        <div style={{ width: PLAYER_W, flexShrink: 0 }}>
+        <div style={{ flex: 1, minWidth: PLAYER_W }}>
           <h1 className="t15" style={{ fontWeight: "bold", marginBottom: 6 }}>{selected.title}</h1>
 
           {/* Flash-era player */}
-          <div data-player style={{ background: "#000", width: PLAYER_W, height: PLAYER_H, position: "relative" }}>
+          {/* Fills the column so nothing is left over on the right, with the
+              height capped so the controls, description and comments stay above
+              the fold on a maximised window. A player letterboxing a video is
+              normal; a player you have to scroll past is not. */}
+          <div
+            data-player
+            style={{
+              background: "#000",
+              width: "100%",
+              height: "clamp(320px, 54vh, 620px)",
+              position: "relative",
+            }}
+          >
             <div
               className="flex h-full items-center justify-center"
               style={{ color: "#666", textAlign: "center", padding: 20 }}
@@ -740,7 +754,7 @@ export default function RetroYoutube() {
         </div>
 
         {/* Related videos sidebar */}
-        <div style={{ flex: 1, minWidth: RAIL_W }}>
+        <div style={{ width: RAIL_W, flexShrink: 0 }}>
           <div style={{ border: "1px solid #CCC" }}>
             <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
               Related Videos

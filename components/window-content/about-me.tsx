@@ -133,7 +133,12 @@ export default function AboutMe() {
             </div>
 
             {/* Profile Content */}
-            <div className="p-4 flex gap-4">
+            {/* The profile is a two-column 2005 layout and does not become a
+                one-column one gracefully. Below its natural width it keeps its
+                shape and the window scrolls, which is what a browser of the
+                period did, rather than squeezing the right column to nothing
+                and clipping it. */}
+            <div className="p-4 flex gap-4 min-w-[820px]">
               {/* Left Column */}
               <div className="w-[300px] space-y-4">
                 {/* Picture Section */}
@@ -143,9 +148,9 @@ export default function AboutMe() {
                     <img
                       src="/images/blob/profile-headshot.jpeg"
                       alt="Profile"
-                      // The headshot is square, and a 120x150 box was cropping
-                      // the sides off it rather than showing the whole crop.
-                      className="h-[150px] w-[150px] object-cover"
+                      // theFacebook's photo box was portrait. The source is 4:5
+                      // and so is this, so nothing is cropped off at all.
+                      className="h-[190px] w-[152px] object-cover"
                     />
                   </div>
                 </div>
