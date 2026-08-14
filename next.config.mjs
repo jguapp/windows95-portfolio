@@ -12,6 +12,8 @@ const csp = [
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",
   "connect-src 'self' https://api.web3forms.com",
+  // Internet Explorer frames the Wayback Machine for its 1996 web.
+  "frame-src 'self' https://web.archive.org",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",

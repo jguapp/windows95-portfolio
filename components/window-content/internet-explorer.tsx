@@ -3,15 +3,17 @@
 import { useCallback, useMemo, useState } from "react"
 
 /**
- * Internet Explorer, with a small internet inside it.
+ * Internet Explorer, and the internet as it was.
  *
- * External pages cannot be shown: nearly every modern site refuses to be
- * framed, and a browser window full of X-Frame-Options errors is worse than
- * no browser at all. So IE ships with its own handful of period pages, and
- * any address it does not know gets the genuine article: the grey
- * "The page cannot be displayed" screen.
+ * Modern sites refuse to be framed, so typing an address does not load
+ * today's web. It loads the Internet Archive's snapshot of that address from
+ * 1996, which is both allowed and better: microsoft.com arrives with its
+ * grey background and its Best Viewed In badge. The Wayback Machine sends no
+ * frame-blocking headers, so the pages render inside the window.
  *
- * Back, Forward, Home and the address bar all work over the built-in sites.
+ * A few built-in pages remain: the home page, the WebRing, the search page.
+ * Input that is not an address at all still gets the grey "page cannot be
+ * displayed" screen.
  */
 
 interface Site {
@@ -70,6 +72,11 @@ const SITES: Record<string, Site> = {
             </tr>
           </tbody>
         </table>
+        <p className="mb-3 text-sm">
+          Or type any address up there. <strong>microsoft.com</strong>, <strong>yahoo.com</strong>,
+          <strong> spacejam.com</strong>: the address bar serves the web as it looked in 1996,
+          by way of the Internet Archive.
+        </p>
         <p className="mb-2 text-sm">
           You are visitor number: <span className="border border-[#808080] bg-black px-2 font-mono text-[#00ff00]">013847</span>
         </p>
@@ -141,6 +148,16 @@ export default function InternetExplorer() {
 
   const current = history[at]
   const site = SITES[current]
+  /** Anything with a dot in its host is worth sending to the archive. */
+  const isWebby = (url: string) => {
+    try {
+      return new URL(url).hostname.includes(".")
+    } catch {
+      return false
+    }
+  }
+  const webby = !site && isWebby(current)
+  const waybackSrc = `https://web.archive.org/web/1996/${current}`
 
   const go = useCallback(
     (url: string) => {
@@ -170,8 +187,8 @@ export default function InternetExplorer() {
     "flex flex-col items-center px-2 py-[2px] border-2 border-transparent enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] disabled:text-[#808080]"
 
   const status = useMemo(
-    () => (site ? `Done` : `Cannot find server`),
-    [site],
+    () => (site ? "Done" : webby ? "Opening page from 1996..." : "Cannot find server"),
+    [site, webby],
   )
 
   return (
@@ -228,6 +245,14 @@ export default function InternetExplorer() {
       <div className="flex-1 overflow-auto bg-white" data-ie-page>
         {site ? (
           site.render(go)
+        ) : webby ? (
+          <iframe
+            key={current}
+            data-ie-frame
+            src={waybackSrc}
+            title="The World Wide Web, 1996"
+            className="h-full w-full border-0"
+          />
         ) : (
           <div className="p-8" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
             <h1 className="mb-3 text-xl font-bold">The page cannot be displayed</h1>
