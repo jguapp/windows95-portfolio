@@ -285,7 +285,7 @@ export default function MsDos() {
 
   return (
     <div
-      className="h-full w-full overflow-auto bg-black p-1"
+      className="win95-mono h-full w-full overflow-auto bg-black p-1"
       ref={scrollRef}
       onClick={() => inputRef.current?.focus()}
       style={{ fontFamily: '"Courier New", monospace', fontSize: 14, lineHeight: 1.15, color: "#c0c0c0" }}

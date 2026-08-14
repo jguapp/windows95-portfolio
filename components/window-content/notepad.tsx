@@ -192,7 +192,7 @@ export default function Notepad() {
         onChange={(e) => setText(e.target.value)}
         spellCheck={false}
         wrap={wordWrap ? "soft" : "off"}
-        className="flex-1 resize-none border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white p-1 text-black outline-none"
+        className="win95-mono flex-1 resize-none border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white p-1 text-black outline-none"
         style={{
           fontFamily: '"Courier New", monospace',
           fontSize: 13,

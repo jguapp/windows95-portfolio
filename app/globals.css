@@ -117,6 +117,19 @@ body {
   font-family: "MS Sans Serif", "VT323", monospace !important;
 }
 
+/*
+  The monospace escape hatch.
+
+  The blanket rule above beats inline styles, so a textarea asking for Courier
+  New still rendered MS Sans Serif. That broke anything that relies on columns
+  lining up: Notepad (real Notepad used Fixedsys, which is fixed-width) and
+  the MS-DOS prompt. This wins because it comes later at equal specificity.
+*/
+.win95-mono,
+.win95-mono * {
+  font-family: "Courier New", "Courier", monospace !important;
+}
+
 #desktop {
   width: 100%;
   height: calc(100vh - 34px); /* Full height minus taskbar */

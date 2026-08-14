@@ -37,18 +37,21 @@ const f = (opts: { body?: string; opens?: string; size?: number; modified?: stri
 
 const d = (children: Record<string, FsNode>): FsDir => ({ kind: "dir", children })
 
-export const README_TEXT = `Welcome to my portfolio.
+export const README_TEXT = `WELCOME.TXT
+===========
 
-This whole desktop is a Next.js application: every window, the Start menu,
-the drag-and-drop, the games. Nothing here is a screenshot.
+This whole desktop is a Next.js application:
+every window, the Start menu, the drag-and-drop,
+the games. Nothing here is a screenshot.
 
 Things worth opening:
 
-  Resume      opens in Microsoft Word 95
-  My Projects opens YouTube, circa 2005
-  Contact Me  opens Outlook Express
-  Games       Chess, Solitaire, Tetris, Minesweeper and Pong
-  Paint       it draws, and it saves
+  Resume       Microsoft Word 95
+  My Projects  YouTube, circa 2005
+  Mail         Outlook Express
+  Games        Chess, Solitaire, Tetris,
+               Minesweeper and Pong
+  Paint        it draws, and it saves
 
 Try the Konami code on the desktop.
 
