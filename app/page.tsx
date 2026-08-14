@@ -296,8 +296,8 @@ export default function Home() {
       {/* The screensaver chosen in Display Properties, after the wait it sets. */}
       <Screensaver />
 
-      {/* The Office Assistant, a year early and entirely dismissible. */}
-      <Clippy activeWindow={activeWindow} />
+      {/* The Office Assistant, on the desktop only and entirely dismissible. */}
+      <Clippy desktopVisible={openWindows.every((w) => minimizedWindows.includes(w))} />
 
       {/* Winamp, loaded on first open */}
       {showWinamp && <Winamp onClose={() => setShowWinamp(false)} />}
