@@ -51,8 +51,8 @@ const MOVE_STEP = 8
 /** Six party rows have to fit between the text box's frame lines at 104 and
  *  144. Starting where the two move rows start put the sixth name on the
  *  bottom edge, so the list starts higher and steps tighter. */
-const PARTY_TOP = 110
-const PARTY_STEP = 6
+const PARTY_TOP = 113
+const PARTY_STEP = 5.5
 
 /**
  * Sprites are 28x28 grids drawn at two logical pixels each, filling the 56x56
@@ -115,33 +115,54 @@ function Sprite({ grid, x, y }: { grid: string[]; x: number; y: number }) {
   )
 }
 
-/** The Generation I bordered box: single-pixel frame, light fill. */
+/**
+ * The Generation I bordered box, from the components sheet: a two-pixel line
+ * with stepped corner curls, the frame every dialog in Red and Blue wore.
+ */
 function Box({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
+  const k = P[3]
   return (
     <>
       <rect x={x} y={y} width={w} height={h} fill={P[0]} />
-      <rect x={x} y={y} width={w} height={1} fill={P[3]} />
-      <rect x={x} y={y + h - 1} width={w} height={1} fill={P[3]} />
-      <rect x={x} y={y} width={1} height={h} fill={P[3]} />
-      <rect x={x + w - 1} y={y} width={1} height={h} fill={P[3]} />
+      {/* Edges, held back from the corners. */}
+      <rect x={x + 4} y={y + 1} width={w - 8} height={2} fill={k} />
+      <rect x={x + 4} y={y + h - 3} width={w - 8} height={2} fill={k} />
+      <rect x={x + 1} y={y + 4} width={2} height={h - 8} fill={k} />
+      <rect x={x + w - 3} y={y + 4} width={2} height={h - 8} fill={k} />
+      {/* Stepped corner curls. */}
+      <rect x={x + 2} y={y + 2} width={2} height={2} fill={k} />
+      <rect x={x + w - 4} y={y + 2} width={2} height={2} fill={k} />
+      <rect x={x + 2} y={y + h - 4} width={2} height={2} fill={k} />
+      <rect x={x + w - 4} y={y + h - 4} width={2} height={2} fill={k} />
     </>
   )
 }
 
+/**
+ * The HP gauge as the sheet draws it: HP in its own little cap, a framed
+ * channel with rounded ends, and the bar riding inside.
+ */
 function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
   const WIDTH = 48
   const filled = Math.max(0, Math.round(WIDTH * ratio))
   const shade = ratio > 0.5 ? P[2] : P[3]
   return (
     <>
-      <rect x={x - 1} y={y - 1} width={WIDTH + 2} height={5} fill={P[3]} />
-      <rect x={x} y={y} width={WIDTH} height={3} fill={P[0]} />
-      <rect x={x} y={y} width={filled} height={3} fill={shade} />
+      {/* The HP cap. */}
+      <text x={x - 14} y={y + 4} fill={P[3]} fontSize={6} className="font-pixel">
+        HP:
+      </text>
+      {/* The channel: 1px frame, ends stepped to read as rounded. */}
+      <rect x={x - 1} y={y - 1} width={WIDTH + 2} height={6} fill={P[3]} />
+      <rect x={x - 1} y={y - 1} width={1} height={1} fill={P[0]} />
+      <rect x={x + WIDTH} y={y - 1} width={1} height={1} fill={P[0]} />
+      <rect x={x - 1} y={y + 4} width={1} height={1} fill={P[0]} />
+      <rect x={x + WIDTH} y={y + 4} width={1} height={1} fill={P[0]} />
+      <rect x={x} y={y} width={WIDTH} height={4} fill={P[0]} />
+      <rect x={x} y={y + 1} width={filled} height={2} fill={shade} />
       {ratio <= 0.2 &&
-        // Dither the last stretch so a critical bar reads differently from a
-        // merely low one without using colour.
         Array.from({ length: filled }).map((_, i) =>
-          i % 2 === 0 ? <rect key={i} x={x + i} y={y} width={1} height={1} fill={P[0]} /> : null,
+          i % 2 === 0 ? <rect key={i} x={x + i} y={y + 1} width={1} height={1} fill={P[0]} /> : null,
         )}
     </>
   )
@@ -245,17 +266,11 @@ function Platform({ cx, cy, rx, ry }: { cx: number; cy: number; rx: number; ry: 
   return <g data-platform>{rows}</g>
 }
 
-function Label({ x, y, children, size = 8 }: { x: number; y: number; children: string; size?: number }) {
+function Label({ x, y, children, size = 7 }: { x: number; y: number; children: string; size?: number }) {
+  // Press Start 2P is the classic 8x8 arcade face, which is as close to the
+  // Game Boy character set as a web font gets.
   return (
-    <text
-      x={x}
-      y={y}
-      fill={P[3]}
-      fontSize={size}
-      fontFamily='"Courier New", monospace'
-      fontWeight="bold"
-      style={{ letterSpacing: 0.3 }}
-    >
+    <text x={x} y={y} fill={P[3]} fontSize={size} className="font-pixel">
       {children}
     </text>
   )
@@ -531,31 +546,25 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           {/* Opponent: front sprite upper right, status box upper left */}
           <Sprite grid={foe.species.sprite} x={96} y={0} />
           <Box x={4} y={12} w={86} h={26} />
-          <Label x={9} y={23}>
+          <Label x={9} y={23} size={6}>
             {foe.name}
           </Label>
-          <Label x={70} y={23}>
+          <Label x={68} y={23} size={6}>
             {`L${foe.level}`}
-          </Label>
-          <Label x={9} y={33} size={7}>
-            HP:
           </Label>
           <HpBar x={32} y={28} ratio={foe.hp / foe.maxHp} />
 
           {/* Player: back sprite lower left, status box lower right */}
           <Sprite grid={player.species.sprite} x={10} y={46} />
           <Box x={74} y={66} w={84} h={34} />
-          <Label x={79} y={77}>
+          <Label x={79} y={77} size={6}>
             {player.name}
           </Label>
-          <Label x={138} y={77}>
+          <Label x={136} y={77} size={6}>
             {`L${player.level}`}
           </Label>
-          <Label x={79} y={88} size={7}>
-            HP:
-          </Label>
           <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-          <Label x={104} y={97} size={7}>
+          <Label x={104} y={97} size={6}>
             {`${player.hp}/${player.maxHp}`}
           </Label>
 
@@ -611,27 +620,31 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {team.map((f, i) => (
                 <g key={f.name}>
                   {cursor === i && (
-                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={5}>
+                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={5}>
+                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
                     {`${f.name}${i === active ? " *" : ""}`}
                   </Label>
-                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={5}>
+                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
                     {f.hp === 0 ? "FNT" : `${f.hp}/${f.maxHp}`}
                   </Label>
                 </g>
               ))}
             </>
           ) : (
-            lines
-              .slice(0, 2)
-              .map((line, i) => (
+            <>
+              {lines.slice(0, 2).map((line, i) => (
                 <Label key={i} x={8} y={120 + i * 13}>
                   {line.trim()}
                 </Label>
-              ))
+              ))}
+              {/* The waiting arrow, blinking as it always did. */}
+              <path d="M150 138 l6 0 l-3 4 z" fill={P[3]}>
+                <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
+              </path>
+            </>
           )}
         </svg>
 
