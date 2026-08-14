@@ -97,6 +97,7 @@ export default function Pong({ onReturn }: PongProps) {
    */
   const cpuTargetRef = useRef(0)
   const cpuLatencyRef = useRef(0)
+  const scoreRef = useRef(score)
   const pausedRef = useRef(paused)
   const gameOverRef = useRef(gameOver)
   const difficultyRef = useRef(difficulty)
@@ -172,6 +173,7 @@ export default function Pong({ onReturn }: PongProps) {
     cpuLatencyRef.current = 0
 
     setScore({ player: 0, computer: 0 })
+    scoreRef.current = { player: 0, computer: 0 }
     setGameOver(false)
     setWinner(null)
     gameOverRef.current = false
@@ -335,6 +337,7 @@ export default function Pong({ onReturn }: PongProps) {
         // Computer scores
         setScore((prev) => {
           const newScore = { ...prev, computer: prev.computer + 1 }
+          scoreRef.current = newScore
 
           // Check for game over
           if (newScore.computer >= WINNING_SCORE) {
@@ -371,6 +374,7 @@ export default function Pong({ onReturn }: PongProps) {
         // Player scores
         setScore((prev) => {
           const newScore = { ...prev, player: prev.player + 1 }
+          scoreRef.current = newScore
 
           // Check for game over
           if (newScore.player >= WINNING_SCORE) {
@@ -489,8 +493,8 @@ export default function Pong({ onReturn }: PongProps) {
     ctx.textAlign = "center"
     ctx.textBaseline = "top"
     ctx.fillStyle = "#ffffff"
-    ctx.fillText(score.player.toString(), canvas.width / 2 - 60, 16)
-    ctx.fillText(score.computer.toString(), canvas.width / 2 + 60, 16)
+    ctx.fillText(scoreRef.current.player.toString(), canvas.width / 2 - 60, 16)
+    ctx.fillText(scoreRef.current.computer.toString(), canvas.width / 2 + 60, 16)
     ctx.textBaseline = "alphabetic"
 
     // Draw game over message
