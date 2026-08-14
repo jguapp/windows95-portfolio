@@ -41,6 +41,7 @@ const COMMANDS: Record<string, string> = {
   tetris: "games",
   pong: "games",
   games: "games",
+  winamp: "winamp",
   outlook: "contact",
   contact: "contact",
   resume: "resume",
