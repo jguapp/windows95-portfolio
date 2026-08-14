@@ -1213,68 +1213,105 @@ export default function Chess({ onReturn }: ChessProps) {
     }, difficulty === "hard" ? 700 : 500)
   }
 
-  // Render the start screen
+  /**
+   * The New Game dialog.
+   *
+   * This was a card with round blue and red badges reading 2P and AI on it,
+   * which is a decade and a half after the rest of the desktop. Windows 95
+   * asked this sort of question with a dialog: grouped boxes, radio buttons,
+   * and OK and Cancel at the bottom right. The pieces stand in for the
+   * swatches an options dialog would have shown.
+   */
   const renderStartScreen = () => {
+    const group = "border border-t-[#808080] border-l-[#808080] border-r-white border-b-white"
+
+    const Radio = ({
+      name,
+      checked,
+      onChange,
+      children,
+    }: {
+      name: string
+      checked: boolean
+      onChange: () => void
+      children: React.ReactNode
+    }) => (
+      <label className="flex cursor-default items-center gap-2 py-[3px]">
+        <input type="radio" name={name} checked={checked} onChange={onChange} />
+        {children}
+      </label>
+    )
+
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-4">
-        <div className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-6 shadow-md max-w-md w-full">
-          <div className="flex items-center justify-center mb-6">
-            <img src="/images/chess/king.png" alt="Chess" className="w-10 h-10 mr-3" />
-            <h2 className="text-xl font-bold text-center">Windows 95 Chess</h2>
+      <div className="flex h-full w-full items-center justify-center bg-[#c0c0c0] p-4">
+        <div
+          data-chess-newgame
+          className="w-[380px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]"
+        >
+          <div className="flex items-center bg-[#000080] px-1 py-[2px] text-white">
+            <img
+              src="/images/win95/chess-32.png"
+              alt=""
+              className="mr-1 h-4 w-4"
+              style={{ imageRendering: "pixelated" }}
+            />
+            <span className="px-1 font-bold">New Game</span>
           </div>
 
-          <div className="mb-8">
-            <h3 className="font-bold mb-3 text-center border-b border-gray-400 pb-1">Select Game Mode</h3>
-            <div className="grid grid-cols-1 gap-3 mt-4">
-              <button
-                className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-3 hover:bg-gray-300 active:border-t-[#5a5a5a] active:border-l-[#5a5a5a] active:border-r-white active:border-b-white flex items-center"
-                onClick={() => setGameMode("local")}
-              >
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                  2P
-                </div>
-                <span className="font-bold">Local Game (2 Players)</span>
-              </button>
-              <button
-                className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-3 hover:bg-gray-300 active:border-t-[#5a5a5a] active:border-l-[#5a5a5a] active:border-r-white active:border-b-white flex items-center"
-                onClick={() => setGameMode("bot")}
-              >
-                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                  AI
-                </div>
-                <span className="font-bold">Play Against Computer</span>
-              </button>
-            </div>
-          </div>
+          <div className="p-3">
+            {/* Opponent */}
+            <fieldset className={`mb-3 px-3 pb-2 ${group}`}>
+              <legend className="px-1">Opponent</legend>
+              <Radio name="opponent" checked={gameMode === "local"} onChange={() => setGameMode("local")}>
+                <span>
+                  <span className="underline">T</span>wo players, one keyboard
+                </span>
+              </Radio>
+              <Radio name="opponent" checked={gameMode === "bot"} onChange={() => setGameMode("bot")}>
+                <span>
+                  Play against the <span className="underline">c</span>omputer
+                </span>
+              </Radio>
+            </fieldset>
 
-          {gameMode && (
-            <div className="mb-8">
-              <h3 className="font-bold mb-3 text-center border-b border-gray-400 pb-1">Select Your Color</h3>
-              <div className="grid grid-cols-2 gap-4 mt-4">
+            {/* Colour. Disabled until an opponent is chosen, as a dialog would. */}
+            <fieldset
+              className={`mb-3 px-3 pb-2 ${group} ${gameMode ? "" : "text-[#808080]"}`}
+              disabled={!gameMode}
+            >
+              <legend className="px-1">Play as</legend>
+              <div className="flex gap-6 py-1">
                 <button
-                  className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-3 hover:bg-gray-300 active:border-t-[#5a5a5a] active:border-l-[#5a5a5a] active:border-r-white active:border-b-white flex flex-col items-center"
-                  onClick={() => startGame(gameMode, "white")}
+                  type="button"
+                  data-colour="white"
+                  onClick={() => gameMode && startGame(gameMode, "white")}
+                  className="flex flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                 >
-                  <div className="bg-gray-100 rounded-full p-2 mb-2">
-                    <img src="/images/chess/king.png" alt="White King" className="w-12 h-12" />
-                  </div>
-                  <span className="font-bold">White</span>
-                  <span className="text-xs mt-1">(Moves First)</span>
+                  <img src="/images/chess/king.png" alt="" className="h-10 w-10" />
+                  <span>
+                    <span className="underline">W</span>hite
+                  </span>
+                  <span className="text-[#404040]">moves first</span>
                 </button>
                 <button
-                  className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] p-3 hover:bg-gray-300 active:border-t-[#5a5a5a] active:border-l-[#5a5a5a] active:border-r-white active:border-b-white flex flex-col items-center"
-                  onClick={() => startGame(gameMode, "black")}
+                  type="button"
+                  data-colour="black"
+                  onClick={() => gameMode && startGame(gameMode, "black")}
+                  className="flex flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                 >
-                  <div className="bg-gray-800 rounded-full p-2 mb-2">
-                    <img src="/images/chess/king1.png" alt="Black King" className="w-12 h-12" />
-                  </div>
-                  <span className="font-bold">Black</span>
-                  <span className="text-xs mt-1">(Moves Second)</span>
+                  <img src="/images/chess/king1.png" alt="" className="h-10 w-10" />
+                  <span>
+                    <span className="underline">B</span>lack
+                  </span>
+                  <span className="text-[#404040]">moves second</span>
                 </button>
               </div>
-            </div>
-          )}
+            </fieldset>
 
+            <p className="text-[#404040]">
+              {gameMode ? "Choose a colour to begin." : "Choose an opponent first."}
+            </p>
+          </div>
         </div>
       </div>
     )

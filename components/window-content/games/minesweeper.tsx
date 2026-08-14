@@ -562,10 +562,10 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       </div>
 
       {/* The board sizes itself; the window does not stretch it. */}
-      <div className="flex flex-1 items-start justify-center overflow-auto p-3" onClick={() => setMenu(null)}>
+      <div className="flex flex-1 items-start overflow-auto p-3" onClick={() => setMenu(null)}>
         <div
           data-panel
-          className="p-[6px]"
+          className="mx-auto p-[6px]"
           style={{
             backgroundColor: "#c0c0c0",
             boxShadow: "inset -1px -1px 0 0 #808080, inset 1px 1px 0 0 #ffffff, inset -3px -3px 0 0 #808080, inset 3px 3px 0 0 #ffffff",
