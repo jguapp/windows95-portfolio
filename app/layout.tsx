@@ -30,7 +30,14 @@ export const metadata: Metadata = {
     description,
   },
   icons: {
-    icon: "/favicon.ico",
+    // The Windows 95 flag, lifted from the wallpaper the desktop already
+    // ships, so the tab carries the logo rather than a generic mark.
+    icon: [
+      { url: "/win95-flag-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/win95-flag-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/win95-flag-48.png", sizes: "48x48", type: "image/png" },
+    ],
+    apple: "/win95-flag-180.png",
   },
 }
 
