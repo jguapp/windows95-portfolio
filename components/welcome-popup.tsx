@@ -109,7 +109,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         <div
           ref={popupRef}
           id="win95-popup"
-          className="absolute w-[600px] max-w-[calc(100vw-16px)] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1000]"
+          className="absolute flex max-h-[calc(100dvh-44px)] w-[600px] max-w-[calc(100vw-16px)] flex-col border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1000]"
           style={panelStyle()}
         >
           <div
@@ -126,7 +126,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </button>
           </div>
 
-          <div className="win95-content p-[10px_12px] sm:p-[10px_20px]">
+          <div className="win95-content min-h-0 flex-1 overflow-auto p-[10px_12px] sm:p-[10px_20px]">
             <h1 className="text-base text-black mb-[15px] font-bold">Welcome to My Portfolio!</h1>
 
             <div className="info-container flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-5">
@@ -217,7 +217,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
 
       {showWhatsNew && (
         <div
-          className="absolute w-[400px] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1001]"
+          className="absolute flex max-h-[calc(100dvh-44px)] w-[400px] max-w-[calc(100vw-16px)] flex-col border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1001]"
           style={panelStyle(50)}
         >
           <div
@@ -234,7 +234,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </button>
           </div>
 
-          <div className="win95-content p-[10px_20px] max-h-[300px] overflow-auto">
+          <div className="win95-content min-h-0 flex-1 overflow-auto p-[10px_20px]">
             <h2 className="text-sm font-bold mb-2">Recent Updates</h2>
             <ul className="list-disc pl-5 text-xs mb-4">
               <li className="mb-1">Winamp, the real thing, with a synthesised opening track</li>
