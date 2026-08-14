@@ -28,7 +28,8 @@ export default function Taskbar({
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
   const [showVolume, setShowVolume] = useState(false)
-  /** Double-clicking the clock opened Date/Time Properties. People try it. */
+  /** The clock opens Date/Time Properties. Windows wanted a double click;
+   *  a single one is friendlier and costs nothing here. */
   const [showDateTime, setShowDateTime] = useState(false)
   /**
    * Mirrors the sound library so the panel reflects changes made anywhere.
@@ -202,7 +203,7 @@ export default function Taskbar({
             month: "long",
             year: "numeric",
           })}
-          onDoubleClick={() => setShowDateTime(true)}
+          onClick={() => setShowDateTime(true)}
           className="text-[13px] text-black bg-[#c0c0c0] px-2 h-full flex items-center justify-center"
           style={{ textShadow: "1px 1px 0 #ffffff" }}
         >
