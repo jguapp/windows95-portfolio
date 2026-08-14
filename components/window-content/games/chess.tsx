@@ -1285,7 +1285,7 @@ export default function Chess({ onReturn }: ChessProps) {
                   type="button"
                   data-colour="white"
                   onClick={() => gameMode && startGame(gameMode, "white")}
-                  className="flex flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                  className="flex flex-1 flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                 >
                   <img src="/images/chess/king.png" alt="" className="h-10 w-10" />
                   <span>
@@ -1297,7 +1297,7 @@ export default function Chess({ onReturn }: ChessProps) {
                   type="button"
                   data-colour="black"
                   onClick={() => gameMode && startGame(gameMode, "black")}
-                  className="flex flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                  className="flex flex-1 flex-col items-center gap-1 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-2 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                 >
                   <img src="/images/chess/king1.png" alt="" className="h-10 w-10" />
                   <span>
