@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
+import { play } from "@/lib/sound"
+import { useNarrowScreen } from "@/lib/use-narrow-screen"
 import AboutMe from "./window-content/about-me"
 import Resume from "./window-content/resume"
 import RetroYoutube from "./window-content/retro-youtube"
@@ -283,7 +285,27 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
   }, [isDragging, dragOffset, size.width, size.height])
 
   // Toggle maximize state
+  // A window makes a sound when it appears. Windows are mounted when they open
+  // and unmounted when they close, so mounting is the moment.
+  useEffect(() => {
+    play("windowOpen")
+  }, [])
+
+  /*
+    On a phone the window manager gets out of the way.
+
+    There is nowhere to drag a window to, no second window worth showing at
+    once, and no grip small enough to resize with a thumb. So a window fills
+    the screen above the taskbar and stays there: the content is the point,
+    not the chrome around it.
+  */
+  const narrow = useNarrowScreen()
+  useEffect(() => {
+    if (narrow) setIsMaximized(true)
+  }, [narrow])
+
   const toggleMaximize = () => {
+    play(isMaximized ? "minimize" : "maximize")
     setIsMaximized((wasMaximized) => {
       if (wasMaximized) {
         // Restore to the rect the window had before it was maximised.
@@ -374,11 +396,13 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
               aria-label="Minimize"
               onClick={(e) => {
                 e.stopPropagation()
+                play("minimize")
                 onMinimize()
               }}
             >
               <MinimizeIcon />
             </button>
+            {!narrow && (
             <button
               className={controlButtonClass}
               aria-label={isMaximized ? "Restore" : "Maximize"}
@@ -389,11 +413,13 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
             >
               <MaximizeIcon />
             </button>
+          )}
             <button
               className={controlButtonClass}
               aria-label="Close"
               onClick={(e) => {
                 e.stopPropagation()
+                play("windowClose")
                 onClose()
               }}
             >

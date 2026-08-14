@@ -109,7 +109,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
         <div
           ref={popupRef}
           id="win95-popup"
-          className="absolute w-[600px] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1000]"
+          className="absolute w-[600px] max-w-[calc(100vw-16px)] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[1000]"
           style={panelStyle()}
         >
           <div
@@ -126,10 +126,10 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             </button>
           </div>
 
-          <div className="win95-content p-[10px_20px]">
+          <div className="win95-content p-[10px_12px] sm:p-[10px_20px]">
             <h1 className="text-base text-black mb-[15px] font-bold">Welcome to My Portfolio!</h1>
 
-            <div className="info-container flex items-start gap-5">
+            <div className="info-container flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-5">
               <div className="info-box flex-1 border border-inset border-[#808080] bg-[#ffffe0] p-[10px] text-black leading-[1.4]">
                 <div className="info-content flex items-start gap-[10px]">
                   <Image
@@ -157,21 +157,21 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                 </div>
               </div>
 
-              <div className="buttons-container flex flex-col gap-[10px] items-stretch">
+              <div className="buttons-container flex flex-row flex-wrap gap-[10px] items-stretch sm:flex-col">
                 <button
-                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer w-[120px] hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer flex-1 min-w-[110px] sm:w-[120px] sm:flex-none hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                   onClick={toggleWhatsNew}
                 >
                   What's <u>N</u>ew
                 </button>
                 <button
-                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer w-[120px] hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer flex-1 min-w-[110px] sm:w-[120px] sm:flex-none hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                   onClick={handleOpenProjects}
                 >
                   <u>L</u>atest Projects
                 </button>
                 <button
-                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer w-[120px] hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                  className="win95-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer flex-1 min-w-[110px] sm:w-[120px] sm:flex-none hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
                   onClick={handleOpenContact}
                 >
                   Contact <u>M</u>e
@@ -206,7 +206,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               </span>
             </label>
             <button
-              className="win95-button close-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer w-[120px] hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+              className="win95-button close-button bg-[#c0c0c0] border border-t-white border-l-white border-r-[#404040] border-b-[#404040] text-xs text-black p-[5px_10px] text-center cursor-pointer flex-1 min-w-[110px] sm:w-[120px] sm:flex-none hover:bg-[#d0d0d0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
               onClick={onClose}
             >
               Close
