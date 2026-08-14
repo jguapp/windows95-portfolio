@@ -641,6 +641,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   // Initialize game on mount
   useEffect(() => {
     initGame()
+    // Deal once on mount. Depending on initGame would redeal the table
+    // whenever any of its inputs changed, mid-game.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Game menu options

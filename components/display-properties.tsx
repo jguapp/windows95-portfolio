@@ -187,6 +187,9 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
     }
 
     applyColorScheme()
+    // selectedBackground is read only to decide whether a scheme may repaint
+    // the desktop; changing wallpaper has its own effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColorScheme])
 
   // Desktop area: the slider maps onto the resolution table and applies as

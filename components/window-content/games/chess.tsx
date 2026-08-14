@@ -169,6 +169,9 @@ export default function Chess({ onReturn }: ChessProps) {
     if (gameMode) {
       initializeBoard()
     }
+    // initializeBoard is redefined each render; this only wants to deal a
+    // fresh board when the mode or colour actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameMode, playerColor])
 
   // Bot move effect
@@ -180,6 +183,9 @@ export default function Chess({ onReturn }: ChessProps) {
 
       return () => clearTimeout(botMoveTimeout)
     }
+    // makeBotMove closes over the live board; re-subscribing on its identity
+    // would fire a second bot move for the same turn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlayer, gameMode, isCheckmate, isStalemate])
 
   /**

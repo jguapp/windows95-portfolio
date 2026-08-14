@@ -6,20 +6,21 @@ interface KonamiCodeDetectorProps {
   onCodeEntered: () => void
 }
 
-export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetectorProps) {
-  const konamiCode = [
-    "ArrowUp",
-    "ArrowUp",
-    "ArrowDown",
-    "ArrowDown",
-    "ArrowLeft",
-    "ArrowRight",
-    "ArrowLeft",
-    "ArrowRight",
-    "b",
-    "a",
-  ]
+/** The sequence, hoisted so it is not a fresh array on every render. */
+const KONAMI_CODE = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+]
 
+export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetectorProps) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       const keyPressed = event.key.toLowerCase()
@@ -28,7 +29,7 @@ export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetector
       if (!konamiCodeElement) return
 
       const currentProgress = Number.parseInt(konamiCodeElement.getAttribute("data-progress") || "0")
-      const expectedKey = konamiCode[currentProgress].toLowerCase()
+      const expectedKey = KONAMI_CODE[currentProgress].toLowerCase()
 
       if (keyPressed === expectedKey) {
         // Correct key in sequence
@@ -36,7 +37,7 @@ export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetector
         konamiCodeElement.setAttribute("data-progress", newProgress.toString())
 
         // If completed the sequence
-        if (newProgress === konamiCode.length) {
+        if (newProgress === KONAMI_CODE.length) {
           konamiCodeElement.setAttribute("data-progress", "0")
           onCodeEntered()
         }
@@ -45,7 +46,7 @@ export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetector
         konamiCodeElement.setAttribute("data-progress", "0")
       }
     },
-    [onCodeEntered, konamiCode],
+    [onCodeEntered],
   )
 
   useEffect(() => {

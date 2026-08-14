@@ -369,6 +369,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         })
       })
     },
+    // The team and active index are read through their setters, so listing
+    // them would rebuild this callback mid-turn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [after, foe],
   )
 
@@ -418,6 +421,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         })
       })
     },
+    // Same: the foe list and both setters are used functionally.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [after, busy, foe, foeTurn, player],
   )
 

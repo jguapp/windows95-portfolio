@@ -74,6 +74,9 @@ export default function DesktopItem({
     if (!isDragging && position && (position.x !== currentPosition.x || position.y !== currentPosition.y)) {
       setCurrentPosition(position)
     }
+    // currentPosition is the value being compared against, not an input: it
+    // would re-fire this effect on its own result.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position, isDragging])
 
   // Update label if it changes from parent
@@ -81,6 +84,9 @@ export default function DesktopItem({
     if (label !== editedLabel && !isRenaming) {
       setEditedLabel(label)
     }
+    // Same shape: editedLabel is what the effect writes, so depending on it
+    // would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label, isRenaming])
 
   // Focus on input when renaming
@@ -212,6 +218,9 @@ export default function DesktopItem({
       window.removeEventListener("mousemove", handleGlobalMouseMove)
       window.removeEventListener("mouseup", handleGlobalMouseUp)
     }
+    // The move and up handlers are redefined every render; re-subscribing on
+    // each would drop a drag in progress.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging])
 
   // Handle clicks outside the rename input to submit
@@ -226,6 +235,9 @@ export default function DesktopItem({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
+    // handleRenameSubmit is recreated each render; the listener only needs the
+    // one captured when the rename began.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRenaming, editedLabel])
 
   // Get icon based on type

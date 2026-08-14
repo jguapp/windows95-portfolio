@@ -513,6 +513,9 @@ export default function Tetris({ onReturn }: TetrisProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
+    // togglePause is recreated each render; including it would rebind the
+    // key listener on every frame of a running game.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStarted, movePiece, dropPiece, rotatePiece, hardDrop, holdPiece, showHelp, showHighScores])
 
   // Game loop

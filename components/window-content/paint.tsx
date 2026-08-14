@@ -122,6 +122,8 @@ export default function Paint() {
     return () => {
       window.removeEventListener("resize", resizeCanvas)
     }
+    // The first snapshot only. undoStack is what this seeds, not an input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle text input focus when shown

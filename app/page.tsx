@@ -222,6 +222,9 @@ export default function Home() {
     return () => {
       window.removeEventListener("windowAction", handleWindowAction as EventListener)
     }
+    // The handlers close over state the listener reads through setters, so
+    // re-subscribing on every change would detach and reattach constantly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // If still booting, show boot sequence
