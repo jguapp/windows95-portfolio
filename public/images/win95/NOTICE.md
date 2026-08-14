@@ -39,3 +39,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## From Yuteoctober/wins95Portfolio (MIT)
+
+`ie-32.png`, `ie-16.png`, `winamp-32.png`, `contact-32.png`, `contact-16.png`
+and the Clippy animation frames in `../clippy/` are from
+https://github.com/Yuteoctober/wins95Portfolio, MIT licensed.
