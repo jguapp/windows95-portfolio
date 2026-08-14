@@ -69,6 +69,12 @@ const DEFAULT_ICONS: DesktopItemData[] = [
     type: "application",
   },
   {
+    id: "internet-explorer",
+    label: "The Internet",
+    icon: "/images/win95/ie-32.png",
+    type: "application",
+  },
+  {
     id: "winamp",
     label: "Winamp",
     icon: "/images/win95/winamp-32.png",
@@ -175,6 +181,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       "contact",
       "gallery",
       "games",
+      "internet-explorer",
       "winamp",
       "paint",
       "calculator",

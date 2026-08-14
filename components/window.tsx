@@ -19,6 +19,7 @@ import MsDos from "./window-content/ms-dos"
 import Explorer from "./window-content/explorer"
 import RecycleBinWindow from "./window-content/recycle-bin"
 import PatchNotes from "./window-content/patch-notes"
+import InternetExplorer from "./window-content/internet-explorer"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -76,6 +77,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   gallery: { width: 800, height: 600 },
   games: { width: 900, height: 680 },
   "patch-notes": { width: 640, height: 560 },
+  "internet-explorer": { width: 780, height: 580 },
 }
 
 const CURSOR: Record<ResizeEdge, string> = {
@@ -158,6 +160,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <Guestbook />
       case "patch-notes":
         return <PatchNotes />
+      case "internet-explorer":
+        return <InternetExplorer />
       default:
         return <div>Content not available</div>
     }

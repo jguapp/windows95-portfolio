@@ -42,6 +42,8 @@ const COMMANDS: Record<string, string> = {
   pong: "games",
   games: "games",
   winamp: "winamp",
+  iexplore: "internet-explorer",
+  ie: "internet-explorer",
   outlook: "contact",
   contact: "contact",
   resume: "resume",

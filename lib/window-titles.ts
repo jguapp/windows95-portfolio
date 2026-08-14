@@ -18,10 +18,12 @@ const TITLES: Record<string, string> = {
   resume: "Resume - Microsoft Word",
   contact: "Inbox - Outlook Express",
   "patch-notes": "Release Notes",
+  "internet-explorer": "Joel's Home Page - Microsoft Internet Explorer",
 }
 
 /** Short form for the taskbar button, which has far less room. */
 const TASKBAR_TITLES: Record<string, string> = {
+  "internet-explorer": "Internet Explorer",
   contact: "Inbox",
   notepad: "Readme.txt - Notepad",
   resume: "Resume",
@@ -53,6 +55,8 @@ const ICONS: Record<string, string> = {
   resume: "/images/win95/resume-16.png",
   projects: "/images/win95/projects-16.png",
   contact: "/images/win95/contact-16.png",
+  "internet-explorer": "/images/win95/ie-32.png",
+  "patch-notes": "/images/win95/notepad-16.png",
   gallery: "/images/win95/gallery-16.png",
   games: "/images/win95/games-16.png",
   paint: "/images/win95/paint-16.png",
