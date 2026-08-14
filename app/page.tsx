@@ -22,6 +22,7 @@ import dynamic from "next/dynamic"
 const Winamp = dynamic(() => import("@/components/winamp"), { ssr: false })
 
 import Shutdown from "@/components/shutdown"
+import { applyResolution, readResolution } from "@/lib/resolution"
 import { playWhenAllowed } from "@/lib/sound"
 import FontChecker from "@/components/font-checker"
 
@@ -48,6 +49,13 @@ export default function Home() {
     it instead means it goes off on the first thing the visitor does, which is
     as close as a page gets to a machine coming up.
   */
+  // A saved Desktop area choice applies as the desktop appears. Keyed on the
+  // boot flag because the shell root does not exist until the boot screen has
+  // gone; applying earlier hit a page that was not there yet.
+  useEffect(() => {
+    if (!isBooting) applyResolution(readResolution())
+  }, [isBooting])
+
   const handleBootComplete = useCallback(() => {
     setIsBooting(false)
     const cancel = playWhenAllowed("startup")
@@ -219,6 +227,7 @@ export default function Home() {
 
   return (
     <main
+      id="shell-root"
       className="h-screen w-full overflow-hidden relative"
       style={{
         backgroundColor: "#008080",

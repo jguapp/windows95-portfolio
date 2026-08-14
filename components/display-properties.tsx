@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/lib/screensavers"
+import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import SaverPreview from "@/components/saver-preview"
 
 interface DisplayPropertiesProps {
@@ -69,6 +70,7 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
     return saved || "tile" // center, tile, stretch
   })
   const [selectedScreenSaver, setSelectedScreenSaver] = useState<string>(() => readSaverSettings().saver)
+  const [resolution, setResolution] = useState<string>(() => readResolution())
   const [waitTime, setWaitTime] = useState(() => readSaverSettings().waitMinutes)
   const [passwordProtected, setPasswordProtected] = useState(false)
   const [selectedColorScheme, setSelectedColorScheme] = useState(() => {
@@ -186,6 +188,12 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
 
     applyColorScheme()
   }, [selectedColorScheme])
+
+  // Desktop area: the slider maps onto the resolution table and applies as
+  // it moves, the way the wallpaper preview does.
+  useEffect(() => {
+    applyResolution(resolution)
+  }, [resolution])
 
   /*
     The saver itself runs from the Screensaver component, which watches the
@@ -615,10 +623,22 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
 
             <div className="mb-3">
               <label className="block text-xs mb-1">Desktop area:</label>
-              <div className="flex items-center">
-                <span className="text-xs mr-1">640 by 480 pixels</span>
-                <input type="range" className="flex-1" />
-                <span className="text-xs ml-1">1024 by 768 pixels</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">Less</span>
+                <input
+                  type="range"
+                  data-resolution-slider
+                  min={0}
+                  max={RESOLUTIONS.length - 1}
+                  step={1}
+                  value={RESOLUTIONS.findIndex((r) => r.id === resolution)}
+                  onChange={(e) => setResolution(RESOLUTIONS[Number(e.target.value)].id)}
+                  className="flex-1"
+                />
+                <span className="text-xs">More</span>
+              </div>
+              <div className="mt-1 text-center text-xs" data-resolution-label>
+                {RESOLUTIONS.find((r) => r.id === resolution)?.label}
               </div>
             </div>
 
