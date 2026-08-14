@@ -37,8 +37,8 @@ const f = (opts: { body?: string; opens?: string; size?: number; modified?: stri
 
 const d = (children: Record<string, FsNode>): FsDir => ({ kind: "dir", children })
 
-export const README_TEXT = `WELCOME.TXT
-===========
+export const README_TEXT = `README.TXT
+==========
 
 This whole desktop is a Next.js application:
 every window, the Start menu, the drag-and-drop,
@@ -46,13 +46,17 @@ the games. Nothing here is a screenshot.
 
 Things worth opening:
 
-  Resume       Microsoft Word 95
-  My Projects  YouTube, circa 2005
-  Mail         Outlook Express
-  Games        Chess, Solitaire, Tetris,
-               Minesweeper and Pong
-  Paint        it draws, and it saves
+  Resume        Microsoft Word 95
+  My Projects   YouTube, circa 2005
+  Mail          Outlook Express
+  Games         Chess, Solitaire, Tetris,
+                Minesweeper, FreeCell,
+                Hearts, Reversi and Pong
+  The Internet  Explorer, and 1996 with it
+  Winamp        it really whips the llama
+  Paint         it draws, and it saves
 
+Ctrl+Alt+R opens Run.
 Try the Konami code on the desktop.
 
 - Joel
