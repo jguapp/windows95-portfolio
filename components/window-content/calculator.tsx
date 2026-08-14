@@ -133,13 +133,13 @@ export default function Calculator() {
     fresh.current = true
     setError(false)
     setDisplay("0")
-  }, [radix])
+  }, [])
 
   const clearEntry = useCallback(() => {
     fresh.current = true
     setError(false)
     setDisplay("0")
-  }, [radix])
+  }, [])
 
   /*
     Entry decides on the value it has and sets the display outright.
@@ -181,7 +181,7 @@ export default function Calculator() {
       const next = prev.slice(0, -1)
       return !next || next === "-" ? "0" : next
     })
-  }, [error, radix])
+  }, [error])
 
   const applyPending = useCallback((right: number): number => {
     const left = acc.current

@@ -34,13 +34,15 @@ const BUTTON =
   "min-w-[80px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white disabled:text-[#808080]"
 
 /** The sketch pad, at the size the entries display it. */
-const PAD_W = 480
-const PAD_H = 160
+const PAD_W = 420
+const PAD_H = 96
 
 export default function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  /** The compose form starts open; it folds away for reading. */
+  const [composing, setComposing] = useState(true)
   const [status, setStatus] = useState("")
   const [ephemeral, setEphemeral] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -134,11 +136,24 @@ export default function Guestbook() {
       style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
       data-guestbook
     >
-      <div className="border-b border-[#808080] px-3 py-2">
-        <div className="font-bold">Sign my guestbook</div>
-        <div className="text-[#404040]">
-          {entries.length === 1 ? "1 person has" : `${entries.length} people have`} signed so far.
+      <div className="flex items-center gap-2 border-b border-[#808080] px-3 py-2">
+        <div className="flex-1">
+          <div className="font-bold">Sign my guestbook</div>
+          <div className="text-[#404040]">
+            {entries.length === 1 ? "1 person has" : `${entries.length} people have`} signed so far.
+          </div>
         </div>
+        {/* Folding the form away gives the entries the whole window, which is
+            what you want once you are reading rather than writing. */}
+        <button
+          type="button"
+          data-toggle-form
+          aria-expanded={composing}
+          onClick={() => setComposing((v) => !v)}
+          className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+        >
+          {composing ? "Hide the form" : "Sign the book"}
+        </button>
       </div>
 
       {/* Entries */}
@@ -182,6 +197,7 @@ export default function Guestbook() {
       </div>
 
       {/* Form */}
+      {composing && (
       <form ref={formRef} onSubmit={submit} className="border-t border-white bg-[#c0c0c0] p-3">
         <div className="mb-2 flex gap-2">
           <label className="flex flex-1 items-center gap-2">
@@ -263,6 +279,7 @@ export default function Guestbook() {
           </div>
         )}
       </form>
+      )}
     </div>
   )
 }

@@ -523,13 +523,15 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           {/*
             One ball per creature, filled while it is still standing. Gen I put
             these beside each trainer's status box so you could see at a glance
-            how much of a team was left.
+            how much of a team was left. The opponent's row hangs below its box
+            and the player's sits above its own, since the player's box is the
+            lower of the two and a row under it would land in the text frame.
           */}
           {foes.map((f, i) => (
             <Ball key={`fb${i}`} x={7 + i * 7.5} y={40} alive={f.hp > 0} />
           ))}
           {team.map((f, i) => (
-            <Ball key={`pb${i}`} x={111 + i * 7.5} y={97} alive={f.hp > 0} />
+            <Ball key={`pb${i}`} x={111 + i * 7.5} y={59} alive={f.hp > 0} />
           ))}
 
           {/*

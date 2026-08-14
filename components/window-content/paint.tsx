@@ -1185,7 +1185,7 @@ export default function Paint() {
           repeating the same class string, which is why several of them disagreed
           about what "selected" looked like.
         */}
-        <div className="toolbar flex w-[104px] shrink-0 flex-col gap-1 border-r border-[#808080] bg-[#c0c0c0] p-1">
+        <div className="toolbar flex w-[120px] shrink-0 flex-col gap-1 border-r border-[#808080] bg-[#c0c0c0] p-1">
           <div className="grid grid-cols-2 gap-[2px]" data-tools>
             {TOOLS.map((entry) => (
               <button
@@ -1196,7 +1196,7 @@ export default function Paint() {
                 data-tool={entry.id}
                 data-selected={tool === entry.id ? "" : undefined}
                 onClick={() => handleToolSelect(entry.id)}
-                className="flex h-[45px] w-[45px] items-center justify-center bg-[#c0c0c0]"
+                className="flex h-[53px] w-[53px] items-center justify-center bg-[#c0c0c0]"
                 style={{
                   boxShadow:
                     tool === entry.id
@@ -1215,7 +1215,7 @@ export default function Paint() {
             className="mt-1 flex min-h-[64px] flex-col items-center gap-1 p-1"
             style={{ boxShadow: "inset 1px 1px 0 0 #808080, inset -1px -1px 0 0 #ffffff" }}
           >
-            {(tool === "brush" || tool === "airbrush" || tool === "eraser") &&
+            {(tool === "brush" || tool === "airbrush") &&
               [1, 3, 5, 8].map((size) => (
                 <button
                   key={size}
@@ -1231,7 +1231,29 @@ export default function Paint() {
                       display: "block",
                       width: size * 2 + 4,
                       height: size * 2 + 4,
-                      borderRadius: tool === "eraser" ? 0 : "50%",
+                      borderRadius: "50%",
+                      backgroundColor: lineWidth === size ? "#ffffff" : "#000000",
+                    }}
+                  />
+                </button>
+              ))}
+
+            {tool === "eraser" &&
+              [4, 8, 14, 22].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  data-size={size}
+                  aria-label={`Size ${size}`}
+                  onClick={() => setLineWidth(size)}
+                  className="flex h-[26px] w-[52px] items-center justify-center"
+                  style={{ backgroundColor: lineWidth === size ? "#000080" : "transparent" }}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      width: size,
+                      height: size,
                       backgroundColor: lineWidth === size ? "#ffffff" : "#000000",
                     }}
                   />

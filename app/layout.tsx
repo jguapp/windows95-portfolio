@@ -43,8 +43,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preload" href="/fonts/ms-sans-serif.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
       </head>
       <body className="font-['MS_Sans_Serif',sans-serif]">
         <Suspense>

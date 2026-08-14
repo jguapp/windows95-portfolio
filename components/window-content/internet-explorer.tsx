@@ -155,11 +155,12 @@ const SITES: Record<string, Site> = {
 }
 
 /**
- * Internet Explorer's real default home page of the era, served from the
- * archive the way every other address is. Joel's own page stays reachable
+ * The home page. Microsoft's own 1996 snapshot is archived in pieces and
+ * renders broken, so this opens on Yahoo, whose directory survived intact and
+ * is the page most people actually started at. Joel's page stays reachable
  * through the address bar and the WebRing.
  */
-const HOME = "http://home.microsoft.com/"
+const HOME = "http://www.yahoo.com/"
 
 /** Normalises whatever was typed into something the site table might hold. */
 function normalise(input: string): string {
