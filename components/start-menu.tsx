@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { messageBox } from "@/components/win95-dialog"
+import { STUB_PROGRAMS } from "@/components/window-content/stub-app"
 
 interface StartMenuProps {
   onOpenWindow: (id: string) => void
@@ -14,6 +15,9 @@ const SUBMENU_CLOSE_MS = 250
 
 export default function StartMenu({ onOpenWindow }: StartMenuProps) {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
+  /** The Accessories cascade inside Programs, tracked separately so leaving
+   *  it does not close Programs itself. */
+  const [accessoriesOpen, setAccessoriesOpen] = useState(false)
 
   // The shutdown flow lives in its own component; the menu only asks for it.
   const handleShutDown = () => {
@@ -88,6 +92,31 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <ul className="list-none m-0 p-0">
+                  <li
+                    className="relative hover:bg-[#000080] hover:text-white"
+                    onMouseEnter={() => setAccessoriesOpen(true)}
+                    onMouseLeave={() => setAccessoriesOpen(false)}
+                  >
+                    <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
+                      <img src="/images/win95/folder-closed-16.png" alt="Accessories" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
+                      <span className="text-sm">Accessories</span>
+                      <span className="ml-auto mr-2">&#9654;</span>
+                    </div>
+                    {accessoriesOpen && (
+                      <div className="absolute left-full top-0 w-[210px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]">
+                        <ul className="list-none m-0 p-0">
+                          {STUB_PROGRAMS.map((prog) => (
+                            <li key={prog.id} className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow(prog.id)}>
+                              <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[30px] cursor-pointer w-full">
+                                <img src={prog.icon} alt="" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />
+                                <span className="text-sm">{prog.name}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("about-me")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[40px] cursor-pointer w-full">
                       <img src="/images/win95/about-me-16.png" alt="About Me" className="mr-2 w-4 h-4" style={{ imageRendering: "pixelated" }} />

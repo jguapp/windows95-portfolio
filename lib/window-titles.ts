@@ -19,6 +19,15 @@ const TITLES: Record<string, string> = {
   contact: "Inbox - Outlook Express",
   "patch-notes": "Release Notes",
   "internet-explorer": "Joel's Home Page - Microsoft Internet Explorer",
+  wordpad: "Document - WordPad",
+  charmap: "Character Map",
+  mediaplayer: "Media Player",
+  soundrec: "Sound - Sound Recorder",
+  cdplayer: "CD Player",
+  phonedialer: "Phone Dialer",
+  hyperterm: "HyperTerminal",
+  scandisk: "ScanDisk - (C:)",
+  defrag: "Disk Defragmenter",
 }
 
 /** Short form for the taskbar button, which has far less room. */

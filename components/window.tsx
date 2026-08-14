@@ -20,6 +20,7 @@ import Explorer from "./window-content/explorer"
 import RecycleBinWindow from "./window-content/recycle-bin"
 import PatchNotes from "./window-content/patch-notes"
 import InternetExplorer from "./window-content/internet-explorer"
+import StubApp, { STUB_PROGRAMS } from "./window-content/stub-app"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -78,6 +79,15 @@ const DEFAULT_SIZE: Record<string, Size> = {
   games: { width: 900, height: 680 },
   "patch-notes": { width: 640, height: 560 },
   "internet-explorer": { width: 780, height: 580 },
+  wordpad: { width: 460, height: 340 },
+  charmap: { width: 460, height: 340 },
+  mediaplayer: { width: 460, height: 340 },
+  soundrec: { width: 460, height: 340 },
+  cdplayer: { width: 460, height: 340 },
+  phonedialer: { width: 460, height: 340 },
+  hyperterm: { width: 460, height: 340 },
+  scandisk: { width: 460, height: 340 },
+  defrag: { width: 460, height: 340 },
 }
 
 const CURSOR: Record<ResizeEdge, string> = {
@@ -162,8 +172,13 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <PatchNotes />
       case "internet-explorer":
         return <InternetExplorer />
-      default:
+      default: {
+        // The Windows 95 program set: stubs with the right icon and a line
+        // about what each was.
+        const stub = STUB_PROGRAMS.find((prog) => prog.id === id)
+        if (stub) return <StubApp program={stub} />
         return <div>Content not available</div>
+      }
     }
   }
 
