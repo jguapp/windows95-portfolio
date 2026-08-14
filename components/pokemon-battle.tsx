@@ -201,6 +201,35 @@ function Ground({
   return <Platform cx={cx} cy={feet - ry} rx={rx} ry={ry} />
 }
 
+/**
+ * The party marker: a tiny ball, drawn from the supplied pixel art.
+ * Alive is the full ball; fainted keeps only a dim outline.
+ */
+function Ball({ x, y, alive }: { x: number; y: number; alive: boolean }) {
+  // 8x8 grid: # outline, G grey cap, W white, . empty.
+  const rows = ["..####..", ".#GGGG#.", "#GGWGGG#", "#GGGGGG#", "#WWWWWW#", "#WWWWWW#", ".#WWWW#.", "..####.."]
+  const tone = (ch: string) => (ch === "#" ? P[3] : ch === "G" ? P[2] : P[0])
+  const cells: React.ReactElement[] = []
+  rows.forEach((row, j) => {
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i]
+      if (ch === ".") continue
+      if (!alive && ch !== "#") continue
+      cells.push(
+        <rect
+          key={`${i}-${j}`}
+          x={x + i * 0.75}
+          y={y + j * 0.75}
+          width={0.75}
+          height={0.75}
+          fill={alive ? tone(ch) : P[1]}
+        />,
+      )
+    }
+  })
+  return <g data-ball>{cells}</g>
+}
+
 /** A flat disc for a fighter to stand on, drawn a row at a time. */
 function Platform({ cx, cy, rx, ry }: { cx: number; cy: number; rx: number; ry: number }) {
   const rows = []
@@ -482,10 +511,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             how much of a team was left.
           */}
           {foes.map((f, i) => (
-            <rect key={`fb${i}`} x={8 + i * 5} y={40} width={3} height={3} fill={P[f.hp > 0 ? 3 : 1]} />
+            <Ball key={`fb${i}`} x={7 + i * 7.5} y={40} alive={f.hp > 0} />
           ))}
           {team.map((f, i) => (
-            <rect key={`pb${i}`} x={112 + i * 5} y={99} width={3} height={3} fill={P[f.hp > 0 ? 3 : 1]} />
+            <Ball key={`pb${i}`} x={111 + i * 7.5} y={97} alive={f.hp > 0} />
           ))}
 
           {/*
