@@ -1,116 +1,71 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import {
+  SAVER_CHANGE_EVENT,
+  makeSaver,
+  readSaverSettings,
+  type SaverSettings,
+} from "@/lib/screensavers"
 
 /**
  * The screensaver, after the desktop has been left alone.
  *
- * Windows 95 shipped Flying Windows as the default and a starfield beside it.
- * This is the starfield: points seeded around the centre and pushed outward,
- * which is how the original faked flying through space on hardware that could
- * not do anything more expensive.
+ * Which saver runs, and how long the desktop has to be idle first, comes from
+ * the Screen Saver tab of Display Properties. The renderers live in
+ * lib/screensavers so the dialog's preview monitor can run the very same code.
  *
  * It gets out of the way on any input at all, including a mouse move, because
- * a screensaver that needs to be dismissed is a bug rather than a feature.
+ * a screensaver that needs dismissing is a bug rather than a feature.
  */
-interface ScreensaverProps {
-  /** How long the desktop has to be idle first. */
-  idleMs?: number
-}
-
-interface Star {
-  x: number
-  y: number
-  z: number
-}
-
-const STAR_COUNT = 260
-/** How fast the field comes at you. Higher is faster. */
-const SPEED = 0.55
-
-export default function Screensaver({ idleMs = 120_000 }: ScreensaverProps) {
+export default function Screensaver() {
   const [active, setActive] = useState(false)
+  const [settings, setSettings] = useState<SaverSettings>({ saver: "starfield", waitMinutes: 2 })
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const frame = useRef(0)
-  const stars = useRef<Star[]>([])
+
+  // Pick up the stored choice, and follow changes made in Display Properties.
+  useEffect(() => {
+    const load = () => setSettings(readSaverSettings())
+    load()
+    window.addEventListener(SAVER_CHANGE_EVENT, load)
+    return () => window.removeEventListener(SAVER_CHANGE_EVENT, load)
+  }, [])
 
   // --- idle detection --------------------------------------------------------
   useEffect(() => {
+    if (settings.saver === "none") {
+      setActive(false)
+      return
+    }
     let timer: ReturnType<typeof setTimeout>
+    const idleMs = settings.waitMinutes * 60_000
 
     const arm = () => {
       clearTimeout(timer)
       timer = setTimeout(() => setActive(true), idleMs)
     }
-
     const wake = () => {
-      setActive((on) => {
-        if (on) return false
-        return on
-      })
+      setActive((on) => (on ? false : on))
       arm()
     }
 
     const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"] as const
     for (const e of events) window.addEventListener(e, wake, { passive: true })
     arm()
-
     return () => {
       clearTimeout(timer)
       for (const e of events) window.removeEventListener(e, wake)
     }
-  }, [idleMs])
+  }, [settings])
 
-  // --- the field -------------------------------------------------------------
-  const draw = useCallback(() => {
+  // --- drawing ---------------------------------------------------------------
+  useEffect(() => {
+    if (!active || settings.saver === "none") return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const w = canvas.width
-    const h = canvas.height
-    const cx = w / 2
-    const cy = h / 2
-
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = "#ffffff"
-
-    for (const star of stars.current) {
-      star.z -= SPEED
-      // Past the eye, so send it back to the far distance somewhere new.
-      if (star.z <= 1) {
-        star.x = Math.random() * 2 - 1
-        star.y = Math.random() * 2 - 1
-        star.z = 100
-      }
-
-      const k = 128 / star.z
-      const px = cx + star.x * k * w * 0.5
-      const py = cy + star.y * k * h * 0.5
-      if (px < 0 || px >= w || py < 0 || py >= h) {
-        star.z = 100
-        continue
-      }
-
-      // Nearer stars are bigger, which is the whole of the depth cue.
-      const size = Math.max(1, Math.round((1 - star.z / 100) * 3))
-      ctx.fillRect(Math.round(px), Math.round(py), size, size)
-    }
-
-    frame.current = requestAnimationFrame(draw)
-  }, [])
-
-  useEffect(() => {
-    if (!active) return
-
-    // Respect a visitor who has asked for less movement: show the black screen
-    // a real screensaver would, without the motion.
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
-    const canvas = canvasRef.current
-    if (!canvas) return
     const resize = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -118,37 +73,39 @@ export default function Screensaver({ idleMs = 120_000 }: ScreensaverProps) {
     resize()
     window.addEventListener("resize", resize)
 
-    stars.current = Array.from({ length: STAR_COUNT }, () => ({
-      x: Math.random() * 2 - 1,
-      y: Math.random() * 2 - 1,
-      z: Math.random() * 99 + 1,
-    }))
+    // A visitor who has asked for less movement gets the black screen a real
+    // saver would have shown, without the motion.
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ctx.fillStyle = "#000000"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    if (still) {
-      const ctx = canvas.getContext("2d")
-      if (ctx) {
-        ctx.fillStyle = "#000000"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+    let frame = 0
+    if (!still) {
+      const saver = makeSaver(settings.saver)
+      let last = performance.now()
+      const loop = (now: number) => {
+        const dt = Math.min(0.1, (now - last) / 1000)
+        last = now
+        saver.step(ctx, canvas.width, canvas.height, dt)
+        frame = requestAnimationFrame(loop)
       }
-    } else {
-      frame.current = requestAnimationFrame(draw)
+      frame = requestAnimationFrame(loop)
     }
 
     return () => {
-      cancelAnimationFrame(frame.current)
+      cancelAnimationFrame(frame)
       window.removeEventListener("resize", resize)
     }
-  }, [active, draw])
+  }, [active, settings])
 
-  if (!active) return null
+  if (!active || settings.saver === "none") return null
 
   return (
     <div
       data-screensaver
+      data-saver={settings.saver}
       className="fixed inset-0 z-[2000] cursor-none bg-black"
       aria-hidden
-      // Any click also dismisses it, which the window-level listener already
-      // covers; this is here so the element itself is never a dead spot.
       onPointerDown={() => setActive(false)}
     >
       <canvas ref={canvasRef} className="block h-full w-full" />

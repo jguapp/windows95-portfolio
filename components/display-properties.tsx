@@ -4,6 +4,8 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/lib/screensavers"
+import SaverPreview from "@/components/saver-preview"
 
 interface DisplayPropertiesProps {
   onClose: () => void
@@ -38,15 +40,8 @@ const backgroundImages = [
   },
 ]
 
-// Screen savers available in Windows 95
-const screenSavers = [
-  { id: "none", name: "(None)" },
-  { id: "mystify", name: "Mystify Your Mind" },
-  { id: "starfield", name: "Starfield Simulation" },
-  { id: "flying-windows", name: "Flying Windows" },
-  { id: "beziers", name: "Beziers" },
-  { id: "curves", name: "3D Flowers" },
-]
+// The savers the engine actually implements, plus none.
+const screenSavers = [{ id: "none", name: "(None)" }, ...SAVERS]
 
 // Color schemes
 const colorSchemes = [
@@ -73,14 +68,8 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
     const saved = localStorage.getItem("win95-background-pattern")
     return saved || "tile" // center, tile, stretch
   })
-  const [selectedScreenSaver, setSelectedScreenSaver] = useState(() => {
-    const saved = localStorage.getItem("win95-screensaver")
-    return saved || "none"
-  })
-  const [waitTime, setWaitTime] = useState(() => {
-    const saved = localStorage.getItem("win95-screensaver-wait")
-    return Number.parseInt(saved || "15", 10)
-  })
+  const [selectedScreenSaver, setSelectedScreenSaver] = useState<string>(() => readSaverSettings().saver)
+  const [waitTime, setWaitTime] = useState(() => readSaverSettings().waitMinutes)
   const [passwordProtected, setPasswordProtected] = useState(false)
   const [selectedColorScheme, setSelectedColorScheme] = useState(() => {
     const saved = localStorage.getItem("win95-color-scheme")
@@ -198,139 +187,13 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
     applyColorScheme()
   }, [selectedColorScheme])
 
-  // Add a new useEffect to handle screen saver settings
+  /*
+    The saver itself runs from the Screensaver component, which watches the
+    stored settings. This dialog only edits them. A private DOM-injected copy
+    of each saver used to run from here, duplicating app/page.tsx.
+  */
   useEffect(() => {
-    let screenSaverTimer: NodeJS.Timeout | null = null
-
-    // Function to start screen saver
-    const startScreenSaver = () => {
-      if (selectedScreenSaver === "none") return
-
-      // Create screen saver element
-      const screenSaverEl = document.createElement("div")
-      screenSaverEl.id = "win95-screensaver"
-      screenSaverEl.style.position = "fixed"
-      screenSaverEl.style.top = "0"
-      screenSaverEl.style.left = "0"
-      screenSaverEl.style.width = "100%"
-      screenSaverEl.style.height = "100%"
-      screenSaverEl.style.zIndex = "10000"
-      screenSaverEl.style.backgroundColor = "black"
-
-      // Add screen saver content based on selection
-      switch (selectedScreenSaver) {
-        case "mystify":
-          screenSaverEl.innerHTML = `
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
-              <div style="width:200px;height:200px;border:2px solid cyan;animation:rotate 5s linear infinite;"></div>
-              <div style="width:150px;height:150px;border:2px solid magenta;position:absolute;top:25px;left:25px;animation:rotate 7s linear infinite reverse;"></div>
-            </div>
-            <style>
-              @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            </style>
-          `
-          break
-        case "starfield": {
-          screenSaverEl.innerHTML = `
-            <div id="starfield" style="width:100%;height:100%;overflow:hidden;position:relative;"></div>
-            <style>
-              @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
-            </style>
-          `
-
-          // Scripts inserted via innerHTML never execute, so the stars have to
-          // be built directly rather than from an inline <script>.
-          const starfield = screenSaverEl.querySelector<HTMLElement>("#starfield")
-          if (starfield) {
-            for (let i = 0; i < 200; i++) {
-              const star = document.createElement("div")
-              star.style.position = "absolute"
-              star.style.width = "2px"
-              star.style.height = "2px"
-              star.style.backgroundColor = "white"
-              star.style.left = `${Math.random() * 100}%`
-              star.style.top = `${Math.random() * 100}%`
-              star.style.animation = `twinkle ${Math.random() * 5 + 1}s infinite`
-              starfield.appendChild(star)
-            }
-          }
-          break
-        }
-        case "flying-windows":
-          screenSaverEl.innerHTML = `
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
-              <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly1 10s infinite linear;"></div>
-              <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly2 8s infinite linear;"></div>
-              <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly3 12s infinite linear;"></div>
-            </div>
-            <style>
-              @keyframes fly1 { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(500px, 300px) rotate(360deg); } }
-              @keyframes fly2 { 0% { transform: translate(200px, 100px) rotate(0deg); } 100% { transform: translate(-300px, -200px) rotate(-360deg); } }
-              @keyframes fly3 { 0% { transform: translate(-100px, 200px) rotate(0deg); } 100% { transform: translate(400px, -300px) rotate(720deg); } }
-            </style>
-          `
-          break
-        default:
-          screenSaverEl.innerHTML = `<div style="color:white;text-align:center;padding-top:40vh;font-family:'MS Sans Serif',sans-serif;">Screen Saver</div>`
-      }
-
-      // Add click handler to exit screen saver
-      screenSaverEl.addEventListener("click", () => {
-        document.body.removeChild(screenSaverEl)
-        resetScreenSaverTimer()
-      })
-
-      // Add key handler to exit screen saver
-      screenSaverEl.addEventListener("keydown", () => {
-        if (document.body.contains(screenSaverEl)) {
-          document.body.removeChild(screenSaverEl)
-          resetScreenSaverTimer()
-        }
-      })
-
-      // Add the screen saver to the body
-      document.body.appendChild(screenSaverEl)
-    }
-
-    // Function to reset the screen saver timer
-    const resetScreenSaverTimer = () => {
-      if (screenSaverTimer) {
-        clearTimeout(screenSaverTimer)
-      }
-
-      if (selectedScreenSaver !== "none") {
-        screenSaverTimer = setTimeout(startScreenSaver, waitTime * 60 * 1000)
-      }
-    }
-
-    // Set up event listeners to reset the timer on user activity
-    const handleUserActivity = () => {
-      resetScreenSaverTimer()
-    }
-
-    // Only set up screen saver if it's not "none"
-    if (selectedScreenSaver !== "none") {
-      window.addEventListener("mousemove", handleUserActivity)
-      window.addEventListener("keydown", handleUserActivity)
-      window.addEventListener("click", handleUserActivity)
-
-      // Initial setup of timer
-      resetScreenSaverTimer()
-    }
-
-    // Save screen saver settings
-    localStorage.setItem("win95-screensaver", selectedScreenSaver)
-    localStorage.setItem("win95-screensaver-wait", waitTime.toString())
-
-    // Clean up
-    return () => {
-      if (screenSaverTimer) {
-        clearTimeout(screenSaverTimer)
-      }
-      window.removeEventListener("mousemove", handleUserActivity)
-      window.removeEventListener("keydown", handleUserActivity)
-      window.removeEventListener("click", handleUserActivity)
-    }
+    writeSaverSettings({ saver: selectedScreenSaver as SaverId | "none", waitMinutes: waitTime })
   }, [selectedScreenSaver, waitTime])
 
   // Start dragging the dialog
@@ -383,8 +246,7 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
     // Save all settings to localStorage
     localStorage.setItem("win95-background-image", selectedBackground)
     localStorage.setItem("win95-background-pattern", backgroundPattern)
-    localStorage.setItem("win95-screensaver", selectedScreenSaver)
-    localStorage.setItem("win95-screensaver-wait", waitTime.toString())
+    writeSaverSettings({ saver: selectedScreenSaver as SaverId | "none", waitMinutes: waitTime })
     localStorage.setItem("win95-color-scheme", selectedColorScheme)
 
     // Apply background image
@@ -658,30 +520,13 @@ export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
                 </div>
               </div>
 
-              {/* Preview */}
-              <div className="w-32 h-32 border border-[#808080] shadow-[inset_1px_1px_#000000] bg-black relative">
-                {selectedScreenSaver === "mystify" && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 border border-[#00ffff] animate-pulse"></div>
-                  </div>
-                )}
-                {selectedScreenSaver === "starfield" && (
-                  <div className="absolute inset-0">
-                    <div className="absolute w-1 h-1 bg-white top-5 left-10"></div>
-                    <div className="absolute w-1 h-1 bg-white top-15 left-20"></div>
-                    <div className="absolute w-1 h-1 bg-white top-8 left-18"></div>
-                    <div className="absolute w-1 h-1 bg-white top-12 left-8"></div>
-                    <div className="absolute w-1 h-1 bg-white top-20 left-16"></div>
-                    <div className="absolute w-1 h-1 bg-white top-16 left-5"></div>
-                  </div>
-                )}
-                {selectedScreenSaver === "flying-windows" && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-[#ffffff] bg-[#000080]"></div>
-                  </div>
-                )}
-                {selectedScreenSaver === "none" && (
-                  <div className="absolute inset-0 flex items-center justify-center text-white text-xs">(None)</div>
+              {/* Preview: the real renderer on a small canvas, so what the
+                  monitor shows is what full screen does. */}
+              <div className="w-40 h-32 border border-[#808080] shadow-[inset_1px_1px_#000000] bg-black">
+                {selectedScreenSaver === "none" ? (
+                  <div className="flex h-full items-center justify-center text-white text-xs">(None)</div>
+                ) : (
+                  <SaverPreview id={selectedScreenSaver as SaverId} />
                 )}
               </div>
             </div>

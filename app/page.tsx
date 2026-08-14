@@ -12,6 +12,16 @@ import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
 import RunDialog from "@/components/run-dialog"
 import Screensaver from "@/components/screensaver"
+import Clippy from "@/components/clippy"
+import dynamic from "next/dynamic"
+
+/*
+  Winamp is heavy, so the component (and the webamp library inside it) loads
+  only when someone opens it. ssr:false because webamp needs a window.
+*/
+const Winamp = dynamic(() => import("@/components/winamp"), { ssr: false })
+
+import Shutdown from "@/components/shutdown"
 import { playWhenAllowed } from "@/lib/sound"
 import FontChecker from "@/components/font-checker"
 
@@ -27,6 +37,8 @@ export default function Home() {
   const [isShutDown, setIsShutDown] = useState(false)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
   const [showRun, setShowRun] = useState(false)
+  const [showWinamp, setShowWinamp] = useState(false)
+  const [showShutdown, setShowShutdown] = useState(false)
 
   /*
     The startup chime.
@@ -45,6 +57,11 @@ export default function Home() {
   // Handle opening a window
   const handleOpenWindow = useCallback(
     (id: string) => {
+      // Winamp draws its own windows, so it never joins the window list.
+      if (id === "winamp") {
+        setShowWinamp(true)
+        return
+      }
       if (!openWindows.includes(id)) {
         setOpenWindows((prev) => [...prev, id])
       }
@@ -113,11 +130,14 @@ export default function Home() {
       }
     }
     const onRequest = () => setShowRun(true)
+    const onShutdown = () => setShowShutdown(true)
     window.addEventListener("keydown", onKey)
     window.addEventListener("openRun", onRequest)
+    window.addEventListener("openShutdown", onShutdown)
     return () => {
       window.removeEventListener("keydown", onKey)
       window.removeEventListener("openRun", onRequest)
+      window.removeEventListener("openShutdown", onShutdown)
     }
   }, [])
 
@@ -136,6 +156,12 @@ export default function Home() {
     }
   }, [handleOpenWindow])
 
+
+  /*
+    The screensaver lives in the Screensaver component, driven by the settings
+    the Display Properties dialog stores. A second, DOM-injected copy of each
+    saver used to be built here from innerHTML; one implementation is enough.
+  */
   // Close start menu when clicking elsewhere
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -151,136 +177,6 @@ export default function Home() {
     }
   }, [showStartMenu])
 
-  // Add a useEffect to initialize screen saver functionality
-  useEffect(() => {
-    // Load screen saver settings
-    const savedScreenSaver = localStorage.getItem("win95-screensaver")
-    const savedWaitTime = localStorage.getItem("win95-screensaver-wait")
-
-    if (savedScreenSaver && savedScreenSaver !== "none") {
-      let screenSaverTimer: NodeJS.Timeout | null = null
-      const waitTime = Number.parseInt(savedWaitTime || "15", 10)
-
-      // Function to start screen saver
-      const startScreenSaver = () => {
-        // Create screen saver element
-        const screenSaverEl = document.createElement("div")
-        screenSaverEl.id = "win95-screensaver"
-        screenSaverEl.style.position = "fixed"
-        screenSaverEl.style.top = "0"
-        screenSaverEl.style.left = "0"
-        screenSaverEl.style.width = "100%"
-        screenSaverEl.style.height = "100%"
-        screenSaverEl.style.zIndex = "10000"
-        screenSaverEl.style.backgroundColor = "black"
-
-        // Add screen saver content based on selection
-        switch (savedScreenSaver) {
-          case "mystify":
-            screenSaverEl.innerHTML = `
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
-                <div style="width:200px;height:200px;border:2px solid cyan;animation:rotate 5s linear infinite;"></div>
-                <div style="width:150px;height:150px;border:2px solid magenta;position:absolute;top:25px;left:25px;animation:rotate 7s linear infinite reverse;"></div>
-              </div>
-              <style>
-                @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-              </style>
-            `
-            break
-          case "starfield": {
-            screenSaverEl.innerHTML = `
-              <div id="starfield" style="width:100%;height:100%;overflow:hidden;position:relative;"></div>
-              <style>
-                @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
-              </style>
-            `
-
-            // Scripts inserted via innerHTML never execute, so the stars have
-            // to be built directly rather than from an inline <script>.
-            const starfield = screenSaverEl.querySelector<HTMLElement>("#starfield")
-            if (starfield) {
-              for (let i = 0; i < 200; i++) {
-                const star = document.createElement("div")
-                star.style.position = "absolute"
-                star.style.width = "2px"
-                star.style.height = "2px"
-                star.style.backgroundColor = "white"
-                star.style.left = `${Math.random() * 100}%`
-                star.style.top = `${Math.random() * 100}%`
-                star.style.animation = `twinkle ${Math.random() * 5 + 1}s infinite`
-                starfield.appendChild(star)
-              }
-            }
-            break
-          }
-          case "flying-windows":
-            screenSaverEl.innerHTML = `
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
-                <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly1 10s infinite linear;"></div>
-                <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly2 8s infinite linear;"></div>
-                <div style="width:100px;height:80px;border:2px solid white;background:#000080;position:absolute;animation:fly3 12s infinite linear;"></div>
-              </div>
-              <style>
-                @keyframes fly1 { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(500px, 300px) rotate(360deg); } }
-                @keyframes fly2 { 0% { transform: translate(200px, 100px) rotate(0deg); } 100% { transform: translate(-300px, -200px) rotate(-360deg); } }
-                @keyframes fly3 { 0% { transform: translate(-100px, 200px) rotate(0deg); } 100% { transform: translate(400px, -300px) rotate(720deg); } }
-              </style>
-            `
-            break
-          default:
-            screenSaverEl.innerHTML = `<div style="color:white;text-align:center;padding-top:40vh;font-family:'MS Sans Serif',sans-serif;">Screen Saver</div>`
-        }
-
-        // Add click handler to exit screen saver
-        screenSaverEl.addEventListener("click", () => {
-          document.body.removeChild(screenSaverEl)
-          resetScreenSaverTimer()
-        })
-
-        // Add key handler to exit screen saver
-        screenSaverEl.addEventListener("keydown", () => {
-          if (document.body.contains(screenSaverEl)) {
-            document.body.removeChild(screenSaverEl)
-            resetScreenSaverTimer()
-          }
-        })
-
-        // Add the screen saver to the body
-        document.body.appendChild(screenSaverEl)
-      }
-
-      // Function to reset the screen saver timer
-      const resetScreenSaverTimer = () => {
-        if (screenSaverTimer) {
-          clearTimeout(screenSaverTimer)
-        }
-
-        screenSaverTimer = setTimeout(startScreenSaver, waitTime * 60 * 1000)
-      }
-
-      // Set up event listeners to reset the timer on user activity
-      const handleUserActivity = () => {
-        resetScreenSaverTimer()
-      }
-
-      window.addEventListener("mousemove", handleUserActivity)
-      window.addEventListener("keydown", handleUserActivity)
-      window.addEventListener("click", handleUserActivity)
-
-      // Initial setup of timer
-      resetScreenSaverTimer()
-
-      // Clean up
-      return () => {
-        if (screenSaverTimer) {
-          clearTimeout(screenSaverTimer)
-        }
-        window.removeEventListener("mousemove", handleUserActivity)
-        window.removeEventListener("keydown", handleUserActivity)
-        window.removeEventListener("click", handleUserActivity)
-      }
-    }
-  }, [])
 
   // Add an event listener to handle window actions from the Resume component
   useEffect(() => {
@@ -388,8 +284,17 @@ export default function Home() {
       {/* Pokemon Battle */}
       {showPokemonBattle && <PokemonBattle onClose={() => setShowPokemonBattle(false)} />}
 
-      {/* Two minutes idle and the starfield takes over, as it did. */}
+      {/* The screensaver chosen in Display Properties, after the wait it sets. */}
       <Screensaver />
+
+      {/* The Office Assistant, a year early and entirely dismissible. */}
+      <Clippy activeWindow={activeWindow} />
+
+      {/* Winamp, loaded on first open */}
+      {showWinamp && <Winamp onClose={() => setShowWinamp(false)} />}
+
+      {/* Shut Down, ending on the amber screen */}
+      {showShutdown && <Shutdown onCancel={() => setShowShutdown(false)} />}
 
       {/* Run dialog, from the Start menu or Windows+R */}
       {showRun && <RunDialog onClose={() => setShowRun(false)} />}
