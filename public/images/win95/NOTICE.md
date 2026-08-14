@@ -48,5 +48,6 @@ https://github.com/Yuteoctober/wins95Portfolio, MIT licensed.
 
 ## From 1j01/98
 
-`ie-32.png` and `ie-16.png` are from https://github.com/1j01/98, the
+`ie-32.png`, `ie-16.png`, `wordpad-32.png`, `mediaplayer-32.png`,
+`soundrec-32.png` and `scandisk-32.png` are from https://github.com/1j01/98, the
 open-source Windows 98 recreation.
