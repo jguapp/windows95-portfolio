@@ -798,22 +798,20 @@ export default function RetroYoutube() {
             </div>
             <div className="t11" style={{ padding: 6, lineHeight: 1.5 }}>
               <p style={{ marginBottom: 6 }}>
-                <strong>jguapp</strong> &#8212; Joined 2005 (allegedly)
+                <strong>Name:</strong> Joel Vasquez
+                <br />
+                <strong>Channel Views:</strong> 12,847
+                <br />
+                <strong>Joined:</strong> March 2005
               </p>
               <p style={{ marginBottom: 6 }}>
-                I make backends. The unglamorous half: the queue that does not lose your job when a worker dies, the
-                cache that stops the same request being computed four times, the right-sizing engine that quietly
-                hands back $53.3K a year because nobody had checked what those pods actually needed.
+                Computer Science student at Baruch College, class of 2027, focused on backend and infrastructure
+                engineering. Software Engineer Intern at Liberty Mutual. Previously built AI agent pipelines at the
+                Robert Wood Johnson Foundation and data pipelines at the CUNY Institute for Demographic Research.
               </p>
               <p style={{ marginBottom: 6 }}>
-                Currently: Computer Science at Baruch, class of 2027. Previously: a summer at Liberty Mutual, a year
-                of AI agents at the Robert Wood Johnson Foundation, two years of data pipelines at CUNY. Also running
-                a ColorStack chapter that went from four people to three hundred.
-              </p>
-              <p style={{ marginBottom: 6 }}>
-                Things I will talk about for too long: why your Postgres connection pool is the problem, whether the
-                Solitaire win cascade counts as good UI, and the correct number of times to rewrite a side project
-                before shipping it. (Three. It is three.)
+                This channel collects my projects: distributed systems, APIs, developer tools and the occasional
+                game. Source for everything is on GitHub.
               </p>
               <p>
                 <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={LINK}>
