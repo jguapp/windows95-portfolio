@@ -120,16 +120,16 @@ Congratulations, and thank you for the disaster recovery work. 877 VMs is not a 
   },
   {
     id: 6,
-    fromName: "Sam Okonkwo",
-    from: "sam@nyumatflix.dev",
-    subject: "NyumatFlix - can you take a look at a PR?",
+    fromName: "Devon Ellis",
+    from: "devon@calligraphyqueue.dev",
+    subject: "Calligraphy - the dead letter queue filled up",
     date: "7/14/2026 1:30 AM",
     read: true,
-    body: `hey joel
+    body: `joel
 
-opened a PR against the streaming branch, the buffer logic is doing something weird under 3g throttling. i think it's the prefetch window but i've been staring at it for four hours
+the DLQ hit its cap overnight. turns out a malformed job was being retried, dead-lettered, and then a cleanup task was re-enqueueing it. infinite loop with extra steps
 
-no rush. or, some rush.`,
+i stopped the bleeding but the dedup check you suggested in feb would have caught this. writing it properly this weekend`,
   },
   {
     id: 7,
@@ -918,14 +918,14 @@ Four people in a library corner. Look at it now.`,
     id: 104,
     fromName: "Joel Vasquez",
     from: "jfvasq1@gmail.com",
-    subject: "RE: NyumatFlix - can you take a look at a PR?",
+    subject: "RE: Calligraphy - the dead letter queue filled up",
     date: "7/14/2026 8:30 AM",
     read: true,
-    body: `Looked at it over coffee.
+    body: `Morning. Classic poison-pill loop, glad it is contained.
 
-It is the prefetch window. You are prefetching against the manifest's advertised bitrate, but under throttling the player has already stepped down, so you fetch segments it will never play. Clamp the prefetch to the currently selected rendition and the buffer maths works again.
+Two things while you are in there: dedup on a content hash of the job payload, not the id, or the cleanup task will mint fresh ids forever. And alert on DLQ depth, not DLQ writes; depth is the number that means something is stuck.
 
-Left the same thing as a review comment with a suggested diff.`,
+Send me the PR when the dedup lands and I will look same day.`,
   },
   {
     id: 105,
@@ -1026,6 +1026,58 @@ This is a reminder of the reminder sent yesterday. You will receive one reminder
   },
 ]
 
+/**
+ * Half-written mail. Drafts are the folder where honesty lives: the messages
+ * you meant to send, kept mid-sentence the way real drafts are.
+ */
+const DRAFTS: Message[] = [
+  {
+    id: 301,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "RE: Speaker Invitation: WebDev Summit 2026",
+    date: "12/06/2025 11:40 PM",
+    read: true,
+    body: `Hi Michael,
+
+Thank you for the invitation. I would be glad to speak. For a topic I was thinking either "Building a desktop in a browser" or possibly
+
+[draft - not sent]`,
+  },
+  {
+    id: 302,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "thank you note - Prof. Vasquez",
+    date: "7/29/2026 12:04 AM",
+    read: true,
+    body: `Professor,
+
+I wanted to say properly that the letter means a lot. You have written more of my career than either of us
+
+this is too much. shorter. just say thank you and mean it
+
+[draft - not sent]`,
+  },
+  {
+    id: 303,
+    fromName: "Joel Vasquez",
+    from: "jfvasq1@gmail.com",
+    subject: "(no subject)",
+    date: "8/12/2026 2:17 AM",
+    read: true,
+    body: `ideas for the desktop, do not lose these
+
+- winamp. obviously
+- clippy but he leaves when you tell him
+- the amber shutdown screen
+- patch notes app that explains the whole thing
+- a fake internet for IE with a webring
+
+[draft - not sent]`,
+  },
+]
+
 type FolderId = "inbox" | "outbox" | "sent" | "deleted" | "drafts"
 
 const FOLDERS: { id: FolderId; label: string; icon: string }[] = [
@@ -1083,7 +1135,15 @@ export default function Contact() {
   const formRef = useRef<HTMLFormElement>(null)
 
   const shown =
-    folder === "inbox" ? messages : folder === "sent" ? sent : folder === "deleted" ? DELETED : []
+    folder === "inbox"
+      ? messages
+      : folder === "sent"
+        ? sent
+        : folder === "deleted"
+          ? DELETED
+          : folder === "drafts"
+            ? DRAFTS
+            : []
   const current = shown.find((m) => m.id === selected) ?? null
   const unread = messages.filter((m) => !m.read).length
 
