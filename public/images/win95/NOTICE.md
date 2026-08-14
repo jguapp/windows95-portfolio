@@ -42,6 +42,11 @@ SOFTWARE.
 
 ## From Yuteoctober/wins95Portfolio (MIT)
 
-`ie-32.png`, `ie-16.png`, `winamp-32.png`, `contact-32.png`, `contact-16.png`
+`winamp-32.png`, `contact-32.png`, `contact-16.png`
 and the Clippy animation frames in `../clippy/` are from
 https://github.com/Yuteoctober/wins95Portfolio, MIT licensed.
+
+## From 1j01/98
+
+`ie-32.png` and `ie-16.png` are from https://github.com/1j01/98, the
+open-source Windows 98 recreation.

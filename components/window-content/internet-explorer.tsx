@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { bumpVisitors } from "@/actions/visitors"
 
 /**
  * Internet Explorer, and the internet as it was.
@@ -22,6 +23,31 @@ interface Site {
 }
 
 const LINK = "cursor-pointer text-[#0000ee] underline"
+
+/**
+ * The hit counter, counting for real: one bump per page view, stored beside
+ * the guestbook. Zero-padded to six digits because that is the law.
+ */
+function VisitorCounter() {
+  const [count, setCount] = useState<number | null>(null)
+  useEffect(() => {
+    let live = true
+    bumpVisitors().then((n) => {
+      if (live) setCount(n)
+    })
+    return () => {
+      live = false
+    }
+  }, [])
+  return (
+    <p className="mb-2 text-sm">
+      You are visitor number:{" "}
+      <span data-visitor-count className="border border-[#808080] bg-black px-2 font-mono text-[#00ff00]">
+        {count === null ? "......" : String(count).padStart(6, "0")}
+      </span>
+    </p>
+  )
+}
 
 const SITES: Record<string, Site> = {
   "http://www.joel95.net/": {
@@ -77,9 +103,7 @@ const SITES: Record<string, Site> = {
           <strong> spacejam.com</strong>: the address bar serves the web as it looked in 1996,
           by way of the Internet Archive.
         </p>
-        <p className="mb-2 text-sm">
-          You are visitor number: <span className="border border-[#808080] bg-black px-2 font-mono text-[#00ff00]">013847</span>
-        </p>
+        <VisitorCounter />
         <p className="text-xs text-[#404040]">This page is under construction. It always will be.</p>
       </div>
     ),
@@ -130,7 +154,12 @@ const SITES: Record<string, Site> = {
   },
 }
 
-const HOME = "http://www.joel95.net/"
+/**
+ * Internet Explorer's real default home page of the era, served from the
+ * archive the way every other address is. Joel's own page stays reachable
+ * through the address bar and the WebRing.
+ */
+const HOME = "http://home.microsoft.com/"
 
 /** Normalises whatever was typed into something the site table might hold. */
 function normalise(input: string): string {
