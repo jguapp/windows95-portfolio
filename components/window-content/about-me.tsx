@@ -396,12 +396,10 @@ export default function AboutMe() {
                                 Hi there! I&apos;m Joel, a Computer Science student at Baruch College, graduating
                                 in 2027. I build backend and infrastructure: the things that have to keep working when
                                 nobody is watching them. This summer I&apos;m a Software Engineer Intern at Liberty
-                                Mutual, where I built a Kubernetes right-sizing engine that found $53.3K a year in
-                                savings and automated disaster recovery across 877 virtual machines. Before that I
-                                spent a year deploying AI agents at the Robert Wood Johnson Foundation and two years
-                                writing data pipelines at the CUNY Institute for Demographic Research. Outside work I
-                                run the ColorStack chapter here, which grew from four founding members to over three
-                                hundred, and I build things like the desktop you are reading this on.
+                                Mutual, where I'm building a Kubernetes right-sizing engine and an automated disaster recovery tool
+                                for virtual machines. Before that I spent a year deploying AI agents at the Robert Wood Johnson Foundation 
+                                and two years doing data work at the CUNY Institute for Demographic Research. Outside work I
+                                help run the ColorStack chapter here at Baruch, and I build things like the desktop you are reading this on.
                               </td>
                             </tr>
                           </tbody>
