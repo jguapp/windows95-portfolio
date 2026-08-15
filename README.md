@@ -28,7 +28,7 @@ No hero section. No parallax. Just a teal desktop, a Start menu, and a resume th
 
 </div>
 
-Not a PDF embed. A working Word 95 window: two toolbars, a ruler with indent markers, a status bar that tracks the caret, and an editable page sitting on the grey workspace. Change the font, resize the text, insert a table, run a spell check, zoom the page.
+Not a PDF embed. A working Word 95 window: two toolbars, a ruler with indent markers, a status bar that tracks the caret, and an editable page sitting on the grey workspace. Change the font, resize the text, insert a table, run a spell check, zoom the page. Print it for real, or save it as Word, PDF or HTML.
 
 <div align="center">
 <img src=".github/assets/resume.png" alt="The resume rendered inside a Microsoft Word 95 window" width="90%" />
@@ -125,7 +125,7 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 
 | | |
 | --- | --- |
-| **Winamp** | the real 2.9 skin engine, whipping the llama, with a synthesised opening track |
+| **Winamp** | the real 2.9 skin engine, whipping the llama, with a synthesised opening track; the eject button takes your own MP3s |
 | **Internet Explorer** | carries its own little internet, hit counter included |
 | **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle with party menus, a real item bag, and back sprites |
 | **Ctrl+Alt+R** | Run takes the real names: `calc`, `winmine`, `sol`, `mspaint`, `iexplore` |

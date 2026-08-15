@@ -184,7 +184,10 @@ keyboard with an Alt+Q window switcher. A polish pass followed: the Appearance
 tab gained schemes that truly recolor the shell, the wallpaper set became drawn
 imitations of what the box shipped, the tray monitor grew a QuickRes menu, and
 two hit counters in the guestbook's database gave Clippy and the 1996 home page
-one real number each. The plan was never written down in advance; the constant was a rule
+one real number each. The last strokes: Word saves as Word and PDF, Winamp
+takes the visitor's own files, the drive's Readme became the guide to the
+hidden features, and the start menu banner and desktop context menu took
+their reference look from the Yuteoctober recreation. The plan was never written down in advance; the constant was a rule
 of thumb, that anything on screen should behave the way 1995 did, and where the original
 was worse than useless (an unwinnable Pong bot, a title bar inside a title bar) the fix
 follows what Windows would have done.</p>
@@ -255,7 +258,7 @@ boxed in. The idle watcher rearms on any input and honours reduced motion.</p>
 <h3>Persistence</h3>
 <p>The virtual drive in <code>lib/filesystem.ts</code> hydrates from localStorage on
 first read and writes itself back on every mutation, under a version-salted key
-(<code>win95:fs:v1</code>) so a change to the shipped default tree can discard stale
+(<code>win95:fs:v2</code>) so a change to the shipped default tree can discard stale
 snapshots by bumping the version. Desktop items a visitor creates persist with their
 positions under <code>win95:desktop-items:v1</code>; the default icons deliberately
 reset to the grid on every load so a dragged icon cannot be lost. Paint's Save to
@@ -327,7 +330,7 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
     <td><code>win95-background-image</code>, <code>win95-background-pattern</code>,
         <code>win95-color-scheme</code>, <code>win95-screensaver</code>,
         <code>win95-screensaver-wait</code>, <code>win95-resolution</code>,
-        <code>win95:fs:v1</code> (the drive), <code>win95:desktop-items:v1</code>
+        <code>win95:fs:v2</code> (the drive), <code>win95:desktop-items:v1</code>
         (created icons), <code>win95:scores:*</code> (game high scores),
         <code>win95:visitor</code> (your visitor number),
         <code>win95:persist</code> (whether work is remembered)</td></tr>

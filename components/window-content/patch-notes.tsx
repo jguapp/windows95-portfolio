@@ -23,7 +23,7 @@ const RELEASES: Release[] = [
     title: "The big one",
     notes: [
       "The games grew from five to eight: FreeCell with the original deal numbering, Hearts and Reversi joined; Solitaire ends in the cascade, Minesweeper drew its LED counters, and high scores survive a refresh.",
-      "Winamp, the real 2.9 skin engine, whipping the llama with a synthesised opening track.",
+      "Winamp, the real 2.9 skin engine, whipping the llama with a synthesised opening track, and an eject button that takes your own music.",
       "Clippit at the bottom right: contextual tips, forty-plus lines, dismissible for good, and he knows your visitor number.",
       "A real C: drive. Notepad, MS-DOS, Explorer and Find share one tree; Find searches names and file contents.",
       "Saving is your choice: check the box on the welcome dialog and files, drawings and desktop icons survive between visits.",
