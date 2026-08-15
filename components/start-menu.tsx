@@ -64,22 +64,26 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
       className="absolute bottom-[28px] left-0 w-[250px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)] z-[200] text-sm"
     >
       <div className="flex h-full">
-        {/* The sidebar banner. Windows anchored it at the bottom and let it
-            grow upward; centring it vertically was never the look. */}
-        {/* The sidebar: a dark band with Windows95 reading bottom to top,
-            flush against the bottom, exactly as the original set it. */}
-        <div className="relative w-[26px] bg-[#7f7f7f]">
+        {/*
+          The sidebar banner, as the original drew it: a black band down the
+          left with the wordmark reading bottom to top from the bottom edge,
+          "Windows" in silver and "95" in white, in a condensed gothic face.
+          Centring it vertically or washing it in gray was never the look.
+        */}
+        <div className="relative w-[26px] overflow-hidden" style={{ backgroundColor: "#000000" }} data-start-banner>
           <span
-            className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap font-bold text-white"
+            className="absolute bottom-[6px] left-1/2 whitespace-nowrap"
             style={{
               writingMode: "vertical-rl",
               transform: "translateX(-50%) rotate(180deg)",
-              fontSize: 18,
-              letterSpacing: 1,
-              fontFamily: '"Franklin Gothic Medium", "Arial Narrow", sans-serif',
+              fontSize: 20,
+              lineHeight: 1,
+              fontWeight: 700,
+              fontFamily: '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif',
             }}
           >
-            Windows<span className="font-normal">95</span>
+            <span style={{ color: "#7f7f7f" }}>Windows</span>
+            <span style={{ color: "#ffffff" }}>95</span>
           </span>
         </div>
 
