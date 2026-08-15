@@ -53,14 +53,12 @@ const SCALE = 6
  * the very bottom edge of the screen, so it was drawn off the panel and could
  * not be read. These keep all four inside the box.
  */
-const MOVE_TOP = 113
+const MOVE_TOP = 116
 const MOVE_STEP = 8
 
 /** Six party rows have to fit between the text box's frame lines at 104 and
  *  144. Starting where the two move rows start put the sixth name on the
  *  bottom edge, so the list starts higher and steps tighter. */
-const PARTY_TOP = 112
-const PARTY_STEP = 5.8
 
 /**
  * Sprites are 28x28 grids drawn at two logical pixels each, filling the 56x56
@@ -112,10 +110,10 @@ function runs(grid: string[]) {
   return out
 }
 
-function Sprite({ grid, x, y }: { grid: string[]; x: number; y: number }) {
+function Sprite({ grid, x, y, scale = 2 }: { grid: string[]; x: number; y: number; scale?: number }) {
   const cells = useMemo(() => runs(grid), [grid])
   return (
-    <g transform={`translate(${x} ${y}) scale(2)`}>
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
       {cells.map((c, i) => (
         <rect key={i} x={c.x} y={c.y} width={c.w} height={1} fill={P[c.shade]} />
       ))}
@@ -173,6 +171,55 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
           i % 2 === 0 ? <rect key={i} x={x + i} y={y + 1} width={1} height={1} fill={P[0]} /> : null,
         )}
     </>
+  )
+}
+
+/**
+ * A fighter seen from behind.
+ *
+ * Red and Blue drew dedicated back sprites; at 28 pixels those were the same
+ * silhouette with the face gone and the shading kept. That is exactly what
+ * this computes: mirror the stance, keep the outline, and flatten highlights
+ * and dark face marks into the mid shades so the eyes disappear.
+ */
+function backView(grid: string[]): string[] {
+  const height = grid.length
+  const width = Math.max(...grid.map((row) => row.length))
+  const cells = grid.map((row) => [...row.padEnd(width, ".")].reverse())
+  const empty = (r: number, c: number) => cells[r][c] === "." || cells[r][c] === " "
+
+  /*
+    Eyes and mouths are often unpainted holes inside the ink, showing the
+    background through, so flattening painted pixels alone leaves the face
+    staring out of the back. A flood fill from the frame marks the true
+    outside; every other empty cell is a hole and gets skinned over.
+  */
+  const outside = Array.from({ length: height }, () => Array<boolean>(width).fill(false))
+  const stack: [number, number][] = []
+  for (let r = 0; r < height; r++) {
+    for (const c of [0, width - 1]) if (empty(r, c)) stack.push([r, c])
+  }
+  for (let c = 0; c < width; c++) {
+    for (const r of [0, height - 1]) if (empty(r, c)) stack.push([r, c])
+  }
+  while (stack.length) {
+    const [r, c] = stack.pop() as [number, number]
+    if (r < 0 || r >= height || c < 0 || c >= width || outside[r][c] || !empty(r, c)) continue
+    outside[r][c] = true
+    stack.push([r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1])
+  }
+
+  const isOutside = (r: number, c: number) => r < 0 || r >= height || c < 0 || c >= width || outside[r][c]
+  return cells.map((row, r) =>
+    row
+      .map((ch, c) => {
+        if (outside[r][c]) return "."
+        const boundary = isOutside(r - 1, c) || isOutside(r + 1, c) || isOutside(r, c - 1) || isOutside(r, c + 1)
+        if (boundary) return "3"
+        if (empty(r, c)) return "2"
+        return ch === "0" || ch === "3" ? "2" : ch
+      })
+      .join(""),
   )
 }
 
@@ -284,7 +331,7 @@ function Label({ x, y, children, size = 7 }: { x: number; y: number; children: s
   )
 }
 
-type Phase = "menu" | "fight" | "switch" | "message" | "over"
+type Phase = "menu" | "fight" | "party" | "items" | "message" | "over"
 
 interface PokemonBattleProps {
   onClose: () => void
@@ -315,6 +362,17 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     [foeActive],
   )
 
+  /** The bag. Using one takes the turn, which is what an item costs. */
+  const [items, setItems] = useState([
+    { name: "POTION", heal: 20, count: 3 },
+    { name: "SUPER POTION", heal: 50, count: 2 },
+    { name: "FULL RESTORE", heal: 999, count: 1 },
+  ])
+  /** Ball rows show during the opening only, as the originals did. */
+  const [introDone, setIntroDone] = useState(false)
+  /** The prompt line of the party and item screens; rejections land here. */
+  const [note, setNote] = useState<string | null>(null)
+
   const [phase, setPhase] = useState<Phase>("message")
   const [message, setMessage] = useState(`Enemy ${SPECIES[FOE_TEAM[0]].name} sent out!`)
   const [cursor, setCursor] = useState(0)
@@ -331,7 +389,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     const opening = setTimeout(() => {
       setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
       cry(SPECIES[PLAYER_TEAM[0]].cry)
-      const ready = setTimeout(() => setPhase("menu"), 1100)
+      const ready = setTimeout(() => {
+        setIntroDone(true)
+        setPhase("menu")
+      }, 1100)
       timers.current.push(ready)
     }, 1300)
     timers.current.push(opening)
@@ -353,6 +414,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         setPlayer((p) => ({ ...p, hp }))
         after(700, () => {
           if (hp !== 0) {
+            setCursor(0)
             setPhase("menu")
             setBusy(false)
             return
@@ -370,6 +432,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             setMessage(`Go! ${team[next].name}!`)
             cry(team[next].species.cry)
             after(900, () => {
+              setCursor(0)
               setPhase("menu")
               setBusy(false)
             })
@@ -422,6 +485,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             setMessage(`Enemy sent out ${foes[next].name}!`)
             cry(foes[next].species.cry)
             after(900, () => {
+              setCursor(0)
               setPhase("menu")
               setBusy(false)
             })
@@ -443,11 +507,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const switchTo = useCallback(
     (index: number) => {
       if (index === active) {
-        setMessage(`${team[index].name} is already out!`)
+        setNote(`${team[index].name} is already out!`)
         return
       }
       if (team[index].hp === 0) {
-        setMessage(`${team[index].name} has no energy left!`)
+        setNote(`${team[index].name} has no energy left!`)
         return
       }
 
@@ -459,6 +523,33 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       after(1000, () => foeTurn(team[index].hp))
     },
     [active, after, foeTurn, team],
+  )
+
+  const applyItem = useCallback(
+    (index: number) => {
+      if (busy) return
+      const item = items[index]
+      if (item.count === 0) {
+        setNote("There is none left!")
+        return
+      }
+      if (player.hp === player.maxHp) {
+        setNote("It won't have any effect.")
+        return
+      }
+      setBusy(true)
+      setPhase("message")
+      setItems((list) => list.map((it, i) => (i === index ? { ...it, count: it.count - 1 } : it)))
+      const healed = Math.min(player.maxHp, player.hp + item.heal)
+      setMessage(`JOEL used ${item.name}!`)
+      sfx.menu()
+      after(900, () => {
+        setPlayer((f) => ({ ...f, hp: Math.min(f.maxHp, f.hp + item.heal) }))
+        setMessage(`${player.name}'s HP was restored!`)
+        after(1000, () => foeTurn(healed))
+      })
+    },
+    [after, busy, foeTurn, items, player, setPlayer],
   )
 
   const run = useCallback(() => {
@@ -478,26 +569,41 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       }
       if (busy || phase === "message") return
 
-      const count = phase === "menu" ? 4 : phase === "switch" ? team.length : player.moves.length
-      if (e.key === "ArrowDown") setCursor((c) => (c + 1) % count)
-      else if (e.key === "ArrowUp") setCursor((c) => (c - 1 + count) % count)
-      else if (e.key === "Enter" || e.key.toLowerCase() === "z") {
+      const count =
+        phase === "menu" ? 4 : phase === "party" ? team.length : phase === "items" ? items.length + 1 : player.moves.length
+      if (e.key === "ArrowDown") {
+        setCursor((c) => (c + 1) % count)
+        setNote(null)
+      } else if (e.key === "ArrowUp") {
+        setCursor((c) => (c - 1 + count) % count)
+        setNote(null)
+      } else if (e.key === "Enter" || e.key.toLowerCase() === "z") {
         if (phase === "menu") {
           if (cursor === 0) {
             setPhase("fight")
             setCursor(0)
           } else if (cursor === 1) {
-            setPhase("switch")
+            setNote(null)
+            setPhase("party")
             setCursor(active)
-          } else if (cursor === 3) run()
-          else setMessage("There's a time and place for everything!")
-        } else if (phase === "switch") {
+          } else if (cursor === 2) {
+            setNote(null)
+            setPhase("items")
+            setCursor(0)
+          } else run()
+        } else if (phase === "party") {
           switchTo(cursor)
+        } else if (phase === "items") {
+          // The last row is CANCEL, as the original menu had.
+          if (cursor === items.length) {
+            setPhase("menu")
+            setCursor(0)
+          } else applyItem(cursor)
         } else {
           performMove(cursor)
         }
       } else if (e.key.toLowerCase() === "x" || e.key === "Backspace") {
-        if (phase === "fight" || phase === "switch") {
+        if (phase === "fight" || phase === "party" || phase === "items") {
           setPhase("menu")
           setCursor(0)
         }
@@ -505,7 +611,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [active, busy, cursor, onClose, phase, player.moves.length, run, performMove, switchTo, team.length])
+  }, [active, busy, cursor, items.length, onClose, phase, player.moves.length, run, performMove, switchTo, team.length, applyItem])
 
   /** FIGHT and PKMN fill the left column, ITEM and RUN the right. */
   const MENU = [
@@ -514,6 +620,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     { label: "ITEM", index: 2, col: 1, row: 0 },
     { label: "RUN", index: 3, col: 1, row: 1 },
   ]
+
+  const playerBack = useMemo(() => backView(player.species.sprite), [player.species])
 
   // Size-6 glyphs advance 6 units, so 24 characters end at x=152 of 160.
   const lines = message.match(/.{1,24}(\s|$)/g) ?? [message]
@@ -535,18 +643,20 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           <rect width={SCREEN_W} height={SCREEN_H} fill={P[0]} />
 
           {/*
-            One ball per creature, filled while it is still standing. Gen I put
-            these beside each trainer's status box so you could see at a glance
-            how much of a team was left. The opponent's row hangs below its box
-            and the player's sits above its own, since the player's box is the
-            lower of the two and a row under it would land in the text frame.
+            One ball per creature, filled while it is still standing. Red and
+            Blue showed these during the opening and cleared them once the
+            fight was on, so they appear here only until the first menu.
           */}
-          {foes.map((f, i) => (
-            <Ball key={`fb${i}`} x={7 + i * 7.5} y={40} alive={f.hp > 0} />
-          ))}
-          {team.map((f, i) => (
-            <Ball key={`pb${i}`} x={111 + i * 7.5} y={59} alive={f.hp > 0} />
-          ))}
+          {!introDone && (
+            <>
+              {foes.map((f, i) => (
+                <Ball key={`fb${i}`} x={7 + i * 7.5} y={40} alive={f.hp > 0} />
+              ))}
+              {team.map((f, i) => (
+                <Ball key={`pb${i}`} x={111 + i * 7.5} y={59} alive={f.hp > 0} />
+              ))}
+            </>
+          )}
 
           {/*
             The ground each fighter stands on.
@@ -557,32 +667,35 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             like they are standing at different distances rather than floating.
           */}
           <Ground grid={foe.species.sprite} x={96} y={0} rx={30} ry={6} />
-          <Ground grid={player.species.sprite} x={10} y={46} rx={34} ry={8} />
+          <Ground grid={playerBack} x={10} y={46} rx={34} ry={8} />
 
-          {/* Opponent: front sprite upper right, status box upper left */}
+          {/* Opponent: front sprite upper right, thin status area upper left */}
           <Sprite grid={foe.species.sprite} x={96} y={0} />
-          <Box x={4} y={12} w={86} h={26} />
-          <Label x={9} y={23} size={6}>
+          <Label x={8} y={16} size={6}>
             {foe.name}
           </Label>
-          <Label x={70} y={23} size={6}>
-            {`L${foe.level}`}
+          <Label x={14} y={23} size={5}>
+            {`:L${foe.level}`}
           </Label>
-          <HpBar x={32} y={28} ratio={foe.hp / foe.maxHp} />
+          <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
+          {/* The era's underline with its end hook, not a dialog frame. */}
+          <rect x={4} y={33} width={68} height={1} fill={P[3]} />
+          <rect x={70} y={33} width={2} height={4} fill={P[3]} />
 
-          {/* Player: back sprite lower left, status box lower right */}
-          <Sprite grid={player.species.sprite} x={10} y={46} />
-          <Box x={74} y={66} w={84} h={34} />
-          <Label x={79} y={77} size={6}>
+          {/* Player: back sprite lower left, thin status area lower right */}
+          <Sprite grid={playerBack} x={10} y={46} />
+          <Label x={84} y={72} size={6}>
             {player.name}
           </Label>
-          <Label x={137} y={77} size={6}>
-            {`L${player.level}`}
+          <Label x={90} y={79} size={5}>
+            {`:L${player.level}`}
           </Label>
           <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-          <Label x={104} y={97} size={6}>
+          <Label x={106} y={96} size={5}>
             {`${player.hp}/${player.maxHp}`}
           </Label>
+          <rect x={78} y={99} width={78} height={1} fill={P[3]} />
+          <rect x={78} y={95} width={2} height={4} fill={P[3]} />
 
           {/* Text box across the bottom two rows */}
           <Box x={0} y={104} w={SCREEN_W} h={40} />
@@ -631,24 +744,6 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
             </>
-          ) : phase === "switch" ? (
-            <>
-              {team.map((f, i) => (
-                <g key={f.name}>
-                  {cursor === i && (
-                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={5}>
-                      &#9654;
-                    </Label>
-                  )}
-                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={5}>
-                    {`${f.name}${i === active ? " *" : ""}`}
-                  </Label>
-                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={5}>
-                    {f.hp === 0 ? "FNT" : `${f.hp}/${f.maxHp}`}
-                  </Label>
-                </g>
-              ))}
-            </>
           ) : (
             <>
               {lines.slice(0, 2).map((line, i) => (
@@ -661,6 +756,79 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
               </path>
             </>
+          )}
+
+          {/*
+            The party screen: the full-page list Red and Blue opened, one row
+            per creature with its mini sprite, level and gauge. Drawn last so
+            it covers the field.
+          */}
+          {phase === "party" && (
+            <g data-party>
+              <rect width={SCREEN_W} height={SCREEN_H} fill={P[0]} />
+              {team.map((f, i) => {
+                const y = 4 + i * 18
+                return (
+                  <g key={f.name}>
+                    {cursor === i && (
+                      <Label x={1} y={y + 10} size={5}>
+                        &#9654;
+                      </Label>
+                    )}
+                    <Sprite grid={f.species.sprite} x={7} y={y} scale={0.55} />
+                    <Label x={26} y={y + 8} size={5}>
+                      {`${f.name}${i === active ? " *" : ""}`}
+                    </Label>
+                    <Label x={30} y={y + 15} size={4.5}>
+                      {f.hp === 0 ? "FNT" : `:L${f.level}`}
+                    </Label>
+                    <HpBar x={108} y={y + 4} ratio={f.hp / f.maxHp} />
+                    <Label x={108} y={y + 15} size={4.5}>
+                      {`${f.hp}/${f.maxHp}`}
+                    </Label>
+                  </g>
+                )
+              })}
+              <Box x={0} y={114} w={SCREEN_W} h={30} />
+              <Label x={8} y={131} size={6}>
+                {note ?? "Choose a POKeMON."}
+              </Label>
+            </g>
+          )}
+
+          {/* The item menu, with the bag the trainer packed. */}
+          {phase === "items" && (
+            <g data-items>
+              <rect width={SCREEN_W} height={SCREEN_H} fill={P[0]} />
+              <Box x={0} y={0} w={SCREEN_W} h={114} />
+              {items.map((it, i) => (
+                <g key={it.name}>
+                  {cursor === i && (
+                    <Label x={7} y={16 + i * 14} size={6}>
+                      &#9654;
+                    </Label>
+                  )}
+                  <Label x={16} y={16 + i * 14} size={6}>
+                    {it.name}
+                  </Label>
+                  <Label x={118} y={16 + i * 14} size={6}>
+                    {`x${it.count}`}
+                  </Label>
+                </g>
+              ))}
+              {cursor === items.length && (
+                <Label x={7} y={16 + items.length * 14} size={6}>
+                  &#9654;
+                </Label>
+              )}
+              <Label x={16} y={16 + items.length * 14} size={6}>
+                CANCEL
+              </Label>
+              <Box x={0} y={114} w={SCREEN_W} h={30} />
+              <Label x={8} y={131} size={6}>
+                {note ?? "Choose an ITEM."}
+              </Label>
+            </g>
           )}
         </svg>
 
