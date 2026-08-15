@@ -28,11 +28,30 @@ const LINK = "cursor-pointer text-[#0000ee] underline"
  * The hit counter, counting for real: one bump per page view, stored beside
  * the guestbook. Zero-padded to six digits because that is the law.
  */
+
+/*
+  One bump per view, even when React mounts twice.
+
+  StrictMode runs mount effects twice in development, which counted every
+  view as two. Concurrent mounts inside a short window share one in-flight
+  request instead; a second page view a moment later still counts.
+*/
+let bumpInFlight: Promise<number> | null = null
+function bumpOnce(): Promise<number> {
+  if (!bumpInFlight) {
+    bumpInFlight = bumpVisitors()
+    setTimeout(() => {
+      bumpInFlight = null
+    }, 1000)
+  }
+  return bumpInFlight
+}
+
 function VisitorCounter() {
   const [count, setCount] = useState<number | null>(null)
   useEffect(() => {
     let live = true
-    bumpVisitors().then((n) => {
+    bumpOnce().then((n) => {
       if (live) setCount(n)
     })
     return () => {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { CloseIcon } from "@/components/win95-controls"
-import { getEntries } from "@/actions/guestbook"
+import { countVisit, visitorCount } from "@/actions/visitors"
 
 /**
  * Clippit, at the bottom right of the desktop.
@@ -72,7 +72,7 @@ const QUIET_MS = 45_000
 
 export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const [dismissed, setDismissed] = useState(false)
-  /** A live line about the guestbook, added once the count arrives. */
+  /** The hit-counter line, added once the visitor number arrives. */
   const [guestLine, setGuestLine] = useState<{ phrase: string; animation: string } | null>(null)
   const [line, setLine] = useState<{ phrase: string; animation: string } | null>(null)
   const saidRef = useRef<Set<string>>(new Set())
@@ -115,19 +115,54 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   }, [dismissed, hidden, speakFresh])
 
   /*
-    One real number among the scripted lines: how many people have signed the
-    guestbook. Fetched once per mount; when the database is absent or the
-    fetch fails, the line simply never joins the pool.
+    One real number among the scripted lines: the hit counter.
+
+    The browser keeps a flag; its absence means a first visit, which is the
+    only kind that increments the shared count. When the database is absent
+    the count resets on every restart and is not worth announcing, so the
+    line never joins the pool.
   */
   useEffect(() => {
     let live = true
-    getEntries()
-      .then(({ entries, persistent }) => {
-        if (!live || !persistent || entries.length === 0) return
-        setGuestLine({
-          phrase: `${entries.length} ${entries.length === 1 ? "person has" : "people have"} signed the guestbook. Be number ${entries.length + 1}.`,
-          animation: GIF(5),
-        })
+    const KEY = "win95:visitor"
+    let stored: string | null = null
+    try {
+      stored = localStorage.getItem(KEY)
+      if (!stored) localStorage.setItem(KEY, "counting")
+    } catch {
+      stored = "uncounted"
+    }
+
+    // A stored number is the visit that was counted; anything else is a
+    // returning visitor from before numbers were kept.
+    const ownNumber = stored ? Number.parseInt(stored, 10) : Number.NaN
+    if (Number.isFinite(ownNumber) && ownNumber > 0) {
+      setGuestLine({
+        phrase: `You were visitor number ${ownNumber.toLocaleString()}. I remember you.`,
+        animation: GIF(5),
+      })
+      return
+    }
+
+    ;(stored ? visitorCount() : countVisit())
+      .then(({ count, persistent }) => {
+        if (!live || !persistent || count === 0) return
+        if (!stored) {
+          try {
+            localStorage.setItem(KEY, String(count))
+          } catch {
+            // The greeting still works this visit; he just forgets by next time.
+          }
+          setGuestLine({
+            phrase: `You are visitor number ${count.toLocaleString()}. I counted you myself.`,
+            animation: GIF(5),
+          })
+        } else {
+          setGuestLine({
+            phrase: `${count.toLocaleString()} visitors so far. I have counted every one.`,
+            animation: GIF(5),
+          })
+        }
       })
       .catch(() => {
         // No database is not an error worth surfacing through a paperclip.

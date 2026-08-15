@@ -1,65 +1,68 @@
 "use server"
 
-import postgres from "postgres"
+import { headers } from "next/headers"
+
+import { rateLimit } from "@/lib/rate-limit"
+import { increment, isPersistent, total } from "@/lib/visitors"
 
 /**
- * The hit counter, made honest.
+ * The counters' public verbs.
  *
- * Every 1996 home page had one and most of them lied. This one keeps a single
- * row in the same Postgres the guestbook uses and increments it once per call.
- * Without a database it falls back to a seeded in-process count, which resets
- * per instance: exactly as trustworthy as the counters it imitates.
+ * A Server Action is a public POST endpoint, so even cosmetic counters get
+ * the contact form's treatment: increments are rate limited per IP, because
+ * the alternative is letting one script inflate the numbers forever. The IP
+ * keys the limiter's in-memory window and is stored nowhere.
+ *
+ * `persistent: false` means the in-process fallback is counting; a number
+ * that resets on restart is not worth a greeting, and Clippy stays quiet.
  */
 
-const connectionString = process.env.DATABASE_URL ?? process.env.POSTGRES_URL
+const UNIQUE_LIMIT = 5
+const HITS_LIMIT = 60
+const WINDOW_MS = 60 * 60 * 1000
 
-const sql = connectionString
-  ? postgres(connectionString, { max: 1, prepare: false, idle_timeout: 20 })
-  : null
-
-let ensured: Promise<void> | null = null
-
-function ensureTable(): Promise<void> {
-  if (!sql) return Promise.resolve()
-  if (!ensured) {
-    ensured = sql`
-      CREATE TABLE IF NOT EXISTS counters (
-        name text PRIMARY KEY,
-        value bigint NOT NULL DEFAULT 0
-      )
-    `.then(
-      () => undefined,
-      (err) => {
-        // Un-cache so the next call retries rather than failing forever.
-        ensured = null
-        throw err
-      },
-    )
-  }
-  return ensured
+async function clientIp(): Promise<string> {
+  const h = await headers()
+  const forwarded = h.get("x-forwarded-for")
+  if (forwarded) return forwarded.split(",")[0].trim()
+  return h.get("x-real-ip") ?? "unknown"
 }
 
-/** The number the fallback starts from, chosen to look period-appropriate. */
-const SEED = 13847
-let inMemory = SEED
-
-/** Increments the visitor count and returns the new total. */
-export async function bumpVisitors(): Promise<number> {
-  if (!sql) {
-    inMemory += 1
-    return inMemory
-  }
+/** Counts a first-time visitor toward the unique-visitors total. */
+export async function countVisit(): Promise<{ count: number; persistent: boolean }> {
   try {
-    await ensureTable()
-    const rows = await sql<{ value: string }[]>`
-      INSERT INTO counters (name, value) VALUES ('ie-home', ${SEED + 1})
-      ON CONFLICT (name) DO UPDATE SET value = counters.value + 1
-      RETURNING value
-    `
-    return Number(rows[0].value)
-  } catch {
-    // A database outage should not break the home page over a novelty number.
-    inMemory += 1
-    return inMemory
+    const limit = rateLimit(`visitors:${await clientIp()}`, UNIQUE_LIMIT, WINDOW_MS)
+    if (!limit.allowed) {
+      return { count: await total("visitors"), persistent: isPersistent() }
+    }
+    return { count: await increment("visitors"), persistent: isPersistent() }
+  } catch (error) {
+    console.error("Could not count the visit:", error)
+    return { count: 0, persistent: false }
+  }
+}
+
+/** Reads the unique-visitors total without counting anybody. */
+export async function visitorCount(): Promise<{ count: number; persistent: boolean }> {
+  try {
+    return { count: await total("visitors"), persistent: isPersistent() }
+  } catch (error) {
+    console.error("Could not read the visitor count:", error)
+    return { count: 0, persistent: false }
+  }
+}
+
+/**
+ * One page view on the home page's hit counter. Returns the new total, which
+ * the counter renders zero-padded because that is the law.
+ */
+export async function bumpVisitors(): Promise<number> {
+  try {
+    const limit = rateLimit(`hits:${await clientIp()}`, HITS_LIMIT, WINDOW_MS)
+    if (!limit.allowed) return total("hits")
+    return await increment("hits")
+  } catch (error) {
+    console.error("Could not bump the hit counter:", error)
+    return 0
   }
 }
