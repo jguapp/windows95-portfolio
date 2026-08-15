@@ -20,7 +20,7 @@ const FLAG_KEY = "win95:persist"
  * name the same strings; a version bump there must be mirrored here or
  * disabling the switch stops clearing the tree.
  */
-const WORK_KEYS = ["win95:fs:v1", "win95:desktop-items:v1"]
+const WORK_KEYS = ["win95:fs:v2", "win95:desktop-items:v1"]
 
 export function persistenceEnabled(): boolean {
   if (typeof window === "undefined") return false

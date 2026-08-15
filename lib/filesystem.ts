@@ -58,8 +58,40 @@ Things worth opening:
   Winamp        it really whips the llama
   Paint         it draws, and it saves
 
-Ctrl+Alt+R opens Run.
-Try the Konami code on the desktop.
+Things nobody finds on their own:
+
+  - The Konami code, on the desktop:
+    Up Up Down Down Left Right Left Right
+    B A. Inside the battle, PKMN opens the
+    party screen and ITEM has a real bag.
+  - Ctrl+Alt+R opens Run, and it takes the
+    real names: calc, winmine, sol, mspaint,
+    iexplore, find, sounds.
+  - Alt+Q switches windows. Tab, arrows and
+    Enter drive the desktop icons.
+  - The checkbox on the Welcome screen.
+    Unchecked, this machine forgets you.
+    Checked, your files, drawings and icons
+    are still here tomorrow.
+  - Winamp's eject button takes your own
+    music. It never leaves your browser.
+  - Type joel95.net in Internet Explorer.
+    The hit counter is real, and so is the
+    visitor number Clippy quotes.
+  - Find, under Start, searches inside file
+    contents. DOS writes files Notepad can
+    open, and this Readme is one file all
+    of them share.
+  - The little monitor in the tray changes
+    the resolution, 640x480 up to 4K.
+  - Display Properties, Appearance: Rose
+    turns everything pink. Everything.
+  - Drag an icon onto the Recycle Bin, then
+    let Restore put it back where it lived.
+  - File > Print in Word prints the actual
+    resume. Save As does Word and PDF.
+  - Release Notes, Start > Documents: the
+    whole history, hackathon onward.
 
 - Joel
 `
@@ -133,7 +165,7 @@ export function subscribe(listener: () => void): () => void {
   visit, which is where everyone started in 1995 anyway.
 */
 // A version bump must be mirrored in lib/persistence.ts WORK_KEYS.
-const FS_VERSION = 1
+const FS_VERSION = 2
 const FS_KEY = `win95:fs:v${FS_VERSION}`
 
 function persist() {
