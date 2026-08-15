@@ -60,7 +60,7 @@ function drawFlag(ctx: CanvasRenderingContext2D, x: number, y: number, size: num
   }
 }
 
-export function flyingWindows(): Saver {
+function flyingWindows(): Saver {
   const logos: Logo[] = Array.from({ length: 24 }, () => ({
     x: Math.random() * 2 - 1,
     y: Math.random() * 2 - 1,
@@ -109,7 +109,7 @@ interface Poly {
   drift: number
 }
 
-export function mystify(): Saver {
+function mystify(): Saver {
   const make = (hue: number): Poly => ({
     corners: Array.from({ length: 4 }, () => ({
       x: Math.random(),
@@ -175,7 +175,7 @@ interface PipeState {
 
 const PIPE_COLOURS = ["#c0c0c0", "#008080", "#800080", "#808000", "#c00000", "#0000c0", "#00a000"]
 
-export function pipes(): Saver {
+function pipes(): Saver {
   let p: PipeState | null = null
   let painted: { x: number; y: number; nx: number; ny: number; colour: string }[] = []
 
@@ -288,7 +288,7 @@ export function pipes(): Saver {
 /* Scrolling Marquee                                                   */
 /* ------------------------------------------------------------------ */
 
-export function marquee(text = "Joel Vasquez — builtbyjoel.dev"): Saver {
+function marquee(text = "Joel Vasquez — builtbyjoel.dev"): Saver {
   let x: number | null = null
   return {
     step(ctx, w, h, dt) {
@@ -311,7 +311,7 @@ export function marquee(text = "Joel Vasquez — builtbyjoel.dev"): Saver {
 /* Starfield                                                           */
 /* ------------------------------------------------------------------ */
 
-export function starfield(): Saver {
+function starfield(): Saver {
   const stars = Array.from({ length: 260 }, () => ({
     x: Math.random() * 2 - 1,
     y: Math.random() * 2 - 1,

@@ -11,7 +11,7 @@
 
 import { persistenceEnabled } from "@/lib/persistence"
 
-export type FsFile = {
+type FsFile = {
   kind: "file"
   /** Window id this file opens in, if any. */
   opens?: string

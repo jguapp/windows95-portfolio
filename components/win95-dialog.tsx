@@ -17,7 +17,7 @@ import { CloseIcon } from "./win95-controls"
  * title-bar controls: no assets, no font dependency, and sharp at any zoom.
  */
 
-export type DialogIcon = "information" | "warning" | "error" | "question"
+type DialogIcon = "information" | "warning" | "error" | "question"
 
 const grid = {
   shapeRendering: "crispEdges" as const,
@@ -43,7 +43,7 @@ function DiscRows(colour: string, dark: string) {
   return rows
 }
 
-export function DialogGlyph({ icon, size = 32 }: { icon: DialogIcon; size?: number }) {
+function DialogGlyph({ icon, size = 32 }: { icon: DialogIcon; size?: number }) {
   if (icon === "warning") {
     return (
       <svg width={size} height={size} viewBox="0 0 32 32" data-glyph={icon} {...grid}>

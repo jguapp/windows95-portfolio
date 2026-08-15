@@ -34,7 +34,7 @@ export function isRed(suit: Suit): boolean {
   return suit === "hearts" || suit === "diamonds"
 }
 
-export function rankLabel(rank: number): string {
+function rankLabel(rank: number): string {
   if (rank === 1) return "A"
   if (rank === 11) return "J"
   if (rank === 12) return "Q"
@@ -65,7 +65,7 @@ export function shuffled(deck: Card[]): Card[] {
   return out
 }
 
-export const CARD_W = 71
+const CARD_W = 71
 export const CARD_H = 96
 
 const FACE_GLYPH: Record<number, string> = { 11: "J", 12: "Q", 13: "K" }

@@ -80,7 +80,6 @@ export const STUB_PROGRAMS: StubProgram[] = [
   },
 ]
 
-export const STUB_IDS = new Set(STUB_PROGRAMS.map((s) => s.id))
 
 export default function StubApp({ program }: { program: StubProgram }) {
   return (

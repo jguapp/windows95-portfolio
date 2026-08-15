@@ -81,7 +81,7 @@ interface ToneOptions {
   delay?: number
 }
 
-export function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slideTo, delay = 0 }: ToneOptions) {
+function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slideTo, delay = 0 }: ToneOptions) {
   const ac = audio()
   if (!ac || muted || volume === 0) return
 
@@ -104,7 +104,7 @@ export function tone({ freq, duration = 0.09, wave = "square", gain = 0.05, slid
 }
 
 /** White-noise burst, for explosions and card shuffles. */
-export function noise(duration = 0.2, gain = 0.05, filterHz = 1200) {
+function noise(duration = 0.2, gain = 0.05, filterHz = 1200) {
   const ac = audio()
   if (!ac || muted || volume === 0) return
 

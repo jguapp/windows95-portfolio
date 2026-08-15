@@ -27,7 +27,7 @@ export const SPRITE_SIZE = 28
  * starts and ends, how long it lasts, how rough it is, and what waveform
  * carries it.
  */
-export interface Cry {
+interface Cry {
   from: number
   to: number
   duration: number
