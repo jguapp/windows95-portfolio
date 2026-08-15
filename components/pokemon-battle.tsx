@@ -39,6 +39,14 @@ const P = ["#ffffff", "#a8a8a8", "#585858", "#000000"] as const
 const SCREEN_W = 160
 const SCREEN_H = 144
 /**
+ * How many screen pixels per Game Boy pixel.
+ *
+ * At 4x the whole battle was 640x576 and the 8x8 pixel face left almost no
+ * air between rows, so names and the party list read as cramped. Six keeps
+ * the pixel grid exact and fits a laptop with room to spare.
+ */
+const SCALE = 6
+/**
  * Where the move list sits inside the text box.
  *
  * Four moves at nine pixels apart from y=117 put the fourth baseline on 144,
@@ -517,8 +525,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       <div style={{ position: "relative" }}>
         <svg
           data-gameboy
-          width={SCREEN_W * 4}
-          height={SCREEN_H * 4}
+          width={SCREEN_W * SCALE}
+          height={SCREEN_H * SCALE}
           viewBox={`0 0 ${SCREEN_W} ${SCREEN_H}`}
           shapeRendering="crispEdges"
           style={{ imageRendering: "pixelated", display: "block", border: "10px solid #5a5a5a", borderRadius: 6 }}

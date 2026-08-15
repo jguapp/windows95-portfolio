@@ -10,6 +10,8 @@ import SaverPreview from "@/components/saver-preview"
 
 interface DisplayPropertiesProps {
   onClose: () => void
+  /** Which tab to open on. The tray's resolution button asks for Settings. */
+  initialTab?: string
 }
 
 // Background images for the user to choose from
@@ -58,9 +60,9 @@ const colorSchemes = [
   { id: "wine", name: "Wine" },
 ]
 
-export default function DisplayProperties({ onClose }: DisplayPropertiesProps) {
+export default function DisplayProperties({ onClose, initialTab }: DisplayPropertiesProps) {
   // Load current settings from localStorage or use defaults
-  const [activeTab, setActiveTab] = useState("background")
+  const [activeTab, setActiveTab] = useState(initialTab ?? "background")
   const [selectedBackground, setSelectedBackground] = useState(() => {
     const saved = localStorage.getItem("win95-background-image")
     return saved || "windows-default"

@@ -25,9 +25,9 @@ const CELL_PX = 75
   below by four pixels. Windows 95 gave each icon an identical cell and let
   the label use up to two lines inside it, which is what this does.
 */
-const CELL_H = 74
-/** Two lines at the 13px line height the labels now render at. */
-const LABEL_H = 26
+const CELL_H = 76
+/** Two lines at the 17px line height the labels render at. */
+const LABEL_H = 34
 
 interface DesktopItemProps {
   id: string

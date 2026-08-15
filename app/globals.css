@@ -1719,8 +1719,21 @@ h6 {
   This is more specific and last, so it settles the argument.
 */
 .desktop-icon .desktop-icon-text {
-  font-size: 11px !important;
-  line-height: 13px !important;
+  font-size: 15px !important;
+  line-height: 17px !important;
   max-width: none;
   text-overflow: clip;
+}
+
+/*
+  The tray clock.
+
+  Windows set it at 8pt in a narrow well. The blanket 1.2rem rule for buttons
+  applies here too and made it noticeably larger than the taskbar text beside
+  it, so this is more specific and wins.
+*/
+#taskbar #clock,
+#right-section #clock {
+  font-size: 11px !important;
+  line-height: 13px !important;
 }

@@ -141,6 +141,30 @@ export default function Taskbar({
 
       <div id="right-section" className="relative flex items-center h-[34px] border-2 border-inset border-white">
         {/*
+          The screen resolution changer. QuickRes shipped with the Power Toys
+          and put a little monitor in the tray; clicking it jumps straight to
+          the Settings tab of Display Properties, where the Desktop area
+          slider lives.
+        */}
+        <button
+          type="button"
+          id="resolution-button"
+          aria-label="Screen resolution"
+          title="Screen resolution"
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "settings" } }))
+          }
+          className="flex items-center justify-center w-[20px] h-full bg-[#c0c0c0]"
+        >
+          <img
+            src="/images/win95/resolution-16.png"
+            alt=""
+            className="w-[16px] h-[16px]"
+            style={{ imageRendering: "pixelated" }}
+          />
+        </button>
+
+        {/*
           The tray speaker was decoration. Clicking it opens the volume control
           Windows 95 put there: a vertical slider and a Mute box, governing
           every sound the desktop makes.
@@ -150,7 +174,7 @@ export default function Taskbar({
           id="sound-button"
           aria-label="Volume"
           onClick={() => setShowVolume((v) => !v)}
-          className="flex items-center justify-center w-[22px] h-full bg-[#c0c0c0]"
+          className="flex items-center justify-center w-[20px] h-full bg-[#c0c0c0]"
         >
           <img
             src="/images/blob/sound.png"
@@ -205,7 +229,8 @@ export default function Taskbar({
             year: "numeric",
           })}
           onClick={() => setShowDateTime(true)}
-          className="text-[10.5px] text-black bg-[#c0c0c0] pl-1 pr-[6px] h-full flex items-center justify-center"
+          className="text-black bg-[#c0c0c0] pl-[6px] pr-[7px] h-full flex items-center justify-center"
+          style={{ fontSize: 11, lineHeight: "13px" }}
         >
           {time}
         </button>

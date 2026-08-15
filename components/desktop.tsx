@@ -129,9 +129,17 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   /** The item whose property sheet is open, if any. */
   const [propertiesFor, setPropertiesFor] = useState<DesktopItemData | null>(null)
 
-  // Control Panel in the Start menu opens the only applet that exists here.
+  /** Which tab Display Properties should open on, when the caller cares. */
+  const [propertiesTab, setPropertiesTab] = useState<string | undefined>(undefined)
+
+  // Control Panel opens the applet; the tray's resolution button asks for its
+  // Settings tab directly.
   useEffect(() => {
-    const open = () => setShowProperties(true)
+    const open = (e: Event) => {
+      const tab = (e as CustomEvent).detail?.tab as string | undefined
+      setPropertiesTab(tab)
+      setShowProperties(true)
+    }
     window.addEventListener("openDisplayProperties", open)
     return () => window.removeEventListener("openDisplayProperties", open)
   }, [])
@@ -156,8 +164,8 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Constants for icon positioning
   // The Windows 95 desktop grid: a 75px cell with the icon at the top and up to
   // two lines of label under it.
-  // The cell is 74px tall, so this is the cell plus an even gap.
-  const ICON_SPACING_Y = 82
+  // The cell is 76px tall, so this is the cell plus an even gap.
+  const ICON_SPACING_Y = 84
   /** The taskbar, which icons must not sit under. */
   const TASKBAR_H = 34
   const FIRST_COLUMN_X = 12
@@ -1205,7 +1213,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
             menuItems={getContextMenuItems()}
           />
         )}
-        {showProperties && <DisplayProperties onClose={() => setShowProperties(false)} />}
+        {showProperties && <DisplayProperties initialTab={propertiesTab} onClose={() => setShowProperties(false)} />}
         {propertiesFor && (
           <ItemProperties item={propertiesFor} onClose={() => setPropertiesFor(null)} />
         )}

@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { CloseIcon } from "@/components/win95-controls"
+import { isBestTime, loadScores, saveScore, type ScoreEntry } from "@/lib/high-scores"
 import { createSound, type SynthAudio } from "@/lib/sound"
 import { messageBox } from "@/components/win95-dialog"
 
@@ -98,6 +99,13 @@ type Cell = 0 | string
 /** A piece in play: its grid, its colour, and where its top-left corner sits. */
 type Tetromino = ReturnType<typeof randomTetromino>
 
+/** What an unplayed machine shows before anybody has filed a score. */
+const SEEDED_SCORES: ScoreEntry[] = [
+  { name: "WIN95", value: 5000 },
+  { name: "PLAYER", value: 3500 },
+  { name: "TETRIS", value: 2000 },
+]
+
 const createEmptyBoard = (): Cell[][] => Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0))
 
 // Random tetromino generator
@@ -140,11 +148,19 @@ export default function Tetris({ onReturn }: TetrisProps) {
   const [speed, setSpeed] = useState(INITIAL_SPEED)
   const [showHelp, setShowHelp] = useState(false)
   const [showHighScores, setShowHighScores] = useState(false)
-  const [highScores] = useState<{ name: string; score: number }[]>([
-    { name: "WIN95", score: 5000 },
-    { name: "PLAYER", score: 3500 },
-    { name: "TETRIS", score: 2000 },
-  ])
+  /*
+    The table lives in localStorage, so a score survives the window closing.
+    The three seeded names are what an unplayed machine shipped with, and a
+    real score displaces them the moment one is filed.
+  */
+  const [highScores, setHighScores] = useState<ScoreEntry[]>(SEEDED_SCORES)
+  /** Set when a finished game earns a place, which opens the name prompt. */
+  const [pendingScore, setPendingScore] = useState<number | null>(null)
+  const [enteredName, setEnteredName] = useState("")
+
+  useEffect(() => {
+    setHighScores(loadScores("tetris", SEEDED_SCORES))
+  }, [])
   const [audioEnabled, setAudioEnabled] = useState(true)
   const [gameStarted, setGameStarted] = useState(false)
   const [showMenu, setShowMenu] = useState<string | null>(null)
@@ -354,6 +370,11 @@ export default function Tetris({ onReturn }: TetrisProps) {
       // Check for game over
       if (piece.position.y <= 0) {
         setGameOver(true)
+        // Points, so a bigger number is better.
+        setScore((final) => {
+          if (final > 0 && isBestTime("tetris", final, undefined, false)) setPendingScore(final)
+          return final
+        })
         if (gameLoopRef.current) {
           clearInterval(gameLoopRef.current)
           gameLoopRef.current = null
@@ -961,6 +982,57 @@ export default function Tetris({ onReturn }: TetrisProps) {
   )
 
   // Render high scores modal
+  /** The name prompt Windows games showed when you made the table. */
+  const renderNameEntry = () => (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+      <div className="win95-type w-[320px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]">
+        <div className="bg-[#000080] px-2 py-[3px] font-bold text-white">Congratulations</div>
+        <form
+          className="p-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            const name = enteredName.trim().slice(0, 12).toUpperCase() || "PLAYER"
+            setHighScores(saveScore("tetris", { name, value: pendingScore ?? 0 }, false))
+            setPendingScore(null)
+            setEnteredName("")
+            setShowHighScores(true)
+          }}
+        >
+          <p className="mb-3">
+            You scored {pendingScore}. That is one of the ten best on this machine.
+          </p>
+          <label className="mb-1 block">Your name:</label>
+          <input
+            autoFocus
+            data-score-name
+            value={enteredName}
+            maxLength={12}
+            onChange={(ev) => setEnteredName(ev.target.value)}
+            className="mb-4 w-full border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[2px] outline-none"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="submit"
+              className="min-w-[76px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPendingScore(null)
+                setEnteredName("")
+              }}
+              className="min-w-[76px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-4 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+
   const renderHighScoresModal = () => (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
       <div className="bg-gray-200 border-2 border-gray-400 w-[400px]">
@@ -987,10 +1059,10 @@ export default function Tetris({ onReturn }: TetrisProps) {
             </thead>
             <tbody>
               {highScores.map((score, index) => (
-                <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
+                <tr key={`${score.name}-${index}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
                   <td className="border border-gray-400 p-2">{index + 1}</td>
                   <td className="border border-gray-400 p-2">{score.name}</td>
-                  <td className="border border-gray-400 p-2 text-right">{score.score}</td>
+                  <td className="border border-gray-400 p-2 text-right">{score.value}</td>
                 </tr>
               ))}
             </tbody>
@@ -1256,6 +1328,7 @@ export default function Tetris({ onReturn }: TetrisProps) {
       {/* Modals */}
       {showHelp && renderHelpModal()}
       {showHighScores && renderHighScoresModal()}
+      {pendingScore !== null && renderNameEntry()}
       {gameOver && gameStarted && renderGameOverModal()}
     </div>
   )
