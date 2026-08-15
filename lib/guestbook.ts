@@ -85,7 +85,14 @@ function ensureTable(client: NonNullable<ReturnType<typeof db>>): Promise<void> 
         drawing TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )
-    `.then(() => undefined)
+    `
+      .then(
+        // Row level security, so no other role reads the table by default.
+        // This app's role owns it and owners bypass RLS, so the server
+        // actions are unaffected; a PostgREST anon role sees nothing.
+        () => client`ALTER TABLE guestbook ENABLE ROW LEVEL SECURITY`,
+      )
+      .then(() => undefined)
     // A failed migration must not be cached, or every later request believes
     // the table exists.
     ready.catch(() => {

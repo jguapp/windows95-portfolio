@@ -43,7 +43,13 @@ function ensureTable(client: NonNullable<ReturnType<typeof db>>): Promise<void> 
         name TEXT PRIMARY KEY,
         count BIGINT NOT NULL
       )
-    `.then(() => undefined)
+    `
+      .then(
+        // Same posture as the guestbook: owner bypasses RLS, nobody else
+        // reads a row by default.
+        () => client`ALTER TABLE counters ENABLE ROW LEVEL SECURITY`,
+      )
+      .then(() => undefined)
     // A failed migration must not be cached, or every later request believes
     // the table exists.
     ready.catch(() => {

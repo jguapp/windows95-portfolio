@@ -37,6 +37,11 @@ export function rateLimit(key: string, max: number, windowMs: number): RateLimit
   if (hits.length >= max) {
     const retryAfterMs = windowMs - (now - hits[0])
     buckets.set(key, hits)
+    // One structured line per rejection: the host's log stream is how a
+    // flood gets noticed, and a spike of these is the signature of one.
+    console.warn(
+      JSON.stringify({ event: "rate_limit_exceeded", key, hits: hits.length, max, windowMs, at: new Date(now).toISOString() }),
+    )
     return {
       allowed: false,
       remaining: 0,
