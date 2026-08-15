@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getRoot, subscribe, type FsDir, type FsNode } from "@/lib/filesystem"
+import { getRoot, subscribe, type FsDir } from "@/lib/filesystem"
 
 /**
  * Find: Files or Folders, searching the drive that actually exists.
