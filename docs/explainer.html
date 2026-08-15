@@ -209,7 +209,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
 <tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites and synthesised cries.</td></tr>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
-<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
+<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
 </table>
@@ -258,7 +258,11 @@ positions under <code>win95:desktop-items:v1</code>; the default icons deliberat
 reset to the grid on every load so a dragged icon cannot be lost. Paint's Save to
 Desktop turns the canvas into a data URL that is both the icon's image and its stored
 content. All storage access is wrapped: quota errors and disabled storage degrade to a
-fresh drive per visit rather than a crash.</p>
+fresh drive per visit rather than a crash. The whole mechanism sits behind a
+switch the welcome dialog offers on every boot (<code>win95:persist</code>,
+default on): unchecking it stops new writes and clears the saved work, while
+display settings, high scores and the visitor number stay outside the switch
+as preferences rather than work.</p>
 <h3>The keyboard desktop</h3>
 <p>Icons are tabbable; focus selects, Enter or Space opens. Arrow movement is spatial
 rather than index-based because icons sit at free coordinates: the candidate with the
@@ -279,10 +283,11 @@ titlebar, the way the stock schemes tied them. The wallpaper and scheme tables
 live in <code>lib/</code> because Display Properties and the desktop's boot
 restore each used to carry private copies that drifted.</p>
 <h3>The resolution simulation</h3>
-<p>Choosing 640x480 sets a CSS zoom of <code>innerWidth / 640</code> on the shell root,
-never below 1, since a lower resolution over the same glass made everything larger.
-The tray monitor pops a QuickRes-style menu of the four modes; the Settings tab
-offers the same list, because four discrete modes deserve rows rather than a
+<p>Choosing 640x480 sets a CSS zoom of <code>innerWidth / 640</code> on the shell
+root. The zoom runs in both directions: the classic modes enlarge, and the 2560x1440
+and 3840x2160 modes shrink the shell below 1x for more desktop area, which is what
+more pixels bought. The tray monitor pops a QuickRes-style menu of the six modes; the
+Settings tab offers the same list, because discrete modes deserve rows rather than a
 slider.</p>
 <h3>The 28-colour palette</h3>
 <p>Paint's colour box is exactly MS Paint's 28, stored as fourteen dark-light pairs, and
@@ -314,7 +319,8 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
         <code>win95-screensaver-wait</code>, <code>win95-resolution</code>,
         <code>win95:fs:v1</code> (the drive), <code>win95:desktop-items:v1</code>
         (created icons), <code>win95:scores:*</code> (game high scores),
-        <code>win95:visitor</code> (your visitor number)</td></tr>
+        <code>win95:visitor</code> (your visitor number),
+        <code>win95:persist</code> (whether work is remembered)</td></tr>
 </table>
 
 <h2 id="deps">Part VIII. Dependencies</h2>
