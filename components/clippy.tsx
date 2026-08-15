@@ -44,7 +44,7 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "The screensavers are real. Leave the desk alone and see.", animation: GIF(6) },
   { phrase: "You're doing great! Keep up the good work.", animation: GIF(3) },
   { phrase: "Alt+Q switches windows. Alt+Tab belongs to your other computer.", animation: GIF(4) },
-  { phrase: "Files you save here are still here tomorrow. I checked.", animation: GIF(6) },
+  { phrase: "Save a file in Notepad. With the Welcome box checked, it is here tomorrow.", animation: GIF(6) },
   { phrase: "Paint has a Save to Desktop now. Your art can live here.", animation: GIF(2) },
   { phrase: "Find, under Start, genuinely searches this C: drive.", animation: GIF(5) },
   { phrase: "The Sounds control panel plays the whole scheme. Try Critical Stop.", animation: GIF(1) },
@@ -72,6 +72,12 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Nothing on this desk is a mockup. Click anything. I dare you.", animation: GIF(2) },
   { phrase: "The guestbook drawings are permanent. Choose your doodle wisely.", animation: GIF(5) },
   { phrase: "Shut Down is under Start. It really shuts down. See you tomorrow.", animation: GIF(6) },
+  { phrase: "Nothing you make here is saved unless you check the box in the Welcome window.", animation: GIF(1) },
+  { phrase: "Right-click the desktop. New folders, wallpaper, and me, all in one menu.", animation: GIF(4) },
+  { phrase: "Icons can be dragged onto the Recycle Bin. It does what you fear.", animation: GIF(5) },
+  { phrase: "Click an icon's name, pause, click it again. Renaming has always worked like that.", animation: GIF(3) },
+  { phrase: "Display Properties has an Appearance tab. Rose turns everything pink. Everything.", animation: GIF(7) },
+  { phrase: "Type joel95.net into Internet Explorer. The home page counts your visit.", animation: GIF(6) },
 ]
 
 const INTERRUPTION = { phrase: "Please, do not interrupt me!", animation: NO_GIF }
@@ -112,6 +118,7 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   "internet-explorer": [
     { phrase: "It is 1996 in that address bar. Try yahoo.com.", animation: GIF(6) },
     { phrase: "The web weighed twelve kilobytes a page back then. It loaded fine.", animation: GIF(7) },
+    { phrase: "joel95.net lives in this browser. The hit counter on it is real.", animation: GIF(2) },
   ],
   calculator: [
     { phrase: "2 + 3 + 4 equals 9 here. That was not always true.", animation: GIF(3) },
