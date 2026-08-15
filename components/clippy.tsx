@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { CloseIcon } from "@/components/win95-controls"
+import { getEntries } from "@/actions/guestbook"
 
 /**
  * Clippit, at the bottom right of the desktop.
@@ -71,6 +72,8 @@ const QUIET_MS = 45_000
 
 export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const [dismissed, setDismissed] = useState(false)
+  /** A live line about the guestbook, added once the count arrives. */
+  const [guestLine, setGuestLine] = useState<{ phrase: string; animation: string } | null>(null)
   const [line, setLine] = useState<{ phrase: string; animation: string } | null>(null)
   const saidRef = useRef<Set<string>>(new Set())
   const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -88,13 +91,17 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
 
   const speakFresh = useCallback(() => {
     // Tips about the window in front come first; the general chatter fills in.
-    const pool = [...(activeWindow ? WINDOW_TIPS[activeWindow] ?? [] : []), ...PHRASES]
+    const pool = [
+      ...(activeWindow ? WINDOW_TIPS[activeWindow] ?? [] : []),
+      ...PHRASES,
+      ...(guestLine ? [guestLine] : []),
+    ]
     const fresh = pool.filter((p) => !saidRef.current.has(p.phrase))
     const pickFrom = fresh.length ? fresh : pool
     const pick = pickFrom[Math.floor(Math.random() * pickFrom.length)]
     saidRef.current.add(pick.phrase)
     speak(pick)
-  }, [activeWindow, speak])
+  }, [activeWindow, guestLine, speak])
 
   // He pops up on his own whenever he is on stage.
   useEffect(() => {
@@ -106,6 +113,29 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
       clearInterval(timer)
     }
   }, [dismissed, hidden, speakFresh])
+
+  /*
+    One real number among the scripted lines: how many people have signed the
+    guestbook. Fetched once per mount; when the database is absent or the
+    fetch fails, the line simply never joins the pool.
+  */
+  useEffect(() => {
+    let live = true
+    getEntries()
+      .then(({ entries, persistent }) => {
+        if (!live || !persistent || entries.length === 0) return
+        setGuestLine({
+          phrase: `${entries.length} ${entries.length === 1 ? "person has" : "people have"} signed the guestbook. Be number ${entries.length + 1}.`,
+          animation: GIF(5),
+        })
+      })
+      .catch(() => {
+        // No database is not an error worth surfacing through a paperclip.
+      })
+    return () => {
+      live = false
+    }
+  }, [])
 
   // Dismissal is not exile: the desktop menu can summon him back.
   useEffect(() => {
