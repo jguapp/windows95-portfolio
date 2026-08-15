@@ -65,25 +65,23 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
     >
       <div className="flex h-full">
         {/*
-          The sidebar banner, as the original drew it: a black band down the
-          left with the wordmark reading bottom to top from the bottom edge,
-          "Windows" in silver and "95" in white, in a condensed gothic face.
-          Centring it vertically or washing it in gray was never the look.
+          The sidebar banner: the grey band down the left with the wordmark
+          reading bottom to top from the bottom edge, "Windows" bold and "95"
+          light, both white, in a condensed gothic face.
         */}
-        <div className="relative w-[26px] overflow-hidden" style={{ backgroundColor: "#000000" }} data-start-banner>
+        <div className="relative w-[26px] overflow-hidden" style={{ backgroundColor: "#7f7f7f" }} data-start-banner>
           <span
-            className="absolute bottom-[6px] left-1/2 whitespace-nowrap"
+            className="absolute bottom-[6px] left-1/2 whitespace-nowrap text-white"
             style={{
               writingMode: "vertical-rl",
               transform: "translateX(-50%) rotate(180deg)",
               fontSize: 20,
               lineHeight: 1,
-              fontWeight: 700,
               fontFamily: '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif',
             }}
           >
-            <span style={{ color: "#7f7f7f" }}>Windows</span>
-            <span style={{ color: "#ffffff" }}>95</span>
+            <span style={{ fontWeight: 700 }}>Windows</span>
+            <span style={{ fontWeight: 400 }}>95</span>
           </span>
         </div>
 
