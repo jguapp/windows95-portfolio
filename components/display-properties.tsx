@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/lib/screensavers"
 import { WALLPAPERS } from "@/lib/wallpapers"
+import { COLOR_SCHEMES, applyScheme } from "@/lib/color-schemes"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import SaverPreview from "@/components/saver-preview"
 
@@ -21,19 +22,8 @@ const backgroundImages = WALLPAPERS
 // The savers the engine actually implements, plus none.
 const screenSavers = [{ id: "none", name: "(None)" }, ...SAVERS]
 
-// Color schemes
-const colorSchemes = [
-  { id: "windows-standard", name: "Windows Standard" },
-  { id: "brick", name: "Brick" },
-  { id: "desert", name: "Desert" },
-  { id: "eggplant", name: "Eggplant" },
-  { id: "lilac", name: "Lilac" },
-  { id: "maple", name: "Maple" },
-  { id: "rose", name: "Rose" },
-  { id: "spruce", name: "Spruce" },
-  { id: "wheat", name: "Wheat" },
-  { id: "wine", name: "Wine" },
-]
+// The shared scheme table; the desktop's boot restore reads the same one.
+const colorSchemes = COLOR_SCHEMES
 
 export default function DisplayProperties({ onClose, initialTab }: DisplayPropertiesProps) {
   // Load current settings from localStorage or use defaults
@@ -71,82 +61,15 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
     }
   }, [selectedBackground])
 
-  // Add a new useEffect to apply color scheme changes
+  // Applying a scheme writes the CSS variables the chrome reads.
   useEffect(() => {
-    // Apply color scheme changes
-    const applyColorScheme = () => {
-      // Default Windows Standard colors
-      let desktopColor = "#008080" // Teal
-      let windowColor = "#c0c0c0" // Silver
-      const textColor = "#000000" // Black
-      const highlightColor = "#000080" // Navy
-      const highlightTextColor = "#ffffff" // White
-
-      // Change colors based on selected scheme
-      switch (selectedColorScheme) {
-        case "brick":
-          desktopColor = "#800000" // Maroon
-          windowColor = "#c0c0c0"
-          break
-        case "desert":
-          desktopColor = "#d2b48c" // Tan
-          windowColor = "#d4c4a8"
-          break
-        case "eggplant":
-          desktopColor = "#604080" // Purple
-          windowColor = "#c0c0c0"
-          break
-        case "lilac":
-          desktopColor = "#c8a2c8" // Light purple
-          windowColor = "#d8c8d8"
-          break
-        case "maple":
-          desktopColor = "#804000" // Brown
-          windowColor = "#c0c0c0"
-          break
-        case "rose":
-          desktopColor = "#ff80a0" // Pink
-          windowColor = "#ffc0d0"
-          break
-        case "spruce":
-          desktopColor = "#006040" // Dark green
-          windowColor = "#c0c0c0"
-          break
-        case "wheat":
-          desktopColor = "#f5deb3" // Wheat
-          windowColor = "#f0e0c0"
-          break
-        case "wine":
-          desktopColor = "#800020" // Burgundy
-          windowColor = "#c0c0c0"
-          break
-        default: // Windows Standard
-          desktopColor = "#008080" // Teal
-          windowColor = "#c0c0c0" // Silver
-          break
-      }
-
-      // Apply colors to desktop if no background image is set
-      const desktop = document.getElementById("desktop")
-      if (desktop) {
-        // Only change background color if no image is set or if using a pattern that shows background
-        if (!selectedBackground || selectedBackground === "none") {
-          desktop.style.backgroundColor = desktopColor
-        }
-      }
-
-      // Apply colors to CSS variables for windows, taskbar, etc.
-      document.documentElement.style.setProperty("--win95-desktop-color", desktopColor)
-      document.documentElement.style.setProperty("--win95-window-color", windowColor)
-      document.documentElement.style.setProperty("--win95-text-color", textColor)
-      document.documentElement.style.setProperty("--win95-highlight-color", highlightColor)
-      document.documentElement.style.setProperty("--win95-highlight-text-color", highlightTextColor)
-
-      // Save to localStorage
-      localStorage.setItem("win95-color-scheme", selectedColorScheme)
+    const scheme = applyScheme(selectedColorScheme)
+    // Only repaint the desktop when no wallpaper is covering it.
+    const desktop = document.getElementById("desktop")
+    if (desktop && (!selectedBackground || selectedBackground === "none")) {
+      desktop.style.backgroundColor = scheme.desktop
     }
-
-    applyColorScheme()
+    localStorage.setItem("win95-color-scheme", selectedColorScheme)
     // selectedBackground is read only to decide whether a scheme may repaint
     // the desktop; changing wallpaper has its own effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps

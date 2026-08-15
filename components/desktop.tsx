@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
 import { WALLPAPERS } from "@/lib/wallpapers"
+import { applyScheme } from "@/lib/color-schemes"
 import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
 import ItemProperties from "./item-properties"
@@ -353,51 +354,13 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         }
       }
 
-      // Apply saved color scheme
+      // Apply saved color scheme through the shared table, so the chrome
+      // colors survive a reload and cannot drift from the Appearance tab.
       if (savedColorScheme) {
-        // Apply color scheme
-        let desktopColor = "#008080" // Default teal
-
-        switch (savedColorScheme) {
-          case "brick":
-            desktopColor = "#800000" // Maroon
-            break
-          case "desert":
-            desktopColor = "#d2b48c" // Tan
-            break
-          case "eggplant":
-            desktopColor = "#604080" // Purple
-            break
-          case "lilac":
-            desktopColor = "#c8a2c8" // Light purple
-            break
-          case "maple":
-            desktopColor = "#804000" // Brown
-            break
-          case "rose":
-            desktopColor = "#ff80a0" // Pink
-            break
-          case "spruce":
-            desktopColor = "#006040" // Dark green
-            break
-          case "wheat":
-            desktopColor = "#f5deb3" // Wheat
-            break
-          case "wine":
-            desktopColor = "#800020" // Burgundy
-            break
-          default: // Windows Standard
-            desktopColor = "#008080" // Teal
-            break
-        }
-
-        // Apply desktop color if no background image
+        const scheme = applyScheme(savedColorScheme)
         if (!savedBackground && desktopRef.current) {
-          desktopRef.current.style.backgroundColor = desktopColor
+          desktopRef.current.style.backgroundColor = scheme.desktop
         }
-
-        // Set CSS variables
-        document.documentElement.style.setProperty("--win95-desktop-color", desktopColor)
       }
 
       setIsInitialized(true)

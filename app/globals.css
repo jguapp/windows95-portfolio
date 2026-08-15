@@ -257,7 +257,13 @@ body {
 }
 
 #taskbar {
-  background: linear-gradient(180deg, #c0c0c0 0%, #9e9e9e 100%);
+  /* The gradient derives from the scheme's face color; at 82% toward black
+     the standard silver lands on the original #9e9e9e bottom stop. */
+  background: linear-gradient(
+    180deg,
+    var(--win95-window-color, #c0c0c0) 0%,
+    color-mix(in srgb, var(--win95-window-color, #c0c0c0) 82%, black) 100%
+  );
 }
 
 #taskbar #start-button {
@@ -1782,4 +1788,27 @@ h6 {
     height: auto !important;
     overflow: visible !important;
   }
+}
+
+/*
+  Appearance schemes.
+
+  The Appearance tab writes these variables, but every silver surface and
+  navy title bar in the tree is a Tailwind arbitrary-value class. Rather
+  than rewrite four hundred call sites, the two generated classes are
+  re-declared here, after the utilities layer, routed through the variables.
+  The fallbacks are the Windows Standard values, so a fresh machine is
+  pixel-identical to the hard-coded original.
+*/
+.bg-\[\#c0c0c0\] {
+  background-color: var(--win95-window-color, #c0c0c0);
+}
+.bg-\[\#000080\] {
+  background-color: var(--win95-highlight-color, #000080);
+}
+.hover\:bg-\[\#000080\]:hover {
+  background-color: var(--win95-highlight-color, #000080);
+}
+.enabled\:hover\:bg-\[\#000080\]:hover:enabled {
+  background-color: var(--win95-highlight-color, #000080);
 }
