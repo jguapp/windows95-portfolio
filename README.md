@@ -62,7 +62,7 @@ FreeCell knows its 32,000 deals by number, and they are the real ones: game 617 
 
 </div>
 
-Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It draws, it undoes, and it saves what you make.
+Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It draws, it undoes, and Save to Desktop turns a drawing into a desktop icon that can outlive the visit.
 
 <div align="center">
 <img src=".github/assets/paint.png" alt="The MS Paint clone with its toolbar and colour palette" width="90%" />
@@ -127,9 +127,9 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 | --- | --- |
 | **Winamp** | the real 2.9 skin engine, whipping the llama, with a synthesised opening track |
 | **Internet Explorer** | carries its own little internet, hit counter included |
-| **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle |
+| **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle with party menus, a real item bag, and back sprites |
 | **Ctrl+Alt+R** | Run takes the real names: `calc`, `winmine`, `sol`, `mspaint`, `iexplore` |
-| **Display Properties** | wallpapers, colour schemes, five real screen savers, and a Desktop area slider that changes the resolution |
+| **Display Properties** | the wallpapers Windows 95 shipped, Appearance schemes that recolour the whole shell, five real screen savers, and resolutions from 640x480 up to 4K |
 | **Clippy** | bottom right, contextual, dismissible for good |
 | **Shut Down** | ends on the amber it's-now-safe screen; Restart reboots the machine |
 | **Accessories** | WordPad to Disk Defragmenter, present and accounted for |
@@ -140,6 +140,10 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 | **The clock** | click it for Date/Time Properties, ticking analogue face and all |
 | **Release Notes** | Start > Documents, the whole history of the desktop in the desktop |
 | **Right-click** | the desktop, the icons, the Solitaire table, everywhere |
+| **The welcome checkbox** | opt in, and your files, drawings and desktop icons survive between visits |
+| **Alt+Q** | the window switcher; Tab, arrows and Enter drive the desktop |
+| **Find** | Start > Find genuinely searches the virtual drive, file contents included |
+| **QuickRes** | the little monitor in the tray pops a resolution menu, as the PowerToy did |
 
 </div>
 

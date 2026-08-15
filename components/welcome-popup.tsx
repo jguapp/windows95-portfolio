@@ -252,23 +252,23 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           <div className="win95-content min-h-0 flex-1 overflow-auto p-[10px_20px]">
             <h2 className="text-sm font-bold mb-2">Recent Updates</h2>
             <ul className="list-disc pl-5 text-xs mb-4">
-              <li className="mb-1">Winamp, the real thing, with a synthesised opening track</li>
-              <li className="mb-1">Internet Explorer serves the actual web of 1996, by way of the archive</li>
-              <li className="mb-1">Clippit is back, dismissible, and can be summoned from the desktop</li>
-              <li className="mb-1">Five screen savers and a wallpaper picker that really apply</li>
-              <li className="mb-1">The Windows 95 sound scheme, synthesised rather than sampled</li>
+              <li className="mb-1">The secret battle plays by Gen I rules: a party screen, a real item bag, back sprites</li>
+              <li className="mb-1">Saving is your choice now: the checkbox below decides what this browser remembers</li>
+              <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the whole shell</li>
+              <li className="mb-1">A QuickRes menu in the tray, from 640x480 up to 4K</li>
               <li className="mb-1">Find really searches the C:\ drive, and Sounds really plays the scheme</li>
               <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
-              <li className="mb-1">Saved files and Paint drawings can survive between visits: check the box below</li>
-              <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
-              <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the shell</li>
               <li className="mb-1">A real hit counter on the 1996 home page, and Clippy knows your visitor number</li>
-              <li className="mb-1">The desktop works on a phone: windows open full screen</li>
+              <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
+              <li className="mb-1">Wrong addresses get a proper Windows 95 error page</li>
             </ul>
 
             <h2 className="text-sm font-bold mb-2">Planned Features</h2>
             <ul className="list-disc pl-5 text-xs">
               <li className="mb-1">A Properties sheet for files inside Explorer</li>
+              <li className="mb-1">Stacked Up Summit 2026 photos in the gallery</li>
+              <li className="mb-1">Shell sort joining the sorting visualiser race</li>
+              <li className="mb-1">The behaviour checks moving into the repo as a test suite</li>
             </ul>
           </div>
 
