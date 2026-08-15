@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
 import { WALLPAPERS } from "@/lib/wallpapers"
+import { persistenceEnabled } from "@/lib/persistence"
 import { applyScheme } from "@/lib/color-schemes"
 import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
@@ -126,7 +127,7 @@ interface StoredItem {
 }
 
 function loadCustomItems(): StoredItem[] {
-  if (typeof window === "undefined") return []
+  if (typeof window === "undefined" || !persistenceEnabled()) return []
   try {
     const raw = window.localStorage.getItem(CUSTOM_KEY)
     if (!raw) return []
@@ -145,7 +146,7 @@ function loadCustomItems(): StoredItem[] {
 }
 
 function saveCustomItems(entries: StoredItem[]) {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined" || !persistenceEnabled()) return
   try {
     window.localStorage.setItem(CUSTOM_KEY, JSON.stringify(entries))
   } catch {
@@ -354,13 +355,14 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         }
       }
 
-      // Apply saved color scheme through the shared table, so the chrome
-      // colors survive a reload and cannot drift from the Appearance tab.
-      if (savedColorScheme) {
-        const scheme = applyScheme(savedColorScheme)
-        if (!savedBackground && desktopRef.current) {
-          desktopRef.current.style.backgroundColor = scheme.desktop
-        }
+      // Apply the color scheme through the shared table on every boot, so
+      // the chrome colors survive a reload and cannot drift from the
+      // Appearance tab. With nothing stored, or a stale unknown id,
+      // applyScheme resolves to Windows Standard: the default is explicit
+      // rather than an accident of CSS fallbacks.
+      const scheme = applyScheme(savedColorScheme)
+      if (!savedBackground && desktopRef.current) {
+        desktopRef.current.style.backgroundColor = scheme.desktop
       }
 
       setIsInitialized(true)
