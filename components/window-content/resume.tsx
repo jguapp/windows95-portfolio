@@ -7,12 +7,15 @@ import { CloseIcon, MaximizeIcon, MinimizeIcon } from "@/components/win95-contro
 import { messageBox } from "@/components/win95-dialog"
 
 // Dialog components
+type SaveFormat = "html" | "doc" | "pdf"
+
 const SaveDialog = ({
   isOpen,
   onClose,
   onSave,
-}: { isOpen: boolean; onClose: () => void; onSave: (filename: string) => void }) => {
+}: { isOpen: boolean; onClose: () => void; onSave: (filename: string, format: SaveFormat) => void }) => {
   const [filename, setFilename] = useState("Resume-Joel-Vasquez")
+  const [format, setFormat] = useState<SaveFormat>("doc")
 
   if (!isOpen) return null
 
@@ -42,23 +45,28 @@ const SaveDialog = ({
                 onChange={(e) => setFilename(e.target.value)}
                 className="flex-1 border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm"
               />
-              <span className="ml-1 text-sm pt-1">.html</span>
+              <span className="ml-1 text-sm pt-1">{`.${format}`}</span>
             </div>
           </div>
 
           <div className="mb-4">
             <label className="block text-sm mb-1">Save as type:</label>
-            <select className="w-full border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm">
-              <option>HTML Document (*.html)</option>
-              <option disabled>Word Document (*.doc)</option>
-              <option disabled>PDF Document (*.pdf)</option>
+            <select
+              data-save-type
+              value={format}
+              onChange={(e) => setFormat(e.target.value as SaveFormat)}
+              className="w-full border border-[#808080] shadow-[inset_1px_1px_#404040] px-2 py-1 text-sm"
+            >
+              <option value="doc">Word Document (*.doc)</option>
+              <option value="pdf">PDF Document (*.pdf)</option>
+              <option value="html">HTML Document (*.html)</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-2">
             <button
               className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] text-sm"
-              onClick={() => onSave(`${filename}.html`)}
+              onClick={() => onSave(filename, format)}
             >
               Save
             </button>
@@ -678,8 +686,23 @@ export default function Resume() {
     setSaveDialogOpen(true)
   }
 
-  const handleSave = (filename: string) => {
+  const handleSave = (filename: string, format: SaveFormat) => {
     if (!resumeRef.current) return
+
+    /*
+      PDF goes through the real print pipeline: the browser's print dialog
+      carries Save as PDF everywhere, and it paginates the same document the
+      Print command produces. Word and HTML are downloads of the same styled
+      markup; Word has opened HTML dressed as .doc since Office 97.
+    */
+    if (format === "pdf") {
+      setSaveDialogOpen(false)
+      document.body.setAttribute("data-printing", "resume")
+      const done = () => document.body.removeAttribute("data-printing")
+      window.addEventListener("afterprint", done, { once: true })
+      setTimeout(() => window.print(), 50)
+      return
+    }
 
     // Create a styled HTML version of the resume
     const resumeContent = resumeRef.current.innerHTML
@@ -701,7 +724,6 @@ export default function Resume() {
           h1 { text-align: center; font-size: 1.5em; margin-bottom: 4px; }
           h2 { font-weight: bold; border-bottom: 1px solid #000; margin-bottom: 4px; }
           a { color: #0000FF; text-decoration: underline; }
-          .header-info { text-align: center; margin-bottom: 16px; }  text-decoration: underline; }
           .header-info { text-align: center; margin-bottom: 16px; }
           .section { margin-bottom: 16px; }
           .flex-between { display: flex; justify-content: space-between; }
@@ -714,14 +736,16 @@ export default function Resume() {
       </html>
     `
 
-    // Create a Blob with the HTML content
-    const blob = new Blob([htmlContent], { type: "text/html" })
+    // The same markup either way; the MIME type and extension make it Word's.
+    const blob = new Blob([htmlContent], {
+      type: format === "doc" ? "application/msword" : "text/html",
+    })
 
     // Create a download link
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = filename
+    link.download = `${filename}.${format}`
 
     // Trigger the download
     document.body.appendChild(link)
