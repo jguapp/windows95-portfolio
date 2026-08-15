@@ -9,6 +9,8 @@
  * run START RESUME, without either knowing anything about the other.
  */
 
+import { persistenceEnabled } from "@/lib/persistence"
+
 export type FsFile = {
   kind: "file"
   /** Window id this file opens in, if any. */
@@ -130,11 +132,12 @@ export function subscribe(listener: () => void): () => void {
   are defensive; a visitor with storage disabled just gets a fresh drive each
   visit, which is where everyone started in 1995 anyway.
 */
+// A version bump must be mirrored in lib/persistence.ts WORK_KEYS.
 const FS_VERSION = 1
 const FS_KEY = `win95:fs:v${FS_VERSION}`
 
 function persist() {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined" || !persistenceEnabled()) return
   try {
     window.localStorage.setItem(FS_KEY, JSON.stringify(root))
   } catch {
@@ -148,6 +151,7 @@ let hydrated = false
 function hydrate() {
   if (hydrated || typeof window === "undefined") return
   hydrated = true
+  if (!persistenceEnabled()) return
   try {
     const raw = window.localStorage.getItem(FS_KEY)
     if (!raw) return

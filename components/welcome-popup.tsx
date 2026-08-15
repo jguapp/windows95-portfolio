@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { CloseIcon } from "./win95-controls"
+import { persistenceEnabled, setPersistenceEnabled } from "@/lib/persistence"
 
 interface WelcomePopupProps {
   onClose: () => void
@@ -16,8 +17,17 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [showAgain, setShowAgain] = useState(false)
+  /**
+   * The footer checkbox: whether files, drawings and desktop items a visitor
+   * makes are remembered by their browser. Read once on mount; toggling it
+   * takes effect immediately, and turning it off clears what was saved.
+   */
+  const [persist, setPersist] = useState(true)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
+
+  useEffect(() => {
+    setPersist(persistenceEnabled())
+  }, [])
   const [isVisible, setIsVisible] = useState(false)
 
   const popupRef = useRef<HTMLDivElement>(null)
@@ -190,19 +200,23 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           </div>
 
           <div className="win95-footer flex justify-between items-center border-t border-t-[#808080] p-[10px_20px] bg-[#c0c0c0] text-[10px]">
-            <label className="flex items-center text-[10px] text-black cursor-pointer">
+            <label className="flex items-center text-[10px] text-black cursor-pointer" data-persist-toggle>
               <div
                 className="relative w-[13px] h-[13px] bg-white border border-[#808080] mr-[5px]"
-                onClick={() => setShowAgain(!showAgain)}
+                onClick={() => {
+                  const next = !persist
+                  setPersist(next)
+                  setPersistenceEnabled(next)
+                }}
               >
-                {showAgain && (
+                {persist && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-black text-[10px] leading-none">✓</span>
                   </div>
                 )}
               </div>
               <span>
-                <u>S</u>how this Welcome Screen next time you start Windows
+                <u>R</u>emember my files and desktop changes on this computer
               </span>
             </label>
             <button
