@@ -196,7 +196,8 @@ export default function InternetExplorer() {
   const [typed, setTyped] = useState(HOME)
 
   const current = history[at]
-  const site = SITES[current]
+  // The built-ins answer with or without www, as the real sites did.
+  const site = SITES[current] ?? SITES[current.replace("http://", "http://www.")]
   /** Anything with a dot in its host is worth sending to the archive. */
   const isWebby = (url: string) => {
     try {

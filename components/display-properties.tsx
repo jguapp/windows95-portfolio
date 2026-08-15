@@ -8,6 +8,7 @@ import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/l
 import { WALLPAPERS } from "@/lib/wallpapers"
 import { COLOR_SCHEMES, applyScheme } from "@/lib/color-schemes"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
+import { CloseIcon } from "@/components/win95-controls"
 import SaverPreview from "@/components/saver-preview"
 
 interface DisplayPropertiesProps {
@@ -184,10 +185,11 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
         >
           <span className="text-sm font-bold">Display Properties</span>
           <button
-            className="w-4 h-4 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] flex items-center justify-center text-black text-[10px]"
+            className="w-4 h-4 shrink-0 bg-[#c0c0c0] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000] cursor-pointer text-black p-0 flex items-center justify-center hover:bg-[#dfdfdf] active:shadow-[inset_1px_1px_#000000,inset_-1px_-1px_#ffffff]"
+            aria-label="Close"
             onClick={onClose}
           >
-            x
+            <CloseIcon />
           </button>
         </div>
 

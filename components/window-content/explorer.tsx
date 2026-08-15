@@ -317,7 +317,11 @@ export default function Explorer() {
                     className={view === "large" ? "h-8 w-8" : "h-4 w-4"}
                     style={{ imageRendering: "pixelated" }}
                   />
-                  <span className={view === "large" ? "break-words leading-tight" : ""}>{name}</span>
+                  <span
+                    className={view === "large" ? "w-full break-words leading-tight [overflow-wrap:anywhere]" : ""}
+                  >
+                    {name}
+                  </span>
                 </button>
               ))}
             </div>
