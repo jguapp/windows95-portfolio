@@ -14,7 +14,7 @@
 
 **A portfolio you don't scroll. You boot it.**
 
-No hero section. No parallax. Just a teal desktop, a Start menu, and a résumé that opens in Microsoft Word 95.
+No hero section. No parallax. Just a teal desktop, a Start menu, and a resume that opens in Microsoft Word 95.
 
 <img src=".github/assets/desktop.png" alt="The Windows 95 desktop with the welcome screen" width="90%" />
 
@@ -24,14 +24,14 @@ No hero section. No parallax. Just a teal desktop, a Start menu, and a résumé 
 
 <div align="center">
 
-## The résumé opens in Word 95
+## The resume opens in Word 95
 
 </div>
 
 Not a PDF embed. A working Word 95 window: two toolbars, a ruler with indent markers, a status bar that tracks the caret, and an editable page sitting on the grey workspace. Change the font, resize the text, insert a table, run a spell check, zoom the page.
 
 <div align="center">
-<img src=".github/assets/resume.png" alt="The résumé rendered inside a Microsoft Word 95 window" width="90%" />
+<img src=".github/assets/resume.png" alt="The resume rendered inside a Microsoft Word 95 window" width="90%" />
 </div>
 
 ###
