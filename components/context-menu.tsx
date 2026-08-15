@@ -78,16 +78,25 @@ export default function ContextMenu({ x, y, menuItems, onClose }: ContextMenuPro
   return (
     <div
       ref={menuRef}
-      className="context-menu absolute bg-[#c0c0c0] border-t-2 border-l-2 border-[#dfdfdf] border-r-2 border-b-2 border-r-[#808080] border-b-[#808080] shadow-md z-50"
-      style={{ left: `${x}px`, top: `${y}px`, width: "160px" }}
+      className="context-menu absolute z-50 select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
+      style={{
+        left: `${x}px`,
+        top: `${y}px`,
+        minWidth: 138,
+        border: "2px solid #eeeded",
+        borderRightColor: "#000000",
+        borderRightWidth: 1,
+        borderBottomColor: "#000000",
+        borderBottomWidth: 1,
+      }}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="p-0.5">
         {menuItems.map((item, index) => (
           <div key={index} onMouseEnter={() => handleMouseEnter(index)}>
             <button
-              className={`w-full text-left px-2 py-0.5 text-sm flex items-center justify-between ${
-                item.disabled ? "text-gray-500" : "hover:bg-[#000080] hover:text-white"
+              className={`relative w-full whitespace-nowrap text-left text-[12px] py-[2px] pl-6 pr-6 block ${
+                item.disabled ? "text-[#8a8989]" : "hover:bg-[#040d91] hover:text-white"
               }`}
               onClick={() => {
                 if (!item.disabled && !item.submenu && item.action) {
@@ -97,26 +106,31 @@ export default function ContextMenu({ x, y, menuItems, onClose }: ContextMenuPro
               disabled={item.disabled}
             >
               <span>{item.labelWithUnderline || item.label}</span>
-              {item.submenu && <span className="ml-2">▶</span>}
+              {item.submenu && <span className="absolute right-1 top-[5px] text-[9px]">▶</span>}
             </button>
-            {item.divider && <hr className="my-0.5 border-t border-[#808080] border-b border-b-[#dfdfdf]" />}
+            {item.divider && <div className="mx-0 my-1" style={{ borderBottom: "2.5px groove #eae8e8" }} />}
 
             {/* Submenu */}
             {item.submenu && activeSubmenu === index && item.submenuItems && (
               <div
-                className="absolute bg-[#c0c0c0] border-t-2 border-l-2 border-[#dfdfdf] border-r-2 border-b-2 border-r-[#808080] border-b-[#808080] shadow-md"
+                className="absolute select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
                 style={{
-                  left: "155px",
-                  top: `${index * 21}px`,
-                  width: "160px",
+                  left: "calc(100% - 4px)",
+                  top: `${index * 22}px`,
+                  minWidth: 138,
+                  border: "2px solid #eeeded",
+                  borderRightColor: "#000000",
+                  borderRightWidth: 1,
+                  borderBottomColor: "#000000",
+                  borderBottomWidth: 1,
                 }}
               >
                 <div className="p-0.5">
                   {item.submenuItems.map((subItem, subIndex) => (
                     <div key={subIndex}>
                       <button
-                        className={`w-full text-left px-2 py-0.5 text-sm flex items-center ${
-                          subItem.disabled ? "text-gray-500" : "hover:bg-[#000080] hover:text-white"
+                        className={`w-full whitespace-nowrap text-left text-[12px] py-[2px] pl-6 pr-6 block ${
+                          subItem.disabled ? "text-[#8a8989]" : "hover:bg-[#040d91] hover:text-white"
                         }`}
                         onClick={() => {
                           if (!subItem.disabled && subItem.action) {
@@ -128,7 +142,7 @@ export default function ContextMenu({ x, y, menuItems, onClose }: ContextMenuPro
                         {subItem.labelWithUnderline || subItem.label}
                       </button>
                       {subItem.divider && (
-                        <hr className="my-0.5 border-t border-[#808080] border-b border-b-[#dfdfdf]" />
+                        <div className="mx-0 my-1" style={{ borderBottom: "2.5px groove #eae8e8" }} />
                       )}
                     </div>
                   ))}

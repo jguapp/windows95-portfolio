@@ -65,24 +65,17 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
     >
       <div className="flex h-full">
         {/*
-          The sidebar banner: the grey band down the left with the wordmark
-          reading bottom to top from the bottom edge, "Windows" bold and "95"
-          light, both white, in a condensed gothic face.
+          The sidebar banner: the Windows95 bitmap itself, anchored at the
+          bottom of a band painted the bitmap's own gray so it continues
+          upward however tall the menu grows.
         */}
-        <div className="relative w-[26px] overflow-hidden" style={{ backgroundColor: "#7f7f7f" }} data-start-banner>
-          <span
-            className="absolute bottom-[6px] left-1/2 whitespace-nowrap text-white"
-            style={{
-              writingMode: "vertical-rl",
-              transform: "translateX(-50%) rotate(180deg)",
-              fontSize: 20,
-              lineHeight: 1,
-              fontFamily: '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif',
-            }}
-          >
-            <span style={{ fontWeight: 700 }}>Windows</span>
-            <span style={{ fontWeight: 400 }}>95</span>
-          </span>
+        <div className="relative w-[26px] overflow-hidden" style={{ backgroundColor: "#7b7d7b" }} data-start-banner>
+          <img
+            src="/images/blob/sidebar95.png"
+            alt=""
+            className="absolute bottom-0 left-0 w-full"
+            style={{ imageRendering: "pixelated" }}
+          />
         </div>
 
         <ul className="list-none m-0 p-0 flex-1 relative">

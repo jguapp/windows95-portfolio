@@ -49,7 +49,8 @@ SOFTWARE.
 ## From Yuteoctober/wins95Portfolio (MIT)
 
 `winamp-32.png`, `contact-32.png`, `contact-16.png`
-and the Clippy animation frames in `../clippy/` are from
+and the Clippy animation frames in `../clippy/` and the start menu sidebar
+`../blob/sidebar95.png` are from
 https://github.com/Yuteoctober/wins95Portfolio, MIT licensed.
 
 ## From 1j01/98
