@@ -44,6 +44,8 @@ const COMMANDS: Record<string, string> = {
   winamp: "winamp",
   iexplore: "internet-explorer",
   find: "find-files",
+  sounds: "sound-properties",
+  mmsys: "sound-properties",
   ie: "internet-explorer",
   outlook: "contact",
   contact: "contact",

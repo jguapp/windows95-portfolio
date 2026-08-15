@@ -22,6 +22,7 @@ import PatchNotes from "./window-content/patch-notes"
 import InternetExplorer from "./window-content/internet-explorer"
 import StubApp, { STUB_PROGRAMS } from "./window-content/stub-app"
 import FindFiles from "./window-content/find-files"
+import SoundProperties from "./window-content/sound-properties"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -83,6 +84,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   "patch-notes": { width: 640, height: 560 },
   "internet-explorer": { width: 780, height: 580 },
   "find-files": { width: 620, height: 460 },
+  "sound-properties": { width: 380, height: 470 },
   wordpad: { width: 460, height: 340 },
   charmap: { width: 460, height: 340 },
   mediaplayer: { width: 460, height: 340 },
@@ -178,6 +180,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <InternetExplorer />
       case "find-files":
         return <FindFiles />
+      case "sound-properties":
+        return <SoundProperties />
       default: {
         // The Windows 95 program set: stubs with the right icon and a line
         // about what each was.

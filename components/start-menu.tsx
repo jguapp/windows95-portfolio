@@ -259,6 +259,12 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <span className="text-sm">Control Panel</span>
                     </div>
                   </li>
+                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("sound-properties")}>
+                    <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
+                      <img src="/images/blob/sound.png" alt="Sounds" className="mr-2 w-5 h-5 object-contain" />
+                      <span className="text-sm">Sounds</span>
+                    </div>
+                  </li>
                   <li className="hover:bg-[#000080] hover:text-white">
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img

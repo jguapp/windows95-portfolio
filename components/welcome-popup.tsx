@@ -242,7 +242,8 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               <li className="mb-1">Clippit is back, dismissible, and can be summoned from the desktop</li>
               <li className="mb-1">Five screen savers and a wallpaper picker that really apply</li>
               <li className="mb-1">The Windows 95 sound scheme, synthesised rather than sampled</li>
-              <li className="mb-1">Release Notes, under Start &gt; Documents, covering the whole history</li>
+              <li className="mb-1">Find really searches the C:\ drive, and Sounds really plays the scheme</li>
+              <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
               <li className="mb-1">The desktop works on a phone: windows open full screen</li>
             </ul>
 
@@ -250,8 +251,6 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             <ul className="list-disc pl-5 text-xs">
               <li className="mb-1">Saving your Notepad and Paint files between visits</li>
               <li className="mb-1">Keyboard control of the desktop, and Alt+Tab between windows</li>
-              <li className="mb-1">Find that actually searches the C:\ drive</li>
-              <li className="mb-1">Sound Properties, so the scheme can be heard and changed</li>
               <li className="mb-1">A Properties sheet for files inside Explorer</li>
             </ul>
           </div>
