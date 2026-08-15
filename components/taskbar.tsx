@@ -230,7 +230,7 @@ export default function Taskbar({
           })}
           onClick={() => setShowDateTime(true)}
           className="text-black bg-[#c0c0c0] pl-[6px] pr-[7px] h-full flex items-center justify-center"
-          style={{ fontSize: 11, lineHeight: "13px" }}
+          style={{ fontSize: 12, lineHeight: "14px" }}
         >
           {time}
         </button>
