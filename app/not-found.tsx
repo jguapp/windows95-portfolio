@@ -1,9 +1,11 @@
+import Link from "next/link"
+
 /**
  * The 404, in the desktop's own voice.
  *
  * A wrong path gets the dialog Windows 95 would have shown: an error box on
- * the teal desktop with one way out. Server-rendered, no client code; the
- * button is a plain link back to C:\.
+ * the teal desktop with one way out. Server-rendered; the button is a link
+ * back to C:\.
  */
 export default function NotFound() {
   return (
@@ -30,12 +32,12 @@ export default function NotFound() {
           </div>
         </div>
         <div className="flex justify-center pb-4">
-          <a
+          <Link
             href="/"
             className="min-w-[110px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-6 py-[5px] text-center text-sm text-black active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
           >
             Back to C:\
-          </a>
+          </Link>
         </div>
       </div>
     </main>
