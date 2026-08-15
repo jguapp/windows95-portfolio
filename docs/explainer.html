@@ -37,7 +37,7 @@
 <p class="meta">
   Project: windows95-portfolio &nbsp;|&nbsp; Repository: github.com/jguapp/windows95-portfolio
   &nbsp;|&nbsp; Live: builtbyjoel.dev<br>
-  Document generated: August 14, 2026 &nbsp;|&nbsp;
+  Document generated: August 15, 2026 &nbsp;|&nbsp;
   Audience: any smart reader, no prior knowledge assumed.
 </p>
 
@@ -174,7 +174,11 @@ windows, the core programs. A resume content pass in February 2026. Then, in Aug
 2026, a long series of authenticity and depth passes: the games grew from five to
 eight, the guestbook moved onto Postgres, the shell gained Run, Date/Time, Properties,
 screensavers, sounds, Clippy, Winamp, Internet Explorer, a working Display Properties,
-and a phone layout. The plan was never written down in advance; the constant was a rule
+and a phone layout. A final pass in mid August made the shell honest in the
+small places: Find searches the virtual drive, the Sounds applet plays the real
+scheme, File and Print in Word produces the actual resume, saved files and
+Paint drawings persist between visits, and the desktop drives from the
+keyboard with an Alt+Q window switcher. The plan was never written down in advance; the constant was a rule
 of thumb, that anything on screen should behave the way 1995 did, and where the original
 was worse than useless (an unwinnable Pong bot, a title bar inside a title bar) the fix
 follows what Windows would have done.</p>
@@ -187,7 +191,7 @@ follows what Windows would have done.</p>
 <tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell and the social preview image.</td></tr>
 <tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
 <tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>
-<tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore.</td></tr>
+<tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore, arrow-key navigation, persistence of created items.</td></tr>
 <tr><td><code>components/window.tsx</code></td><td>The window frame: drag, eight resize grips, minimise, maximise rules, per-app sizes, the id-to-content switch.</td></tr>
 <tr><td><code>components/taskbar.tsx</code></td><td>Start button, window buttons, quick launch, volume slider, single-click clock.</td></tr>
 <tr><td><code>components/start-menu.tsx</code></td><td>The menu and its cascades, including Accessories.</td></tr>
@@ -197,8 +201,9 @@ follows what Windows would have done.</p>
 <tr><td><code>components/clippy.tsx</code></td><td>The assistant: contextual tips, dismissal for good.</td></tr>
 <tr><td><code>components/winamp.tsx</code></td><td>Webamp host plus the synthesised opening track.</td></tr>
 <tr><td><code>components/shutdown.tsx</code>, <code>run-dialog.tsx</code>, <code>date-time-properties.tsx</code>, <code>item-properties.tsx</code></td><td>The shell dialogs.</td></tr>
+<tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
 <tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites and synthesised cries.</td></tr>
-<tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, stub-app, and <code>games/</code> with the eight games.</td></tr>
+<tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
 <tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
@@ -239,6 +244,24 @@ one.</p>
 renderer so the full-screen saver and the Settings preview run identical code. 3D Pipes
 grows through a grid, takes any open neighbour preferring straight ahead, and only dies
 boxed in. The idle watcher rearms on any input and honours reduced motion.</p>
+<h3>Persistence</h3>
+<p>The virtual drive in <code>lib/filesystem.ts</code> hydrates from localStorage on
+first read and writes itself back on every mutation, under a version-salted key
+(<code>win95:fs:v1</code>) so a change to the shipped default tree can discard stale
+snapshots by bumping the version. Desktop items a visitor creates persist with their
+positions under <code>win95:desktop-items:v1</code>; the default icons deliberately
+reset to the grid on every load so a dragged icon cannot be lost. Paint's Save to
+Desktop turns the canvas into a data URL that is both the icon's image and its stored
+content. All storage access is wrapped: quota errors and disabled storage degrade to a
+fresh drive per visit rather than a crash.</p>
+<h3>The keyboard desktop</h3>
+<p>Icons are tabbable; focus selects, Enter or Space opens. Arrow movement is spatial
+rather than index-based because icons sit at free coordinates: the candidate with the
+least forward distance plus three times the off-axis drift wins. The window switcher
+lives on Alt+Q because the operating system consumes Alt+Tab before the browser sees
+it, the same reason Run is Ctrl+Alt+R. Q steps while Alt is held, releasing Alt
+commits through the same path as opening a window, which is what restores a minimised
+one.</p>
 <h3>The resolution simulation</h3>
 <p>Choosing 640x480 sets a CSS zoom of <code>innerWidth / 640</code> on the shell root,
 never below 1, since a lower resolution over the same glass made everything larger.</p>
@@ -266,7 +289,9 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
 <tr><td>localStorage keys</td>
     <td><code>win95-background-image</code>, <code>win95-background-pattern</code>,
         <code>win95-color-scheme</code>, <code>win95-screensaver</code>,
-        <code>win95-screensaver-wait</code>, <code>win95-resolution</code></td></tr>
+        <code>win95-screensaver-wait</code>, <code>win95-resolution</code>,
+        <code>win95:fs:v1</code> (the drive), <code>win95:desktop-items:v1</code>
+        (created icons), <code>win95:scores:*</code> (game high scores)</td></tr>
 </table>
 
 <h2 id="deps">Part VIII. Dependencies</h2>
@@ -321,19 +346,18 @@ and the guestbook uses its in-process fallback.</p>
 
 <h2 id="limits">Part XII. Limitations and future improvements</h2>
 <ul>
-  <li>Visitor state largely resets on reload by design; only display settings and the
-      guestbook persist.</li>
+  <li>Display settings, the guestbook, high scores, files written to the virtual
+      drive and created desktop items persist; open windows and their layout still
+      reset on reload.</li>
   <li>Internet Explorer carries built-in pages only, since external sites refuse
       framing.</li>
-  <li>Keyboard access to the desktop itself is thin: icons are not tabbable and there
-      is no Alt+Tab.</li>
   <li>The Playwright checks that verify behaviour (around 350 assertions at last full
       run) live outside the repository in a scratch directory; moving them into
       <code>tests/</code> with a config would make them part of the definition of
       done.</li>
   <li>styled-components is declared but unused and could be dropped.</li>
-  <li>Most valuable next: persistence for Notepad and Paint saves, and in-repo
-      tests.</li>
+  <li>Most valuable next: in-repo tests, and a Properties sheet for files inside
+      Explorer.</li>
 </ul>
 
 <h2 id="trouble">Part XIII. Troubleshooting</h2>
@@ -366,6 +390,8 @@ and the guestbook uses its in-process fallback.</p>
   <dt>Custom event</dt><dd>A named DOM message any component can dispatch or listen for.</dd>
   <dt>Honeypot</dt><dd>A hidden form field only robots fill in; entries with it filled are dropped.</dd>
   <dt>LCG</dt><dd>Linear congruential generator, the tiny random number recipe behind FreeCell's numbered deals.</dd>
+  <dt>localStorage</dt><dd>The browser's per-site key-value store, which is what
+      makes saved files, drawings and scores survive a reload.</dd>
   <dt>Marquee selection</dt><dd>The dotted rectangle drawn while dragging over the desktop.</dd>
   <dt>Pooled connection</dt><dd>A shared database connection endpoint that survives many short-lived serverless instances.</dd>
   <dt>Rate limit</dt><dd>A cap on how often one client may perform an action.</dd>
