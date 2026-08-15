@@ -16,6 +16,12 @@ for it, and Chess, Tetris and Pong never shipped with Windows at all, so
 `reversi-32.png`, `chess-32.png`, `tetris-32.png` and `pong-32.png` are original
 artwork drawn for this project on the same 32x32 grid at 16 colours.
 
+`charmap-32.png`, `charmap-16.png`, `cdplayer-32.png`, `phone-32.png`,
+`hyperterm-32.png` and `defrag-32.png` are from the `@react95/icons` npm
+package, version 2.5.3 (MIT), which extracts the original Windows 95 icon
+resources: Charmap1, Cdplayer107, Dialer1, Dpmodemx701 and Defrag. They
+replaced drawings made for this project that never matched the set.
+
 ```
 MIT License
 
