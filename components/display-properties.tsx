@@ -628,19 +628,21 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
 
             <div className="mb-3">
               <label className="block text-xs mb-1">Desktop area:</label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">Less</span>
-                <input
-                  type="range"
-                  data-resolution-slider
-                  min={0}
-                  max={RESOLUTIONS.length - 1}
-                  step={1}
-                  value={RESOLUTIONS.findIndex((r) => r.id === resolution)}
-                  onChange={(e) => setResolution(RESOLUTIONS[Number(e.target.value)].id)}
-                  className="flex-1"
-                />
-                <span className="text-xs">More</span>
+              {/* A list, not a slider: four discrete modes deserve four rows. */}
+              <div className="border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white">
+                {RESOLUTIONS.map((res) => (
+                  <button
+                    key={res.id}
+                    type="button"
+                    data-resolution-option={res.id}
+                    onClick={() => setResolution(res.id)}
+                    className={`block w-full px-2 py-[2px] text-left text-xs ${
+                      resolution === res.id ? "bg-[#000080] text-white" : "text-black"
+                    }`}
+                  >
+                    {res.label}
+                  </button>
+                ))}
               </div>
               <div className="mt-1 text-center text-xs" data-resolution-label>
                 {RESOLUTIONS.find((r) => r.id === resolution)?.label}

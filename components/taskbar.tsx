@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { taskbarTitle, windowIcon } from "@/lib/window-titles"
 import { getVolume, isMuted, play, setMuted, setVolume, subscribeVolume } from "@/lib/sound"
+import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import DateTimeProperties from "@/components/date-time-properties"
 
 /** Quick Launch entries, in the order Windows put them: the shell first. */
@@ -29,6 +30,13 @@ export default function Taskbar({
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
   const [showVolume, setShowVolume] = useState(false)
+  /** The QuickRes popup: a list of resolutions above the tray. */
+  const [showRes, setShowRes] = useState(false)
+  const [resolution, setResolutionState] = useState("native")
+
+  useEffect(() => {
+    setResolutionState(readResolution())
+  }, [])
   /** The clock opens Date/Time Properties. Windows wanted a double click;
    *  a single one is friendlier and costs nothing here. */
   const [showDateTime, setShowDateTime] = useState(false)
@@ -59,6 +67,17 @@ export default function Taskbar({
     window.addEventListener("mousedown", onDown)
     return () => window.removeEventListener("mousedown", onDown)
   }, [showVolume])
+
+  useEffect(() => {
+    if (!showRes) return
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest("[data-resolution-panel]") || target.closest("#resolution-button")) return
+      setShowRes(false)
+    }
+    window.addEventListener("mousedown", onDown)
+    return () => window.removeEventListener("mousedown", onDown)
+  }, [showRes])
 
 
   useEffect(() => {
@@ -142,18 +161,16 @@ export default function Taskbar({
       <div id="right-section" className="relative flex items-center h-[34px] border-2 border-inset border-white">
         {/*
           The screen resolution changer. QuickRes shipped with the Power Toys
-          and put a little monitor in the tray; clicking it jumps straight to
-          the Settings tab of Display Properties, where the Desktop area
-          slider lives.
+          and put a little monitor in the tray; clicking it popped a menu of
+          resolutions right there, which is what this does. Display Properties
+          stays one entry away at the bottom of the list.
         */}
         <button
           type="button"
           id="resolution-button"
           aria-label="Screen resolution"
           title="Screen resolution"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "settings" } }))
-          }
+          onClick={() => setShowRes((v) => !v)}
           className="flex items-center justify-center w-[20px] h-full bg-[#c0c0c0]"
         >
           <img
@@ -163,6 +180,45 @@ export default function Taskbar({
             style={{ imageRendering: "pixelated" }}
           />
         </button>
+
+        {showRes && (
+          <div
+            data-resolution-panel
+            className="win95-type absolute bottom-[36px] right-1 z-[1100] w-[170px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_6px_rgba(0,0,0,0.5)]"
+            style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+          >
+            {RESOLUTIONS.map((res) => (
+              <button
+                key={res.id}
+                type="button"
+                data-resolution-option={res.id}
+                onClick={() => {
+                  applyResolution(res.id)
+                  setResolutionState(res.id)
+                  setShowRes(false)
+                  play("click")
+                }}
+                className="flex w-full items-center gap-1 px-2 py-[3px] text-left hover:bg-[#000080] hover:text-white"
+              >
+                <span className="inline-block w-[12px]">{resolution === res.id ? "\u2713" : ""}</span>
+                {res.label}
+              </button>
+            ))}
+            <div className="mx-1 my-1 border-t border-[#808080] border-b border-b-white" />
+            <button
+              type="button"
+              data-resolution-settings
+              onClick={() => {
+                setShowRes(false)
+                window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "settings" } }))
+              }}
+              className="flex w-full items-center gap-1 px-2 py-[3px] text-left hover:bg-[#000080] hover:text-white"
+            >
+              <span className="inline-block w-[12px]" />
+              Adjust Display Properties...
+            </button>
+          </div>
+        )}
 
         {/*
           The tray speaker was decoration. Clicking it opens the volume control
