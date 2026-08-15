@@ -193,6 +193,7 @@ follows what Windows would have done.</p>
 <tr><td><code>app/page.tsx</code></td><td>The one route. Window list state, boot flag, global shortcuts, hosts every overlay.</td></tr>
 <tr><td><code>app/globals.css</code></td><td>The Win95 look: bevels, scrollbars, cursors, the type scale, the blanket font rule and its <code>.win95-mono</code> escape hatch.</td></tr>
 <tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell and the social preview image.</td></tr>
+<tr><td><code>app/not-found.tsx</code></td><td>The 404: a Windows 95 error dialog on the teal desktop with one button back to C:\.</td></tr>
 <tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
 <tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>
 <tr><td><code>actions/visitors.ts</code>, <code>lib/visitors.ts</code></td><td>The two hit counters: unique visitors for Clippy's greeting, page views for the home page. Rate limited per IP; the IP is stored nowhere.</td></tr>
@@ -207,7 +208,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/winamp.tsx</code></td><td>Webamp host plus the synthesised opening track.</td></tr>
 <tr><td><code>components/shutdown.tsx</code>, <code>run-dialog.tsx</code>, <code>date-time-properties.tsx</code>, <code>item-properties.tsx</code></td><td>The shell dialogs.</td></tr>
 <tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
-<tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites and synthesised cries.</td></tr>
+<tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites, synthesised cries, full-screen party and item menus, and computed back sprites.</td></tr>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
 <tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
@@ -289,6 +290,13 @@ and 3840x2160 modes shrink the shell below 1x for more desktop area, which is wh
 more pixels bought. The tray monitor pops a QuickRes-style menu of the six modes; the
 Settings tab offers the same list, because discrete modes deserve rows rather than a
 slider.</p>
+<h3>The computed back sprite</h3>
+<p>The player's fighter is shown from behind, as Red and Blue drew it. Rather
+than hand-drawing twelve back views, <code>backView</code> derives one: mirror
+the stance, keep the ink outline, flatten highlights and dark face marks into
+the mid shades, and skin over the unpainted holes that eyes and mouths are
+made of, found by flood-filling the true outside of the silhouette. At Game
+Boy resolution the result is what a back sprite amounted to.</p>
 <h3>The 28-colour palette</h3>
 <p>Paint's colour box is exactly MS Paint's 28, stored as fourteen dark-light pairs, and
 the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted to a
@@ -345,7 +353,13 @@ with zod, carries a honeypot field and an in-memory rate limit
 Postgres client uses a pooled connection string. <code>next.config.mjs</code> sets a
 content security policy. The <code>public/images/win95/NOTICE.md</code> file records
 icon provenance, and the battle sprites are CC0 with the source linked in
-<code>pokemon-roster.ts</code>. One historical note: an earlier Web3Forms access key
+<code>pokemon-roster.ts</code>. Both database tables enable row level security at
+creation: the app's role owns them and owners bypass RLS, so the server actions
+are unaffected, while any other role reads nothing by default. The rate limiter
+logs one structured warn per rejection, so the host's log stream shows a flood
+as a spike of <code>rate_limit_exceeded</code> lines. There are no API routes,
+admin surfaces, or protected routes; error paths return generic messages and log
+details server-side only. One historical note: an earlier Web3Forms access key
 appeared in the repository's git history, and rotating it is tracked as issue #10.</p>
 
 <h2 id="running">Part X. Running the project</h2>
