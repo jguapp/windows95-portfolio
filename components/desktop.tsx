@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
+import { WALLPAPERS } from "@/lib/wallpapers"
 import ContextMenu from "./context-menu"
 import DisplayProperties from "./display-properties"
 import ItemProperties from "./item-properties"
@@ -337,60 +338,18 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
 
       // Load saved background settings
       const savedBackground = localStorage.getItem("win95-background-image")
-      const savedPattern = localStorage.getItem("win95-background-pattern")
       const savedColorScheme = localStorage.getItem("win95-color-scheme")
 
-      // Apply saved background if it exists
+      // Apply saved background if it exists. A stored id the set no longer
+      // carries simply falls through to the default paint.
       if (savedBackground && desktopRef.current) {
-        const bgImage = savedBackground
-        const pattern = savedPattern || "center"
-
-        // Find the background image URL
-        const backgroundImageObj = [
-          {
-            id: "windows-default",
-            name: "Windows Default",
-            url: "/images/wallpapers/teal.png",
-          },
-          {
-            id: "clouds",
-            name: "Clouds",
-            url: "/images/wallpapers/clouds.png",
-          },
-          {
-            id: "bricks",
-            name: "Bricks",
-            url: "/images/wallpapers/bricks.png",
-          },
-          {
-            id: "maze",
-            name: "Maze",
-            url: "/images/wallpapers/maze.png",
-          },
-          {
-            id: "waves",
-            name: "Waves",
-            url: "/images/wallpapers/waves.png",
-          },
-        ].find((bg) => bg.id === bgImage)
-
+        const backgroundImageObj = WALLPAPERS.find((bg) => bg.id === savedBackground)
         if (backgroundImageObj) {
           desktopRef.current.style.backgroundImage = `url(${backgroundImageObj.url})`
-
-          // Set background size and repeat based on pattern
-          if (pattern === "center") {
-            desktopRef.current.style.backgroundSize = "auto"
-            desktopRef.current.style.backgroundRepeat = "no-repeat"
-            desktopRef.current.style.backgroundPosition = "center"
-          } else if (pattern === "tile") {
-            desktopRef.current.style.backgroundSize = "auto"
-            desktopRef.current.style.backgroundRepeat = "repeat"
-            desktopRef.current.style.backgroundPosition = "top left"
-          } else if (pattern === "stretch") {
-            desktopRef.current.style.backgroundSize = "cover"
-            desktopRef.current.style.backgroundRepeat = "no-repeat"
-            desktopRef.current.style.backgroundPosition = "center"
-          }
+          // Wallpaper tiles; Center and Stretch did not exist in 1995.
+          desktopRef.current.style.backgroundSize = "auto"
+          desktopRef.current.style.backgroundRepeat = "repeat"
+          desktopRef.current.style.backgroundPosition = "top left"
         }
       }
 

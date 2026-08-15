@@ -51,3 +51,11 @@ https://github.com/Yuteoctober/wins95Portfolio, MIT licensed.
 `ie-32.png`, `ie-16.png`, `wordpad-32.png`, `mediaplayer-32.png`,
 `soundrec-32.png` and `scandisk-32.png` are from https://github.com/1j01/98, the
 open-source Windows 98 recreation.
+
+## Wallpapers
+
+The patterns in `../wallpapers/` named after the Windows 95 wallpaper set
+(Black Thatch, Blue Rivets, Bubbles, Carved Stone, Egypt, Houndstooth,
+Metal Links, Pinstripe, Red Blocks, Sandstone, Straw Mat, Tiles, Triangles)
+are drawn imitations generated from scripted geometry for this project. They
+are not Microsoft's bitmap files and were not derived from them.

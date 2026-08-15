@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/lib/screensavers"
+import { WALLPAPERS } from "@/lib/wallpapers"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import SaverPreview from "@/components/saver-preview"
 
@@ -14,34 +15,8 @@ interface DisplayPropertiesProps {
   initialTab?: string
 }
 
-// Background images for the user to choose from
-const backgroundImages = [
-  {
-    id: "windows-default",
-    name: "Windows Default",
-    url: "/images/wallpapers/teal.png",
-  },
-  {
-    id: "clouds",
-    name: "Clouds",
-    url: "/images/wallpapers/clouds.png",
-  },
-  {
-    id: "bricks",
-    name: "Bricks",
-    url: "/images/wallpapers/bricks.png",
-  },
-  {
-    id: "maze",
-    name: "Maze",
-    url: "/images/wallpapers/maze.png",
-  },
-  {
-    id: "waves",
-    name: "Waves",
-    url: "/images/wallpapers/waves.png",
-  },
-]
+// The shared wallpaper set; the desktop's restore path reads the same list.
+const backgroundImages = WALLPAPERS
 
 // The savers the engine actually implements, plus none.
 const screenSavers = [{ id: "none", name: "(None)" }, ...SAVERS]
@@ -67,10 +42,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
     const saved = localStorage.getItem("win95-background-image")
     return saved || "windows-default"
   })
-  const [backgroundPattern, setBackgroundPattern] = useState(() => {
-    const saved = localStorage.getItem("win95-background-pattern")
-    return saved || "tile" // center, tile, stretch
-  })
   const [selectedScreenSaver, setSelectedScreenSaver] = useState<string>(() => readSaverSettings().saver)
   const [resolution, setResolution] = useState<string>(() => readResolution())
   const [waitTime, setWaitTime] = useState(() => readSaverSettings().waitMinutes)
@@ -90,28 +61,15 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
       const bgImage = backgroundImages.find((bg) => bg.id === selectedBackground)
       if (bgImage) {
         desktop.style.backgroundImage = `url(${bgImage.url})`
+        // Wallpaper tiles; Center and Stretch did not exist in 1995.
+        desktop.style.backgroundSize = "auto"
+        desktop.style.backgroundRepeat = "repeat"
+        desktop.style.backgroundPosition = "top left"
 
-        // Set background size and repeat based on pattern
-        if (backgroundPattern === "center") {
-          desktop.style.backgroundSize = "auto"
-          desktop.style.backgroundRepeat = "no-repeat"
-          desktop.style.backgroundPosition = "center"
-        } else if (backgroundPattern === "tile") {
-          desktop.style.backgroundSize = "auto"
-          desktop.style.backgroundRepeat = "repeat"
-          desktop.style.backgroundPosition = "top left"
-        } else if (backgroundPattern === "stretch") {
-          desktop.style.backgroundSize = "cover"
-          desktop.style.backgroundRepeat = "no-repeat"
-          desktop.style.backgroundPosition = "center"
-        }
-
-        // Save settings to localStorage
         localStorage.setItem("win95-background-image", selectedBackground)
-        localStorage.setItem("win95-background-pattern", backgroundPattern)
       }
     }
-  }, [selectedBackground, backgroundPattern])
+  }, [selectedBackground])
 
   // Add a new useEffect to apply color scheme changes
   useEffect(() => {
@@ -258,7 +216,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
   const handleApply = () => {
     // Save all settings to localStorage
     localStorage.setItem("win95-background-image", selectedBackground)
-    localStorage.setItem("win95-background-pattern", backgroundPattern)
     writeSaverSettings({ saver: selectedScreenSaver as SaverId | "none", waitMinutes: waitTime })
     localStorage.setItem("win95-color-scheme", selectedColorScheme)
 
@@ -268,21 +225,10 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
       const bgImage = backgroundImages.find((bg) => bg.id === selectedBackground)
       if (bgImage) {
         desktop.style.backgroundImage = `url(${bgImage.url})`
-
-        // Set background size and repeat based on pattern
-        if (backgroundPattern === "center") {
-          desktop.style.backgroundSize = "auto"
-          desktop.style.backgroundRepeat = "no-repeat"
-          desktop.style.backgroundPosition = "center"
-        } else if (backgroundPattern === "tile") {
-          desktop.style.backgroundSize = "auto"
-          desktop.style.backgroundRepeat = "repeat"
-          desktop.style.backgroundPosition = "top left"
-        } else if (backgroundPattern === "stretch") {
-          desktop.style.backgroundSize = "cover"
-          desktop.style.backgroundRepeat = "no-repeat"
-          desktop.style.backgroundPosition = "center"
-        }
+        // Wallpaper tiles; Center and Stretch did not exist in 1995.
+        desktop.style.backgroundSize = "auto"
+        desktop.style.backgroundRepeat = "repeat"
+        desktop.style.backgroundPosition = "top left"
       }
     }
   }
@@ -396,56 +342,17 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                     ))}
                   </select>
                 </div>
-
-                <div className="mb-3">
-                  <label className="block text-xs mb-1">Display:</label>
-                  <div className="flex flex-col gap-1">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="pattern"
-                        value="center"
-                        checked={backgroundPattern === "center"}
-                        onChange={() => setBackgroundPattern("center")}
-                        className="mr-1"
-                      />
-                      <span className="text-xs">Center</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="pattern"
-                        value="tile"
-                        checked={backgroundPattern === "tile"}
-                        onChange={() => setBackgroundPattern("tile")}
-                        className="mr-1"
-                      />
-                      <span className="text-xs">Tile</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="pattern"
-                        value="stretch"
-                        checked={backgroundPattern === "stretch"}
-                        onChange={() => setBackgroundPattern("stretch")}
-                        className="mr-1"
-                      />
-                      <span className="text-xs">Stretch</span>
-                    </label>
-                  </div>
-                </div>
               </div>
 
               {/* Preview */}
               <div className="w-32 h-32 border border-[#808080] shadow-[inset_1px_1px_#000000] bg-[#008080] relative">
                 <div
-                  className="absolute inset-2 bg-cover bg-center border border-[#000000]"
+                  className="absolute inset-2 border border-[#000000]"
                   style={{
                     backgroundImage: `url(${backgroundImages.find((bg) => bg.id === selectedBackground)?.url})`,
-                    backgroundSize: backgroundPattern === "stretch" ? "cover" : "auto",
-                    backgroundRepeat: backgroundPattern === "tile" ? "repeat" : "no-repeat",
-                    backgroundPosition: "center",
+                    backgroundSize: "auto",
+                    backgroundRepeat: "repeat",
+                    backgroundPosition: "top left",
                   }}
                 >
                   {/* Mini desktop icons */}
