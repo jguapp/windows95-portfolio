@@ -178,7 +178,11 @@ and a phone layout. A final pass in mid August made the shell honest in the
 small places: Find searches the virtual drive, the Sounds applet plays the real
 scheme, File and Print in Word produces the actual resume, saved files and
 Paint drawings persist between visits, and the desktop drives from the
-keyboard with an Alt+Q window switcher. The plan was never written down in advance; the constant was a rule
+keyboard with an Alt+Q window switcher. A polish pass followed: the Appearance
+tab gained schemes that truly recolor the shell, the wallpaper set became drawn
+imitations of what the box shipped, the tray monitor grew a QuickRes menu, and
+two hit counters in the guestbook's database gave Clippy and the 1996 home page
+one real number each. The plan was never written down in advance; the constant was a rule
 of thumb, that anything on screen should behave the way 1995 did, and where the original
 was worse than useless (an unwinnable Pong bot, a title bar inside a title bar) the fix
 follows what Windows would have done.</p>
@@ -191,6 +195,7 @@ follows what Windows would have done.</p>
 <tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell and the social preview image.</td></tr>
 <tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
 <tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>
+<tr><td><code>actions/visitors.ts</code>, <code>lib/visitors.ts</code></td><td>The two hit counters: unique visitors for Clippy's greeting, page views for the home page. Rate limited per IP; the IP is stored nowhere.</td></tr>
 <tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore, arrow-key navigation, persistence of created items.</td></tr>
 <tr><td><code>components/window.tsx</code></td><td>The window frame: drag, eight resize grips, minimise, maximise rules, per-app sizes, the id-to-content switch.</td></tr>
 <tr><td><code>components/taskbar.tsx</code></td><td>Start button, window buttons, quick launch, volume slider, single-click clock.</td></tr>
@@ -204,7 +209,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
 <tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites and synthesised cries.</td></tr>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
-<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
+<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
 </table>
@@ -262,9 +267,23 @@ lives on Alt+Q because the operating system consumes Alt+Tab before the browser 
 it, the same reason Run is Ctrl+Alt+R. Q steps while Alt is held, releasing Alt
 commits through the same path as opening a window, which is what restores a minimised
 one.</p>
+<h3>Appearance schemes</h3>
+<p>The chrome is built from two Tailwind arbitrary-value classes: silver faces
+and navy title bars. Rather than rewrite four hundred call sites, globals.css
+re-declares those two generated classes after the utilities layer, routed
+through CSS variables that <code>lib/color-schemes.ts</code> writes; the
+fallbacks are the Windows Standard values, so a machine that never touches the
+Appearance tab is pixel-identical to the hard-coded original. Each scheme names
+a desktop, face and titlebar color, and selection highlights follow the
+titlebar, the way the stock schemes tied them. The wallpaper and scheme tables
+live in <code>lib/</code> because Display Properties and the desktop's boot
+restore each used to carry private copies that drifted.</p>
 <h3>The resolution simulation</h3>
 <p>Choosing 640x480 sets a CSS zoom of <code>innerWidth / 640</code> on the shell root,
-never below 1, since a lower resolution over the same glass made everything larger.</p>
+never below 1, since a lower resolution over the same glass made everything larger.
+The tray monitor pops a QuickRes-style menu of the four modes; the Settings tab
+offers the same list, because four discrete modes deserve rows rather than a
+slider.</p>
 <h3>The 28-colour palette</h3>
 <p>Paint's colour box is exactly MS Paint's 28, stored as fourteen dark-light pairs, and
 the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted to a
@@ -273,6 +292,9 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
 <h2 id="contracts">Part VII. Data contracts</h2>
 <table>
 <tr><th>Contract</th><th>Fields</th></tr>
+<tr><td>Counters (Postgres, table created on first use)</td>
+    <td><code>name text primary key</code>, <code>count bigint</code>; rows
+        <code>visitors</code> and <code>hits</code></td></tr>
 <tr><td>Guestbook row (Postgres, table created on first use)</td>
     <td><code>id serial</code>, <code>name text</code>, <code>message text</code>,
         <code>site text null</code>, <code>drawing text null</code> (data URL),
@@ -291,7 +313,8 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
         <code>win95-color-scheme</code>, <code>win95-screensaver</code>,
         <code>win95-screensaver-wait</code>, <code>win95-resolution</code>,
         <code>win95:fs:v1</code> (the drive), <code>win95:desktop-items:v1</code>
-        (created icons), <code>win95:scores:*</code> (game high scores)</td></tr>
+        (created icons), <code>win95:scores:*</code> (game high scores),
+        <code>win95:visitor</code> (your visitor number)</td></tr>
 </table>
 
 <h2 id="deps">Part VIII. Dependencies</h2>

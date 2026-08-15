@@ -246,6 +246,8 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
               <li className="mb-1">Your saved files and Paint drawings survive between visits</li>
               <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
+              <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the shell</li>
+              <li className="mb-1">A real hit counter on the 1996 home page, and Clippy knows your visitor number</li>
               <li className="mb-1">The desktop works on a phone: windows open full screen</li>
             </ul>
 
