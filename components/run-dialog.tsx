@@ -43,6 +43,7 @@ const COMMANDS: Record<string, string> = {
   games: "games",
   winamp: "winamp",
   iexplore: "internet-explorer",
+  find: "find-files",
   ie: "internet-explorer",
   outlook: "contact",
   contact: "contact",

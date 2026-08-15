@@ -21,6 +21,7 @@ import RecycleBinWindow from "./window-content/recycle-bin"
 import PatchNotes from "./window-content/patch-notes"
 import InternetExplorer from "./window-content/internet-explorer"
 import StubApp, { STUB_PROGRAMS } from "./window-content/stub-app"
+import FindFiles from "./window-content/find-files"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -81,6 +82,7 @@ const DEFAULT_SIZE: Record<string, Size> = {
   games: { width: 900, height: 680 },
   "patch-notes": { width: 640, height: 560 },
   "internet-explorer": { width: 780, height: 580 },
+  "find-files": { width: 620, height: 460 },
   wordpad: { width: 460, height: 340 },
   charmap: { width: 460, height: 340 },
   mediaplayer: { width: 460, height: 340 },
@@ -174,6 +176,8 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <PatchNotes />
       case "internet-explorer":
         return <InternetExplorer />
+      case "find-files":
+        return <FindFiles />
       default: {
         // The Windows 95 program set: stubs with the right icon and a line
         // about what each was.

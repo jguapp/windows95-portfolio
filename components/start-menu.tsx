@@ -298,7 +298,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <ul className="list-none m-0 p-0">
-                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("explorer")}>
+                  <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("find-files")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img src="/images/find-icon.png" alt="Files or Folders" className="mr-2 w-7 h-7" />
                       <span className="text-sm">Files or Folders...</span>
