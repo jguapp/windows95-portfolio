@@ -303,6 +303,9 @@ export default function DesktopItem({
         top: `${currentPosition.y}px`,
         zIndex: isDragging ? 100 : 1,
         userSelect: "none", // Prevent text selection during drag
+        // Focus selects the icon, and the dotted label border is the Windows
+        // 95 focus indicator; the native ring would sit on top of it.
+        outline: "none",
       }}
       onClick={(e) => {
         if (!isDragging && !isRenaming) {
@@ -322,6 +325,23 @@ export default function DesktopItem({
         e.stopPropagation()
         if (!isRenaming) {
           onRightClick(e)
+        }
+      }}
+      // Keyboard: Tab reaches the icon, Enter or Space opens it, and focus
+      // selects it so the Windows 95 dotted label marks where you are. The
+      // target check keeps keys typed into the rename input from opening.
+      tabIndex={0}
+      role="button"
+      aria-label={label}
+      onFocus={() => {
+        if (!isRenaming) onClick()
+      }}
+      onKeyDown={(e) => {
+        if (isRenaming || e.target !== e.currentTarget) return
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          e.stopPropagation()
+          onDoubleClick()
         }
       }}
       data-id={id}

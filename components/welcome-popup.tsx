@@ -245,12 +245,12 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               <li className="mb-1">Find really searches the C:\ drive, and Sounds really plays the scheme</li>
               <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
               <li className="mb-1">Your saved files and Paint drawings survive between visits</li>
+              <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
               <li className="mb-1">The desktop works on a phone: windows open full screen</li>
             </ul>
 
             <h2 className="text-sm font-bold mb-2">Planned Features</h2>
             <ul className="list-disc pl-5 text-xs">
-              <li className="mb-1">Keyboard control of the desktop, and Alt+Tab between windows</li>
               <li className="mb-1">A Properties sheet for files inside Explorer</li>
             </ul>
           </div>

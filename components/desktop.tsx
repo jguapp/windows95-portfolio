@@ -1242,6 +1242,54 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
     }
   }, [selectionBox.isSelecting])
 
+  /*
+    Arrow keys walk the icon grid.
+
+    Icons live at free positions rather than in a true grid structure, so the
+    move is spatial: from the focused icon, the best candidate in the pressed
+    direction is the one with the least forward distance plus a weighted
+    penalty for drifting off axis. The handler only acts when the key event
+    comes from a desktop icon, so typing inside windows is untouched.
+  */
+  const handleDesktopKeyNav = (e: React.KeyboardEvent) => {
+    const dirs: Record<string, [number, number]> = {
+      ArrowRight: [1, 0],
+      ArrowLeft: [-1, 0],
+      ArrowDown: [0, 1],
+      ArrowUp: [0, -1],
+    }
+    const dir = dirs[e.key]
+    if (!dir) return
+    const source = (e.target as HTMLElement).closest?.("[data-id]")
+    if (!source) return
+    const fromId = source.getAttribute("data-id")
+    const from = fromId ? iconPositions[fromId] : undefined
+    if (!from) return
+    e.preventDefault()
+
+    let best: string | null = null
+    let bestScore = Number.POSITIVE_INFINITY
+    for (const icon of icons) {
+      if (icon.id === fromId) continue
+      const pos = iconPositions[icon.id]
+      if (!pos) continue
+      const dx = pos.x - from.x
+      const dy = pos.y - from.y
+      const forward = dx * dir[0] + dy * dir[1]
+      if (forward < 1) continue
+      const lateral = Math.abs(dx * dir[1]) + Math.abs(dy * dir[0])
+      const score = forward + lateral * 3
+      if (score < bestScore) {
+        bestScore = score
+        best = icon.id
+      }
+    }
+    if (best) {
+      const el = document.querySelector<HTMLElement>(`[data-id="${CSS.escape(best)}"]`)
+      el?.focus()
+    }
+  }
+
   return (
     <>
       <div
@@ -1249,6 +1297,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
         id="desktop"
         className="w-full h-[calc(100vh-34px)] p-2.5 relative"
         onClick={handleDesktopClick}
+        onKeyDown={handleDesktopKeyNav}
         onContextMenu={handleDesktopRightClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

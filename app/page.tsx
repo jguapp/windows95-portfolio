@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import Desktop from "@/components/desktop"
+import WindowSwitcher from "@/components/window-switcher"
 import Taskbar from "@/components/taskbar"
 import StartMenu from "@/components/start-menu"
 import Window from "@/components/window"
@@ -165,6 +166,57 @@ export default function Home() {
     }
   }, [])
 
+  /*
+    The window switcher, on Alt+Q.
+
+    Alt+Tab never reaches the page: the operating system takes it first, the
+    same reason Run lives on Ctrl+Alt+R rather than Windows+R. Holding Alt and
+    tapping Q steps through the open windows, releasing Alt commits to the
+    selected one, Escape cancels. Minimised windows are listed too; committing
+    to one restores it, because that is what handleOpenWindow does.
+  */
+  const [switcher, setSwitcher] = useState<{ list: string[]; index: number } | null>(null)
+  const switcherRef = useRef(switcher)
+  switcherRef.current = switcher
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const open = switcherRef.current
+      if (e.altKey && e.key.toLowerCase() === "q") {
+        e.preventDefault()
+        if (open) {
+          const step = e.shiftKey ? -1 : 1
+          setSwitcher({ ...open, index: (open.index + step + open.list.length) % open.list.length })
+        } else if (openWindows.length > 0) {
+          // Start on the window after the active one, as Alt+Tab did.
+          const activeIdx = activeWindow ? openWindows.indexOf(activeWindow) : -1
+          setSwitcher({ list: openWindows, index: (activeIdx + 1) % openWindows.length })
+        }
+      } else if (open && e.key === "Escape") {
+        e.preventDefault()
+        setSwitcher(null)
+      }
+    }
+    const onKeyUp = (e: KeyboardEvent) => {
+      const open = switcherRef.current
+      if (open && e.key === "Alt") {
+        e.preventDefault()
+        setSwitcher(null)
+        handleOpenWindow(open.list[open.index])
+      }
+    }
+    // Losing the page mid-hold would strand the strip on screen.
+    const onBlur = () => setSwitcher(null)
+    window.addEventListener("keydown", onKeyDown)
+    window.addEventListener("keyup", onKeyUp)
+    window.addEventListener("blur", onBlur)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("keyup", onKeyUp)
+      window.removeEventListener("blur", onBlur)
+    }
+  }, [openWindows, activeWindow, handleOpenWindow])
+
   // Listen for custom openWindow events
   useEffect(() => {
     const handleCustomOpenWindow = (event: CustomEvent) => {
@@ -317,6 +369,8 @@ export default function Home() {
 
       {/* The Office Assistant: beside your windows, behind none of them. */}
       <Clippy activeWindow={activeWindow} hidden={maximizedWindows.size > 0} />
+
+      {switcher && <WindowSwitcher windows={switcher.list} selected={switcher.index} />}
 
       {/* Winamp, loaded on first open */}
       {showWinamp && <Winamp onClose={() => setShowWinamp(false)} />}
