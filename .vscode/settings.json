@@ -1,0 +1,6 @@
+{
+  // Tailwind's @tailwind and @apply are valid directives PostCSS compiles
+  // away; VS Code's built-in CSS validator does not know them and filled the
+  // Problems panel with "Unknown at rule" warnings for app/globals.css.
+  "css.lint.unknownAtRules": "ignore"
+}
