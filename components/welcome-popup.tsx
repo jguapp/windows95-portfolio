@@ -19,10 +19,11 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   /**
    * The footer checkbox: whether files, drawings and desktop items a visitor
-   * makes are remembered by their browser. Read once on mount; toggling it
-   * takes effect immediately, and turning it off clears what was saved.
+   * makes are remembered by their browser. Off until they say otherwise;
+   * toggling takes effect immediately, and turning it off clears what was
+   * saved.
    */
-  const [persist, setPersist] = useState(true)
+  const [persist, setPersist] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
 
   useEffect(() => {
@@ -258,7 +259,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
               <li className="mb-1">The Windows 95 sound scheme, synthesised rather than sampled</li>
               <li className="mb-1">Find really searches the C:\ drive, and Sounds really plays the scheme</li>
               <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
-              <li className="mb-1">Your saved files and Paint drawings survive between visits</li>
+              <li className="mb-1">Saved files and Paint drawings can survive between visits: check the box below</li>
               <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
               <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the shell</li>
               <li className="mb-1">A real hit counter on the 1996 home page, and Clippy knows your visitor number</li>

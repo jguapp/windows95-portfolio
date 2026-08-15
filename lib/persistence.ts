@@ -4,8 +4,8 @@
  * The master switch for remembering a visitor's work.
  *
  * Saving files and desktop items into someone's browser is a choice they
- * should make, so the welcome dialog asks. The switch defaults to on, which
- * preserves the behaviour the desk shipped with; turning it off stops new
+ * should make, so the welcome dialog asks and nothing is saved until the box
+ * is checked: consent is opt-in, not assumed. Turning it back off stops new
  * writes and clears what was already saved, because "stop remembering" that
  * keeps the old data would be a strange kind of stopping.
  *
@@ -25,7 +25,7 @@ const WORK_KEYS = ["win95:fs:v1", "win95:desktop-items:v1"]
 export function persistenceEnabled(): boolean {
   if (typeof window === "undefined") return false
   try {
-    return window.localStorage.getItem(FLAG_KEY) !== "0"
+    return window.localStorage.getItem(FLAG_KEY) === "1"
   } catch {
     return false
   }
