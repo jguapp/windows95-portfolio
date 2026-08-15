@@ -1056,6 +1056,23 @@ export default function Paint() {
   }
 
   // Handle save
+  /** Puts the drawing on the desktop as an icon, where it persists. */
+  const handleSaveToDesktop = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    try {
+      window.dispatchEvent(
+        new CustomEvent("createDesktopIcon", {
+          detail: { label: fileName.replace(/\.[a-z0-9]+$/i, ""), dataUrl: canvas.toDataURL("image/png") },
+        }),
+      )
+      setIsModified(false)
+      messageBox({ title: "Paint", text: `${fileName} is on the desktop now, and it will still be there tomorrow.`, icon: "information" })
+    } catch (e) {
+      messageBox({ title: "Paint", text: "Error saving to the desktop: " + e, icon: "error" })
+    }
+  }
+
   const handleSave = () => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -1101,6 +1118,13 @@ export default function Paint() {
               New
             </div>
             <div className="px-4 py-1 text-xs hover:bg-[#000080] hover:text-white cursor-pointer">Open...</div>
+            <div
+              className="px-4 py-1 text-xs hover:bg-[#000080] hover:text-white cursor-pointer"
+              data-save-desktop
+              onClick={handleSaveToDesktop}
+            >
+              Save to Desktop
+            </div>
             <div className="px-4 py-1 text-xs hover:bg-[#000080] hover:text-white cursor-pointer" onClick={handleSave}>
               Save
             </div>

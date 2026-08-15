@@ -106,6 +106,51 @@ const DEFAULT_ICONS: DesktopItemData[] = [
   },
 ]
 
+/*
+  Created desktop items persist; the default set does not.
+
+  The default icons always reset to the grid, a decision made deliberately so
+  a dragged icon cannot be lost for good. Items a visitor creates, folders,
+  documents, drawings saved from Paint, are a different matter: losing those
+  on refresh made creating them pointless. They are stored with their
+  positions and rejoin the desktop on load.
+*/
+const CUSTOM_KEY = "win95:desktop-items:v1"
+const DEFAULT_IDS = new Set(DEFAULT_ICONS.map((icon) => icon.id))
+
+interface StoredItem {
+  item: DesktopItemData
+  pos?: { x: number; y: number }
+}
+
+function loadCustomItems(): StoredItem[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    const seen = new Set<string>()
+    return parsed.filter((e) => {
+      if (!e || !e.item || typeof e.item.id !== "string") return false
+      if (DEFAULT_IDS.has(e.item.id) || seen.has(e.item.id)) return false
+      seen.add(e.item.id)
+      return true
+    })
+  } catch {
+    return []
+  }
+}
+
+function saveCustomItems(entries: StoredItem[]) {
+  if (typeof window === "undefined") return
+  try {
+    window.localStorage.setItem(CUSTOM_KEY, JSON.stringify(entries))
+  } catch {
+    // A drawing can outgrow the quota; losing persistence beats crashing.
+  }
+}
+
 export default function Desktop({ onOpenWindow }: DesktopProps) {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [iconPositions, setIconPositions] = useState<IconPosition>({})
@@ -224,6 +269,45 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Check if clipboard has content
   const hasClipboardContent = clipboard !== null
 
+  // Whatever is not a default icon is a visitor's work: keep it.
+  useEffect(() => {
+    if (!isInitialized) return
+    const custom = icons
+      .filter((icon) => !DEFAULT_IDS.has(icon.id))
+      .map((icon) => ({ item: icon, pos: iconPositions[icon.id] }))
+    saveCustomItems(custom)
+  }, [icons, iconPositions, isInitialized])
+
+  /*
+    Paint asks for a desktop icon by event: it has no business knowing how the
+    desktop stores things. The drawing arrives as a data URL that doubles as
+    the icon, and double-clicking it reopens Paint.
+  */
+  useEffect(() => {
+    const onCreate = (e: Event) => {
+      const { label, dataUrl } = (e as CustomEvent).detail as { label: string; dataUrl: string }
+      if (!label || !dataUrl) return
+      // State updaters must stay pure, so the id is fixed here and each
+      // updater below is idempotent; the effect re-subscribes per id.
+      const itemId = `drawing-${nextItemId}`
+      setIcons((prev) =>
+        prev.some((icon) => icon.id === itemId)
+          ? prev
+          : [...prev, { id: itemId, label, icon: dataUrl, type: "shortcut", shortcutTo: "paint" }],
+      )
+      setIconPositions((prev) => ({
+        ...prev,
+        [itemId]: {
+          x: FIRST_COLUMN_X + ICON_COLUMN_W * 3,
+          y: FIRST_ROW_Y + ((nextItemId - 1) % 6) * ICON_SPACING_Y,
+        },
+      }))
+      setNextItemId(nextItemId + 1)
+    }
+    window.addEventListener("createDesktopIcon", onCreate)
+    return () => window.removeEventListener("createDesktopIcon", onCreate)
+  }, [nextItemId, FIRST_COLUMN_X, ICON_COLUMN_W, FIRST_ROW_Y, ICON_SPACING_Y])
+
   // Load saved background settings but reset icons on page refresh
   useEffect(() => {
     if (isInitialized) return
@@ -234,7 +318,22 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       // Recycle Bin, and any icon added since the save had no position at all
       // and stacked on top of the first one.
       localStorage.removeItem("win95-icon-positions")
-      resetToDefaultIcons()
+      // Defaults reset to the grid; created items come back where they were.
+      const custom = loadCustomItems()
+      setIcons([...DEFAULT_ICONS, ...custom.map((c) => c.item)])
+      const positions = initializeIconPositions()
+      custom.forEach((c, i) => {
+        positions[c.item.id] = c.pos ?? {
+          x: FIRST_COLUMN_X + ICON_COLUMN_W * 3,
+          y: FIRST_ROW_Y + i * ICON_SPACING_Y,
+        }
+      })
+      setIconPositions(positions)
+      const maxId = custom
+        .map((c) => Number.parseInt(c.item.id.replace(/^\D+/, ""), 10))
+        .filter(Number.isFinite)
+        .reduce((a, b) => Math.max(a, b), 0)
+      setNextItemId(maxId + 1)
 
       // Load saved background settings
       const savedBackground = localStorage.getItem("win95-background-image")

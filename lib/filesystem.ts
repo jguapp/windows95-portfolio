@@ -111,6 +111,7 @@ let root: FsDir = INITIAL
 const listeners = new Set<() => void>()
 
 export function getRoot(): FsDir {
+  hydrate()
   return root
 }
 
@@ -119,7 +120,48 @@ export function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
+/*
+  Persistence.
+
+  The tree lives in localStorage so a file saved from Notepad or written from
+  DOS is still there tomorrow. The key carries a version: when the shipped
+  default tree changes shape, bumping FS_VERSION discards stale saves rather
+  than letting an old snapshot freeze the defaults forever. Reads and writes
+  are defensive; a visitor with storage disabled just gets a fresh drive each
+  visit, which is where everyone started in 1995 anyway.
+*/
+const FS_VERSION = 1
+const FS_KEY = `win95:fs:v${FS_VERSION}`
+
+function persist() {
+  if (typeof window === "undefined") return
+  try {
+    window.localStorage.setItem(FS_KEY, JSON.stringify(root))
+  } catch {
+    // Quota or storage disabled. The session still works; it just forgets.
+  }
+}
+
+let hydrated = false
+
+/** Replaces the default tree with the stored one, once, on the client. */
+function hydrate() {
+  if (hydrated || typeof window === "undefined") return
+  hydrated = true
+  try {
+    const raw = window.localStorage.getItem(FS_KEY)
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    if (parsed && parsed.kind === "dir" && parsed.children) {
+      root = parsed as FsDir
+    }
+  } catch {
+    // A corrupt save is worth less than a working drive.
+  }
+}
+
 function notify() {
+  persist()
   root = { ...root }
   for (const l of listeners) l()
 }
