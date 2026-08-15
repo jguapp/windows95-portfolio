@@ -1737,3 +1737,49 @@ h6 {
   font-size: 11px !important;
   line-height: 13px !important;
 }
+
+/*
+  Printing the resume.
+
+  File > Print in the Word window sets data-printing="resume" on the body and
+  calls window.print(). Only the document page is meant on paper: visibility
+  hides the desktop while keeping layout, the page is repositioned to the top
+  left, and the clipping ancestors are opened so the content paginates instead
+  of stopping at one screenful. Every browser's print dialog includes Save as
+  PDF, which is the download recruiters actually want.
+*/
+@media print {
+  body[data-printing="resume"] * {
+    visibility: hidden;
+  }
+  body[data-printing="resume"] [data-page],
+  body[data-printing="resume"] [data-page] * {
+    visibility: visible;
+  }
+  body[data-printing="resume"] [data-page] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    transform: none !important;
+    box-shadow: none !important;
+    padding: 0.5in !important;
+  }
+  body[data-printing="resume"] .window,
+  body[data-printing="resume"] .window * {
+    overflow: visible !important;
+  }
+  body[data-printing="resume"] .window {
+    position: static !important;
+    height: auto !important;
+    width: auto !important;
+  }
+  /* The root chain is h-screen and overflow-hidden for the desktop; on paper
+     it has to grow with the document or everything past page one is cut. */
+  body[data-printing="resume"],
+  body[data-printing="resume"] #shell-root,
+  body[data-printing="resume"] #windows-container {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

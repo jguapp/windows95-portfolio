@@ -208,7 +208,23 @@ const PrintDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
           <div className="flex justify-end gap-2">
             <button
               className="px-4 py-1 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] text-sm"
-              onClick={onClose}
+              onClick={() => {
+                /*
+                  A real print, scoped by the stylesheet: with the printing
+                  attribute set, everything but the document page is hidden and
+                  the clipping ancestors open up so the resume paginates. The
+                  attribute comes off again whether the visitor prints or
+                  cancels, via afterprint.
+                */
+                onClose()
+                document.body.setAttribute("data-printing", "resume")
+                const done = () => {
+                  document.body.removeAttribute("data-printing")
+                  window.removeEventListener("afterprint", done)
+                }
+                window.addEventListener("afterprint", done)
+                setTimeout(() => window.print(), 50)
+              }}
             >
               Print
             </button>
