@@ -57,6 +57,16 @@ const RELEASES: Release[] = [
       "One secret behind a famous code.",
     ],
   },
+  {
+    version: "0.1 Beta",
+    date: "December 2024",
+    title: "The hackathon",
+    notes: [
+      "Born at a 24-hour hackathon: a teal desktop, a Start button, and the idea that a portfolio could boot.",
+      "Only the base layer made it in before the clock ran out, but the concept was proven.",
+      "Everything since exists because 24 hours was not enough and stopping was not interesting.",
+    ],
+  },
 ]
 
 export default function PatchNotes() {
