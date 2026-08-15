@@ -804,29 +804,14 @@ h6 {
 
 /* Add these styles to your globals.css file */
 
-.context-menu {
-  background-color: #c0c0c0;
-  border-top: 1px solid #ffffff;
-  border-left: 1px solid #ffffff;
-  border-right: 1px solid #000000;
-  border-bottom: 1px solid #000000;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.context-menu-item {
-  padding: 4px 20px;
-  cursor: pointer;
-}
-
-.context-menu-item:hover {
-  background-color: #000080;
-  color: white;
-}
-
-.context-menu-divider {
-  height: 1px;
-  background-color: #808080;
-  margin: 2px 0;
+/*
+  The context menu sizes itself: the blanket 1.2rem element rule would blow
+  its 12px items up to menu-and-a-half, so this out-ranks it.
+*/
+.context-menu,
+.context-menu button,
+.context-menu span {
+  font-size: 12px !important;
 }
 
 .desktop-icon img,
@@ -862,11 +847,6 @@ h6 {
 /* Context Menu Styles */
 .context-menu {
   user-select: none;
-}
-
-.context-menu-item {
-  font-size: 12px;
-  height: 20px;
 }
 
 /* Desktop Icon Styles */
