@@ -256,14 +256,14 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/controls-folder.ico"
                         alt="Control Panel"
-                        className="mr-2 w-4 h-4"
+                        className="mr-2 w-7 h-7"
                       />
                       <span className="text-sm">Control Panel</span>
                     </div>
                   </li>
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("sound-properties")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
-                      <img src="/images/blob/sound.png" alt="Sounds" className="mr-2 w-5 h-5 object-contain" />
+                      <img src="/images/blob/sound.png" alt="Sounds" className="mr-2 w-7 h-7 object-contain" />
                       <span className="text-sm">Sounds</span>
                     </div>
                   </li>
@@ -272,7 +272,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/printers-folder.ico"
                         alt="Printers"
-                        className="mr-2 w-4 h-4"
+                        className="mr-2 w-7 h-7"
                       />
                       <span className="text-sm">Printers</span>
                     </div>
@@ -282,7 +282,7 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <img
                         src="/images/blob/windows-logo-without-text.ico"
                         alt="Windows Setup"
-                        className="mr-2 w-4 h-4"
+                        className="mr-2 w-7 h-7"
                       />
                       <span className="text-sm">Windows Setup</span>
                     </div>
