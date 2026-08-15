@@ -78,6 +78,7 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Click an icon's name, pause, click it again. Renaming has always worked like that.", animation: GIF(3) },
   { phrase: "Display Properties has an Appearance tab. Rose turns everything pink. Everything.", animation: GIF(7) },
   { phrase: "Type joel95.net into Internet Explorer. The home page counts your visit.", animation: GIF(6) },
+  { phrase: "Winamp's eject button takes your own music. It never leaves your browser.", animation: GIF(2) },
 ]
 
 const INTERRUPTION = { phrase: "Please, do not interrupt me!", animation: NO_GIF }
