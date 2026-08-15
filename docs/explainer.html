@@ -342,7 +342,7 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
 <tr><td>zod</td><td>Validating the two form inputs on the server.</td></tr>
 <tr><td>webamp</td><td>The real Winamp 2.9 skin engine, MIT licensed, dynamically imported so only visitors who open it pay for it.</td></tr>
 <tr><td>@vercel/analytics</td><td>Page analytics on the host.</td></tr>
-<tr><td>styled-components</td><td>Present in package.json from the project's early era; the components use Tailwind. A candidate for removal.</td></tr>
+<tr><td>server-only</td><td>The marker package that makes importing a secret-touching module from client code a build error; listed explicitly rather than relying on hoisting.</td></tr>
 </table>
 
 <h2 id="security">Part IX. Security and governance</h2>
@@ -359,7 +359,10 @@ are unaffected, while any other role reads nothing by default. The rate limiter
 logs one structured warn per rejection, so the host's log stream shows a flood
 as a spike of <code>rate_limit_exceeded</code> lines. There are no API routes,
 admin surfaces, or protected routes; error paths return generic messages and log
-details server-side only. One historical note: an earlier Web3Forms access key
+details server-side only. A full-surface console sweep, part of the behaviour
+checks, opens every window, game, dialog and shell surface under a console
+listener and passes with zero errors; <code>pnpm audit</code> reports no known
+vulnerabilities in the dependency tree. One historical note: an earlier Web3Forms access key
 appeared in the repository's git history, and rotating it is tracked as issue #10.</p>
 
 <h2 id="running">Part X. Running the project</h2>
@@ -398,7 +401,6 @@ and the guestbook uses its in-process fallback.</p>
       run) live outside the repository in a scratch directory; moving them into
       <code>tests/</code> with a config would make them part of the definition of
       done.</li>
-  <li>styled-components is declared but unused and could be dropped.</li>
   <li>Most valuable next: in-repo tests, and a Properties sheet for files inside
       Explorer.</li>
 </ul>
