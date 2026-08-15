@@ -70,7 +70,7 @@ const DEFAULT_ICONS: DesktopItemData[] = [
   },
   {
     id: "internet-explorer",
-    label: "The Internet",
+    label: "Internet Explorer",
     icon: "/images/win95/ie-32.png",
     type: "application",
   },
@@ -156,7 +156,8 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   // Constants for icon positioning
   // The Windows 95 desktop grid: a 75px cell with the icon at the top and up to
   // two lines of label under it.
-  const ICON_SPACING_Y = 78
+  // The cell is 74px tall, so this is the cell plus an even gap.
+  const ICON_SPACING_Y = 82
   /** The taskbar, which icons must not sit under. */
   const TASKBAR_H = 34
   const FIRST_COLUMN_X = 12

@@ -1709,3 +1709,18 @@ h6 {
 [data-messagebox] button {
   cursor: url("/images/cursors/arrow.png") 0 0, default;
 }
+
+/*
+  Desktop icon labels.
+
+  Windows 95 set these at 8pt. The blanket 1.2rem rule further up is meant for
+  window chrome and wins over both .desktop-icon-text rules, which rendered
+  them at 16px: two lines then needed 40px and overflowed the icon's cell.
+  This is more specific and last, so it settles the argument.
+*/
+.desktop-icon .desktop-icon-text {
+  font-size: 11px !important;
+  line-height: 13px !important;
+  max-width: none;
+  text-overflow: clip;
+}

@@ -5,6 +5,12 @@ import { taskbarTitle, windowIcon } from "@/lib/window-titles"
 import { getVolume, isMuted, play, setMuted, setVolume, subscribeVolume } from "@/lib/sound"
 import DateTimeProperties from "@/components/date-time-properties"
 
+/** Quick Launch entries, in the order Windows put them: the shell first. */
+const QUICK_LAUNCH = [
+  { id: "explorer", label: "Windows Explorer", icon: "/images/win95/explorer-16.png" },
+  { id: "msdos", label: "MS-DOS Prompt", icon: "/images/win95/msdos-16.png" },
+]
+
 interface TaskbarProps {
   openWindows: string[]
   activeWindow: string | null
@@ -90,6 +96,18 @@ export default function Taskbar({
           Windows 98. A Windows 95 machine with IE4 installed had exactly this. */}
       <div id="quick-launch" className="flex items-center gap-[2px] px-1">
         <div className="mr-1 h-[22px] w-[3px] border-l border-l-[#808080] border-r border-r-white" />
+        {QUICK_LAUNCH.map((q) => (
+          <button
+            key={q.id}
+            type="button"
+            aria-label={q.label}
+            title={q.label}
+            onClick={() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: q.id } }))}
+            className="flex h-[22px] w-[22px] items-center justify-center border-2 border-transparent hover:border-t-white hover:border-l-white hover:border-r-[#404040] hover:border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+          >
+            <img src={q.icon} alt="" className="h-4 w-4" style={{ imageRendering: "pixelated" }} />
+          </button>
+        ))}
         <div className="ml-1 h-[22px] w-[3px] border-l border-l-[#808080] border-r border-r-white" />
       </div>
 

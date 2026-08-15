@@ -724,21 +724,29 @@ export default function Pong({ onReturn }: PongProps) {
             <canvas ref={canvasRef} className="bg-black" onMouseMove={handleMouseMove} />
           </div>
 
-          {/* Game Status */}
+          {/*
+            The status panel doubles as the start button.
+
+            Telling somebody to click New Game while the only New Game is
+            buried in a menu is a puzzle, not an instruction. Before a game
+            begins, and after one ends, this panel is the button; the rest of
+            the time it just reports.
+          */}
           <div className="flex justify-center">
-            <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
-              <span className="text-sm">
-                {!gameStarted
-                  ? "Click New Game to start"
-                  : gameOver
-                    ? winner === "player"
-                      ? "You Win!"
-                      : "Computer Wins!"
-                    : paused
-                      ? "Game Paused"
-                      : "Game in Progress"}
-              </span>
-            </div>
+            {!gameStarted || gameOver ? (
+              <button
+                type="button"
+                data-pong-start
+                onClick={initGame}
+                className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-6 py-1 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+              >
+                {gameOver ? (winner === "player" ? "You Win!  Play again" : "Computer Wins!  Play again") : "New Game"}
+              </button>
+            ) : (
+              <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
+                <span className="text-sm">{paused ? "Game Paused" : "Game in Progress"}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

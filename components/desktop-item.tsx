@@ -16,6 +16,18 @@ const ICON_PX = 32
  * look like a column.
  */
 const CELL_PX = 75
+/*
+  Every icon occupies the same box, whatever its label.
+
+  A one-line label made a 62px tall icon and a two-line label an 82px one,
+  against a fixed vertical pitch. The result was uneven: generous air under
+  Mail and Gallery, while My Projects and Recycle Bin overlapped the icon
+  below by four pixels. Windows 95 gave each icon an identical cell and let
+  the label use up to two lines inside it, which is what this does.
+*/
+const CELL_H = 74
+/** Two lines at the 13px line height the labels now render at. */
+const LABEL_H = 26
 
 interface DesktopItemProps {
   id: string
@@ -286,6 +298,7 @@ export default function DesktopItem({
       }`}
       style={{
         width: CELL_PX,
+        height: CELL_H,
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
         zIndex: isDragging ? 100 : 1,
@@ -356,9 +369,10 @@ export default function DesktopItem({
         </div>
       ) : (
         <p
-          className={`desktop-icon-text mt-1.5 mb-0 break-words leading-tight text-xs ${
+          className={`desktop-icon-text mt-1 mb-0 break-words leading-tight text-xs ${
             isSelected ? "border border-dotted border-white" : ""
           }`}
+          style={{ height: LABEL_H, overflow: "hidden" }}
           draggable="false"
           onDoubleClick={(e) => {
             e.stopPropagation()
