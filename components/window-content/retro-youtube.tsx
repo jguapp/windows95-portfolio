@@ -219,6 +219,19 @@ const COMMENTS: Record<string, Comment[]> = {
       when: "2 months ago",
       text: "any plans to open the API publicly?",
     },
+    {
+      name: "sync_or_swim",
+      when: "2 months ago",
+      text: "How do you handle a save that happens on two devices while one is offline?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 months ago",
+          owner: true,
+          text: "Last write wins per field, not per article. Two devices editing different things merge cleanly; the same field twice keeps the newer stamp. Boring and predictable beats clever and wrong for a reading list.",
+        },
+      ],
+    },
   ],
   calligraphy: [
     {
@@ -264,6 +277,24 @@ const COMMENTS: Record<string, Comment[]> = {
       name: "exponential_backoff_fan",
       when: "2 months ago",
       text: "graceful recovery of interrupted jobs is the part everyone skips. respect",
+    },
+    {
+      name: "channel_select",
+      when: "2 months ago",
+      text: "What happens to a job whose worker dies mid-run? Does it just vanish?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 months ago",
+          owner: true,
+          text: "A reaper reclaims anything that sat in the processing set past its lease. It goes back to pending with its retry count up by one, so a dead worker costs latency, not the job.",
+        },
+      ],
+    },
+    {
+      name: "goroutine_greg",
+      when: "3 months ago",
+      text: "worker pools in go are half the tutorial content on the internet and still everyone ships one with a leak",
     },
   ],
   portfolio: [
@@ -319,6 +350,24 @@ const COMMENTS: Record<string, Comment[]> = {
         },
       ],
     },
+    {
+      name: "msdos_forever",
+      when: "5 days ago",
+      text: "Typed dir in the DOS prompt expecting a joke and got an actual directory listing of an actual file tree. Respect.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "5 days ago",
+          owner: true,
+          text: "The C: drive is one tree that DOS, Explorer, Notepad and Find all share. Save a file in one and the others see it, which is the part that makes it feel like a computer instead of a set.",
+        },
+      ],
+    },
+    {
+      name: "y2k_prepper",
+      when: "1 week ago",
+      text: "does the clock survive the year 2000",
+    },
   ],
   rmp: [
     {
@@ -360,6 +409,37 @@ const COMMENTS: Record<string, Comment[]> = {
         },
       ],
     },
+    {
+      name: "manifest_v3_victim",
+      when: "2 weeks ago",
+      text: "Content script or does it hit an API from the background worker? MV3 killed half my extensions.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 weeks ago",
+          owner: true,
+          text: "Content script reads the instructor names off the page and the service worker does the lookups, so the ratings request never runs in page context. MV3's service worker lifecycle is the annoying part; every lookup has to assume the worker just woke up.",
+        },
+      ],
+    },
+    {
+      name: "prof_shopper",
+      when: "3 weeks ago",
+      text: "The amount of time this saves during enrollment week is honestly embarrassing to admit",
+    },
+    {
+      name: "webstore_wary",
+      when: "1 month ago",
+      text: "What data does it collect? Asking before I install anything with access to my student portal.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "1 month ago",
+          owner: true,
+          text: "None. No analytics, no account, nothing leaves the browser except the rating lookups themselves, and those carry professor names only. The source is public if you would rather read than trust.",
+        },
+      ],
+    },
   ],
   sportsflix: [
     {
@@ -393,6 +473,37 @@ const COMMENTS: Record<string, Comment[]> = {
       when: "1 week ago",
       text: "how are the public endpoints holding up under any real traffic?",
     },
+    {
+      name: "hero_banner_hater",
+      when: "2 weeks ago",
+      text: "Autoplaying hero video on a sports site is brave. Data usage?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 weeks ago",
+          owner: true,
+          text: "The hero is a poster frame until you interact. Autoplay on a page you opened to browse fixtures is how you lose people on mobile plans.",
+        },
+      ],
+    },
+    {
+      name: "kickoff_karen",
+      when: "3 weeks ago",
+      text: "Timezones. Every sports site gets them wrong. Tell me kickoff shows in my time.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "3 weeks ago",
+          owner: true,
+          text: "Everything renders from the viewer's clock. The schedule data is stored in UTC and formatted at the edge of the UI, never before.",
+        },
+      ],
+    },
+    {
+      name: "relegation_zone",
+      when: "1 month ago",
+      text: "the hover card showing form over the last five fixtures is a nice touch",
+    },
   ],
   sentiment: [
     {
@@ -413,6 +524,42 @@ const COMMENTS: Record<string, Comment[]> = {
       when: "3 months ago",
       text: "50k reviews is the classic dataset. Did you hold out a proper test set or just cross-validate?",
     },
+    {
+      name: "tfidf_tina",
+      when: "2 months ago",
+      text: "Raw counts or tf-idf? It changes what the model pays attention to more than people expect.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "2 months ago",
+          owner: true,
+          text: "Both, compared. Downweighting the words that appear everywhere helps exactly as advertised: the model stops caring that every review contains the word movie.",
+        },
+      ],
+    },
+    {
+      name: "gpu_poor",
+      when: "3 months ago",
+      text: "Refreshing to see a linear model instead of somebody fine-tuning a transformer to classify movie reviews on a laptop",
+    },
+    {
+      name: "overfit_owen",
+      when: "3 months ago",
+      text: "What did the confusion matrix look like? Balanced misses or one-sided?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "3 months ago",
+          owner: true,
+          text: "Close to symmetric, which the balanced dataset makes easier. The interesting errors were not the counts but the confident ones: five-star vocabulary wrapped around a negative verdict.",
+        },
+      ],
+    },
+    {
+      name: "ml_lurker",
+      when: "4 months ago",
+      text: "the error analysis section is the part most write-ups skip. good on you for reading the actual misclassified reviews",
+    },
   ],
   sorting: [
     {
@@ -425,6 +572,47 @@ const COMMENTS: Record<string, Comment[]> = {
           when: "4 months ago",
           owner: true,
           text: "Entirely the point. You can read O(n squared) and nod, or you can watch it still working on the first fifty bars while quicksort has finished and gone home.",
+        },
+      ],
+    },
+    {
+      name: "merge_purist",
+      when: "3 months ago",
+      text: "Merge sort looking stately and predictable while quicksort thrashes around and still wins. Poetry.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "3 months ago",
+          owner: true,
+          text: "Until you hand quicksort a sorted array with a bad pivot choice and the poetry ends. The visualiser makes that failure mode watchable too.",
+        },
+      ],
+    },
+    {
+      name: "cs101_ta",
+      when: "4 months ago",
+      text: "Sent this to my recitation section instead of explaining partitioning for the fifth time. It did my job better than I do.",
+    },
+    {
+      name: "insertion_enjoyer",
+      when: "4 months ago",
+      text: "insertion sort on nearly-sorted input deserves more respect and this shows why",
+    },
+    {
+      name: "audio_on",
+      when: "5 months ago",
+      text: "the pitch mapped to bar height turns every algorithm into a little song. bubble sort is a dirge",
+    },
+    {
+      name: "shellsort_stan",
+      when: "5 months ago",
+      text: "No shell sort? The gap sequence race is the best one.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "5 months ago",
+          owner: true,
+          text: "Fair request. The frame is built to take another algorithm as one function plus a name, so it is on the list.",
         },
       ],
     },
@@ -460,6 +648,37 @@ const COMMENTS: Record<string, Comment[]> = {
       name: "focusmodefan",
       when: "3 months ago",
       text: "the haptics on session end are a small thing that makes it feel finished",
+    },
+    {
+      name: "widget_wendy",
+      when: "3 months ago",
+      text: "Does the timer survive backgrounding? Half the focus apps quietly stop counting when iOS suspends them.",
+      replies: [
+        {
+          name: "jguapp",
+          when: "3 months ago",
+          owner: true,
+          text: "The end time is stored, not the elapsed seconds, so suspension costs nothing: on return the display recomputes from the clock. A notification fires at the end either way.",
+        },
+      ],
+    },
+    {
+      name: "quadrant_two",
+      when: "4 months ago",
+      text: "important-not-urgent is where my whole life lives and no app ever makes it visible. the matrix as the home screen is the right call",
+    },
+    {
+      name: "not_a_designer",
+      when: "4 months ago",
+      text: "what did you build the ui in, storyboards or swiftui?",
+      replies: [
+        {
+          name: "jguapp",
+          when: "4 months ago",
+          owner: true,
+          text: "SwiftUI throughout. The matrix is a LazyVGrid and the timer ring is one Canvas view; storyboards never entered the conversation.",
+        },
+      ],
     },
   ],
 }
