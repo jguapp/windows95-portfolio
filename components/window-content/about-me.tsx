@@ -343,12 +343,12 @@ export default function AboutMe() {
                             </tr>
                             <tr>
                               <td className="w-[124px] pr-4 align-top">Interested In:</td>
-                              <td className="text-[#42b3f5]">Machine Learning, Data Science, Web Development</td>
+                              <td className="text-[#42b3f5]">Backend, Infrastructure, Machine Learning</td>
                             </tr>
                             <tr>
                               <td className="w-[124px] pr-4 align-top">Interests:</td>
                               <td className="text-[#42b3f5] break-words">
-                                Reading, Writing, Open Source, Basketball, Legos, Watching Movies, Guitar, Gaming, Math,
+                                Reading, Writing, Open Source, Basketball, Lego, Watching Movies, Guitar, Gaming, Math,
                                 Coding, Working Out, Sleeping
                               </td>
                             </tr>
@@ -378,7 +378,7 @@ export default function AboutMe() {
                             <tr>
                               <td className="w-[124px] pr-4 align-top">Favorite Movies:</td>
                               <td className="text-[#42b3f5] break-words">
-                                Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Pitch Perfect, Spiderman
+                                Jojo Rabbit, Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Pitch Perfect, Spiderman
                                 2, Good Will Hunting, Star Wars
                               </td>
                             </tr>

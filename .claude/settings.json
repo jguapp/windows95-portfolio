@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(npx tsc *)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint *)",
+      "PowerShell(Get-CimInstance *)",
+      "Bash(npx eslint *)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test *)",
+      "PowerShell(Get-Process *)",
+      "Bash(tasklist)",
+      "Bash(tasklist *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-Item *)",
+      "Bash(npm view *)",
+      "Bash(curl -s -o /dev/null *)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm typecheck *)",
+      "Bash(gh run watch *)",
+      "Bash(pnpm audit)"
+    ]
+  }
+}
