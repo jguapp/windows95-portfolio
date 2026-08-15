@@ -285,8 +285,9 @@ export default function Taskbar({
             year: "numeric",
           })}
           onClick={() => setShowDateTime(true)}
+          // Size lives in globals.css (#taskbar #clock), which must out-rank
+          // the blanket button type rule; an inline size here never renders.
           className="text-black bg-[#c0c0c0] pl-[6px] pr-[7px] h-full flex items-center justify-center"
-          style={{ fontSize: 12, lineHeight: "14px" }}
         >
           {time}
         </button>
