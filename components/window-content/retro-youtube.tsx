@@ -686,51 +686,32 @@ const COMMENTS: Record<string, Comment[]> = {
 function Stars({ n }: { n: number }) {
   return (
     <span style={{ color: "#F5C518", letterSpacing: 1 }}>
-      {"★".repeat(n)}
-      <span style={{ color: "#CCC" }}>{"★".repeat(5 - n)}</span>
+      {"\u2605".repeat(n)}
+      <span style={{ color: "#CCC" }}>{"\u2605".repeat(5 - n)}</span>
     </span>
   )
 }
 
 const LINK = { color: "#0000CC", textDecoration: "none" } as const
 
-export default function RetroYoutube() {
-  const [selected, setSelected] = useState<Project>(PROJECTS[0])
-  const [tab, setTab] = useState("Videos")
-  const [commentText, setCommentText] = useState("")
-  const [posted, setPosted] = useState<Comment[]>([])
+const BUTTON = { border: "1px solid #999", background: "#EFEFEF", padding: "2px 10px" } as const
 
-  const comments = [...(COMMENTS[selected.id] ?? []), ...posted]
-
+/** The 2005 masthead: logo, account links, search, and the tab strip. */
+function Masthead({ tab, onTab }: { tab: string; onTab: (t: string) => void }) {
   return (
-    <div
-      className="page-2005 h-full w-full overflow-auto bg-white"
-      style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "#000" }}
-    >
-      {/* Header */}
+    <>
       <div style={{ borderBottom: "1px solid #CCC", padding: "8px 10px" }}>
         <div className="flex items-start justify-between">
           <img src="/2005-youtube-logo.png" alt="YouTube" style={{ height: 52 }} />
           <div className="t11">
-            <a href="#" style={LINK}>
-              Sign Up
-            </a>
-            {" | "}
-            <a href="#" style={LINK}>
-              My Account
-            </a>
-            {" | "}
-            <a href="#" style={LINK}>
-              History
-            </a>
-            {" | "}
-            <a href="#" style={LINK}>
-              Help
-            </a>
-            {" | "}
-            <a href="#" style={LINK}>
-              Log In
-            </a>
+            {["Sign Up", "My Account", "History", "Help", "Log In"].map((label, i) => (
+              <span key={label}>
+                {i > 0 && " | "}
+                <a href="#" style={LINK}>
+                  {label}
+                </a>
+              </span>
+            ))}
           </div>
         </div>
 
@@ -740,23 +721,19 @@ export default function RetroYoutube() {
             aria-label="Search"
             style={{ border: "1px solid #7F9DB9", padding: "2px 4px", width: 260 }}
           />
-          <button
-            type="button"
-            style={{ border: "1px solid #999", background: "#EFEFEF", padding: "2px 10px" }}
-          >
+          <button type="button" style={BUTTON}>
             Search
           </button>
           <span className="t11" style={{ marginLeft: 8, color: "#666" }}>Broadcast Yourself&#8482;</span>
         </div>
       </div>
 
-      {/* Nav */}
       <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "4px 10px" }}>
         {["Home", "Videos", "Categories", "Channels", "Upload"].map((t) => (
           <button
             key={t}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => onTab(t)}
             style={{
               marginRight: 14,
               fontWeight: tab === t ? "bold" : "normal",
@@ -767,255 +744,301 @@ export default function RetroYoutube() {
           </button>
         ))}
       </div>
+    </>
+  )
+}
+
+/** The player, ratings, description, tags and the URL/Embed pair. */
+function WatchPane({ project }: { project: Project }) {
+  return (
+    <>
+      <h1 className="t15" style={{ fontWeight: "bold", marginBottom: 6 }}>{project.title}</h1>
+
+      {/* Flash-era player. Fills the column so nothing is left over on the
+          right, with the height capped so the controls, description and
+          comments stay above the fold on a maximised window. A player
+          letterboxing a video is normal; a player you have to scroll past
+          is not. */}
+      <div
+        data-player
+        style={{
+          background: "#000",
+          width: "100%",
+          height: "clamp(320px, 54vh, 620px)",
+          position: "relative",
+        }}
+      >
+        <div
+          className="flex h-full items-center justify-center"
+          style={{ color: "#666", textAlign: "center", padding: 20 }}
+        >
+          Demo coming soon.
+          <br />
+          Meanwhile the source is on GitHub.
+        </div>
+        <div
+          className="absolute bottom-0 left-0 flex w-full items-center gap-2"
+          style={{ background: "#2B2B2B", padding: "3px 6px" }}
+        >
+          <span style={{ color: "#fff" }}>&#9654;</span>
+          <div style={{ flex: 1, height: 6, background: "#555", position: "relative" }}>
+            <div style={{ width: 0, height: "100%", background: "#C00" }} />
+            <div
+              style={{ position: "absolute", left: 0, top: -2, width: 8, height: 10, background: "#DDD" }}
+            />
+          </div>
+          <span style={{ color: "#CCC" }}>0:00 / 0:00</span>
+          <span style={{ color: "#fff" }}>&#128266;</span>
+        </div>
+      </div>
+
+      <div className="t11 mt-2 flex items-center justify-between">
+        <span>
+          <Stars n={project.rating} /> <span style={{ color: "#666" }}>({project.ratings} ratings)</span>
+        </span>
+        <span style={{ color: "#666" }}>
+          Views: <strong style={{ color: "#000" }}>{project.views.toLocaleString()}</strong>
+        </span>
+      </div>
+
+      <div className="t11 mt-1" style={{ color: "#666" }}>
+        Added: {project.added} &nbsp;From:{" "}
+        <a href="https://github.com/jguapp" style={{ ...LINK, fontWeight: "bold" }}>
+          jguapp
+        </a>
+      </div>
+
+      <div className="mt-2 flex gap-1">
+        {["Share", "Favorite", "Playlists", "Flag"].map((b) => (
+          <button key={b} type="button" style={{ ...BUTTON, padding: "2px 8px" }}>
+            {b}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-3" style={{ lineHeight: 1.45, whiteSpace: "pre-line" }}>
+        {project.description}
+      </p>
+
+      <div className="t11 mt-3">
+        <strong>Tags:</strong>{" "}
+        {project.tags.map((t) => (
+          <a key={t} href="#" style={{ ...LINK, marginRight: 6 }}>
+            {t}
+          </a>
+        ))}
+      </div>
+
+      {/* The URL and Embed pair every 2005 video page had */}
+      <div className="mt-3" style={{ border: "1px solid #CCC", background: "#F8F8F8", padding: 6 }}>
+        <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
+          <span style={{ width: 44 }}>URL</span>
+          <input
+            readOnly
+            aria-label="Video URL"
+            value={project.live ?? project.repo ?? ""}
+            onFocus={(e) => e.currentTarget.select()}
+            style={{ flex: 1, border: "1px solid #7F9DB9", padding: "1px 3px" }}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span style={{ width: 44 }}>Embed</span>
+          <input
+            readOnly
+            aria-label="Embed code"
+            value={`<embed src="${project.id}.swf" width="425" height="350">`}
+            onFocus={(e) => e.currentTarget.select()}
+            style={{ flex: 1, border: "1px solid #7F9DB9", padding: "1px 3px" }}
+          />
+        </div>
+      </div>
+
+      {project.repo && (
+        <div className="t11 mt-2">
+          <a href={project.repo} target="_blank" rel="noopener noreferrer" style={LINK}>
+            View source on GitHub
+          </a>
+        </div>
+      )}
+    </>
+  )
+}
+
+/** One comment with its byline and any owner replies. */
+function CommentThread({ comment }: { comment: Comment }) {
+  const byline = (name: string, owner: boolean | undefined, when: string) => (
+    <div className="t11">
+      <a href="#" style={{ ...LINK, fontWeight: "bold" }}>
+        {name}
+      </a>
+      {owner && <span style={{ color: "#666" }}> (Video Owner)</span>}
+      <span style={{ color: "#666" }}> &#8212; {when}</span>
+    </div>
+  )
+  return (
+    <div style={{ borderTop: "1px solid #EEE", padding: "6px 0" }}>
+      {byline(comment.name, comment.owner, comment.when)}
+      <p style={{ marginTop: 2 }}>{comment.text}</p>
+      {comment.replies?.map((r, j) => (
+        <div key={j} style={{ marginLeft: 18, marginTop: 6, borderLeft: "2px solid #EEE", paddingLeft: 8 }}>
+          {byline(r.name, r.owner, r.when)}
+          <p style={{ marginTop: 2 }}>{r.text}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CommentSection({
+  comments,
+  text,
+  onText,
+  onPost,
+}: {
+  comments: Comment[]
+  text: string
+  onText: (v: string) => void
+  onPost: () => void
+}) {
+  return (
+    <div className="mt-4">
+      <h2 className="t13" style={{ fontWeight: "bold", borderBottom: "1px solid #CCC", paddingBottom: 3 }}>
+        Comments &amp; Responses
+      </h2>
+
+      <form
+        className="mt-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          onPost()
+        }}
+      >
+        <textarea
+          aria-label="Post a comment"
+          value={text}
+          onChange={(e) => onText(e.target.value)}
+          rows={3}
+          style={{ width: "100%", border: "1px solid #7F9DB9", padding: 3 }}
+        />
+        <button type="submit" style={{ ...BUTTON, marginTop: 3 }}>
+          Post a Comment
+        </button>
+      </form>
+
+      <div className="mt-3" data-comments>
+        {comments.map((c, i) => (
+          <CommentThread key={`${c.name}-${i}`} comment={c} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** The Related Videos rail and the channel box beneath it. */
+function RelatedRail({ current, onSelect }: { current: Project; onSelect: (p: Project) => void }) {
+  return (
+    <div style={{ width: RAIL_W, flexShrink: 0 }}>
+      <div style={{ border: "1px solid #CCC" }}>
+        <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
+          Related Videos
+        </div>
+        <div data-related>
+          {PROJECTS.filter((p) => p.id !== current.id).map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onSelect(p)}
+              className="flex w-full gap-2 text-left"
+              style={{ padding: 6, borderBottom: "1px solid #EEE" }}
+            >
+              <img
+                src="/images/demo-coming-soon.png"
+                alt=""
+                style={{
+                  width: RAIL_THUMB_W,
+                  height: RAIL_THUMB_H,
+                  objectFit: "cover",
+                  border: "1px solid #CCC",
+                  flexShrink: 0,
+                }}
+              />
+              <span>
+                <span className="t11" style={{ ...LINK, display: "block" }}>{p.title}</span>
+                <span className="t10" style={{ color: "#666" }}>
+                  {p.views.toLocaleString()} views
+                  <br />
+                  From: jguapp
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-3" style={{ border: "1px solid #CCC" }}>
+        <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
+          About This Channel
+        </div>
+        <div className="t11" style={{ padding: 6, lineHeight: 1.5 }}>
+          <p style={{ marginBottom: 6 }}>
+            <strong>Name:</strong> Joel Vasquez
+            <br />
+            <strong>Channel Views:</strong> 12,847
+            <br />
+            <strong>Joined:</strong> March 2005
+          </p>
+          <p style={{ marginBottom: 6 }}>
+            Computer Science student at Baruch College, class of 2027, focused on backend and infrastructure
+            engineering. Software Engineer Intern at Liberty Mutual. Previously built AI agent pipelines at the
+            Robert Wood Johnson Foundation and data pipelines at the CUNY Institute for Demographic Research.
+          </p>
+          <p style={{ marginBottom: 6 }}>
+            This channel collects my projects: distributed systems, APIs, developer tools and the occasional
+            game. Source for everything is on GitHub.
+          </p>
+          <p>
+            <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={LINK}>
+              github.com/jguapp
+            </a>
+            {" \u00b7 "}
+            <a href="https://builtbyjoel.dev" target="_blank" rel="noopener noreferrer" style={LINK}>
+              builtbyjoel.dev
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function RetroYoutube() {
+  const [selected, setSelected] = useState<Project>(PROJECTS[0])
+  const [tab, setTab] = useState("Videos")
+  const [commentText, setCommentText] = useState("")
+  const [posted, setPosted] = useState<Comment[]>([])
+
+  const comments = [...(COMMENTS[selected.id] ?? []), ...posted]
+
+  const postComment = () => {
+    if (!commentText.trim()) return
+    setPosted((p) => [...p, { name: "You", when: "just now", text: commentText.trim() }])
+    setCommentText("")
+  }
+
+  return (
+    <div
+      className="page-2005 h-full w-full overflow-auto bg-white"
+      style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "#000" }}
+    >
+      <Masthead tab={tab} onTab={setTab} />
 
       <div className="flex gap-3 p-3" style={{ alignItems: "flex-start" }}>
-        {/* Main column */}
         <div style={{ flex: 1, minWidth: PLAYER_W }}>
-          <h1 className="t15" style={{ fontWeight: "bold", marginBottom: 6 }}>{selected.title}</h1>
-
-          {/* Flash-era player */}
-          {/* Fills the column so nothing is left over on the right, with the
-              height capped so the controls, description and comments stay above
-              the fold on a maximised window. A player letterboxing a video is
-              normal; a player you have to scroll past is not. */}
-          <div
-            data-player
-            style={{
-              background: "#000",
-              width: "100%",
-              height: "clamp(320px, 54vh, 620px)",
-              position: "relative",
-            }}
-          >
-            <div
-              className="flex h-full items-center justify-center"
-              style={{ color: "#666", textAlign: "center", padding: 20 }}
-            >
-              Demo coming soon.
-              <br />
-              Meanwhile the source is on GitHub.
-            </div>
-            <div
-              className="absolute bottom-0 left-0 flex w-full items-center gap-2"
-              style={{ background: "#2B2B2B", padding: "3px 6px" }}
-            >
-              <span style={{ color: "#fff" }}>&#9654;</span>
-              <div style={{ flex: 1, height: 6, background: "#555", position: "relative" }}>
-                <div style={{ width: 0, height: "100%", background: "#C00" }} />
-                <div
-                  style={{ position: "absolute", left: 0, top: -2, width: 8, height: 10, background: "#DDD" }}
-                />
-              </div>
-              <span style={{ color: "#CCC" }}>0:00 / 0:00</span>
-              <span style={{ color: "#fff" }}>&#128266;</span>
-            </div>
-          </div>
-
-          {/* Rating and stats */}
-          <div className="t11 mt-2 flex items-center justify-between">
-            <span>
-              <Stars n={selected.rating} /> <span style={{ color: "#666" }}>({selected.ratings} ratings)</span>
-            </span>
-            <span style={{ color: "#666" }}>
-              Views: <strong style={{ color: "#000" }}>{selected.views.toLocaleString()}</strong>
-            </span>
-          </div>
-
-          <div className="t11 mt-1" style={{ color: "#666" }}>
-            Added: {selected.added} &nbsp;From:{" "}
-            <a href="https://github.com/jguapp" style={{ ...LINK, fontWeight: "bold" }}>
-              jguapp
-            </a>
-          </div>
-
-          <div className="mt-2 flex gap-1">
-            {["Share", "Favorite", "Playlists", "Flag"].map((b) => (
-              <button
-                key={b}
-                type="button"
-                style={{ border: "1px solid #999", background: "#EFEFEF", padding: "2px 8px" }}
-              >
-                {b}
-              </button>
-            ))}
-          </div>
-
-          <p className="mt-3" style={{ lineHeight: 1.45, whiteSpace: "pre-line" }}>
-            {selected.description}
-          </p>
-
-          <div className="t11 mt-3">
-            <strong>Tags:</strong>{" "}
-            {selected.tags.map((t) => (
-              <a key={t} href="#" style={{ ...LINK, marginRight: 6 }}>
-                {t}
-              </a>
-            ))}
-          </div>
-
-          {/* The URL and Embed pair every 2005 video page had */}
-          <div className="mt-3" style={{ border: "1px solid #CCC", background: "#F8F8F8", padding: 6 }}>
-            <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
-              <span style={{ width: 44 }}>URL</span>
-              <input
-                readOnly
-                aria-label="Video URL"
-                value={selected.live ?? selected.repo ?? ""}
-                onFocus={(e) => e.currentTarget.select()}
-                style={{ flex: 1, border: "1px solid #7F9DB9", padding: "1px 3px" }}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span style={{ width: 44 }}>Embed</span>
-              <input
-                readOnly
-                aria-label="Embed code"
-                value={`<embed src="${selected.id}.swf" width="425" height="350">`}
-                onFocus={(e) => e.currentTarget.select()}
-                style={{ flex: 1, border: "1px solid #7F9DB9", padding: "1px 3px" }}
-              />
-            </div>
-          </div>
-
-          {selected.repo && (
-            <div className="t11 mt-2">
-              <a href={selected.repo} target="_blank" rel="noopener noreferrer" style={LINK}>
-                View source on GitHub
-              </a>
-            </div>
-          )}
-
-          {/* Comments */}
-          <div className="mt-4">
-            <h2 className="t13" style={{ fontWeight: "bold", borderBottom: "1px solid #CCC", paddingBottom: 3 }}>
-              Comments &amp; Responses
-            </h2>
-
-            <form
-              className="mt-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (!commentText.trim()) return
-                setPosted((p) => [...p, { name: "You", when: "just now", text: commentText.trim() }])
-                setCommentText("")
-              }}
-            >
-              <textarea
-                aria-label="Post a comment"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                rows={3}
-                style={{ width: "100%", border: "1px solid #7F9DB9", padding: 3 }}
-              />
-              <button
-                type="submit"
-                style={{ border: "1px solid #999", background: "#EFEFEF", padding: "2px 10px", marginTop: 3 }}
-              >
-                Post a Comment
-              </button>
-            </form>
-
-            <div className="mt-3" data-comments>
-              {comments.map((c, i) => (
-                <div key={`${c.name}-${i}`} style={{ borderTop: "1px solid #EEE", padding: "6px 0" }}>
-                  <div className="t11">
-                    <a href="#" style={{ ...LINK, fontWeight: "bold" }}>
-                      {c.name}
-                    </a>
-                    {c.owner && <span style={{ color: "#666" }}> (Video Owner)</span>}
-                    <span style={{ color: "#666" }}> &#8212; {c.when}</span>
-                  </div>
-                  <p style={{ marginTop: 2 }}>{c.text}</p>
-                  {c.replies?.map((r, j) => (
-                    <div key={j} style={{ marginLeft: 18, marginTop: 6, borderLeft: "2px solid #EEE", paddingLeft: 8 }}>
-                      <div className="t11">
-                        <a href="#" style={{ ...LINK, fontWeight: "bold" }}>
-                          {r.name}
-                        </a>
-                        {r.owner && <span style={{ color: "#666" }}> (Video Owner)</span>}
-                        <span style={{ color: "#666" }}> &#8212; {r.when}</span>
-                      </div>
-                      <p style={{ marginTop: 2 }}>{r.text}</p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+          <WatchPane project={selected} />
+          <CommentSection comments={comments} text={commentText} onText={setCommentText} onPost={postComment} />
         </div>
 
-        {/* Related videos sidebar */}
-        <div style={{ width: RAIL_W, flexShrink: 0 }}>
-          <div style={{ border: "1px solid #CCC" }}>
-            <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
-              Related Videos
-            </div>
-            <div data-related>
-              {PROJECTS.filter((p) => p.id !== selected.id).map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setSelected(p)}
-                  className="flex w-full gap-2 text-left"
-                  style={{ padding: 6, borderBottom: "1px solid #EEE" }}
-                >
-                  <img
-                    src="/images/demo-coming-soon.png"
-                    alt=""
-                    style={{
-                      width: RAIL_THUMB_W,
-                      height: RAIL_THUMB_H,
-                      objectFit: "cover",
-                      border: "1px solid #CCC",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span>
-                    <span className="t11" style={{ ...LINK, display: "block" }}>{p.title}</span>
-                    <span className="t10" style={{ color: "#666" }}>
-                      {p.views.toLocaleString()} views
-                      <br />
-                      From: jguapp
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-3" style={{ border: "1px solid #CCC" }}>
-            <div style={{ background: "#F0F0F0", borderBottom: "1px solid #CCC", padding: "3px 6px", fontWeight: "bold" }}>
-              About This Channel
-            </div>
-            <div className="t11" style={{ padding: 6, lineHeight: 1.5 }}>
-              <p style={{ marginBottom: 6 }}>
-                <strong>Name:</strong> Joel Vasquez
-                <br />
-                <strong>Channel Views:</strong> 12,847
-                <br />
-                <strong>Joined:</strong> March 2005
-              </p>
-              <p style={{ marginBottom: 6 }}>
-                Computer Science student at Baruch College, class of 2027, focused on backend and infrastructure
-                engineering. Software Engineer Intern at Liberty Mutual. Previously built AI agent pipelines at the
-                Robert Wood Johnson Foundation and data pipelines at the CUNY Institute for Demographic Research.
-              </p>
-              <p style={{ marginBottom: 6 }}>
-                This channel collects my projects: distributed systems, APIs, developer tools and the occasional
-                game. Source for everything is on GitHub.
-              </p>
-              <p>
-                <a href="https://github.com/jguapp" target="_blank" rel="noopener noreferrer" style={LINK}>
-                  github.com/jguapp
-                </a>
-                {" · "}
-                <a href="https://builtbyjoel.dev" target="_blank" rel="noopener noreferrer" style={LINK}>
-                  builtbyjoel.dev
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
+        <RelatedRail current={selected} onSelect={setSelected} />
       </div>
 
       <div className="t10" style={{ borderTop: "1px solid #CCC", padding: "6px 10px", color: "#666" }}>
