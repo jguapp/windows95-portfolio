@@ -59,8 +59,8 @@ const MOVE_STEP = 8
 /** Six party rows have to fit between the text box's frame lines at 104 and
  *  144. Starting where the two move rows start put the sixth name on the
  *  bottom edge, so the list starts higher and steps tighter. */
-const PARTY_TOP = 113
-const PARTY_STEP = 5.5
+const PARTY_TOP = 112
+const PARTY_STEP = 5.8
 
 /**
  * Sprites are 28x28 grids drawn at two logical pixels each, filling the 56x56
@@ -515,7 +515,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     { label: "RUN", index: 3, col: 1, row: 1 },
   ]
 
-  const lines = message.match(/.{1,26}(\s|$)/g) ?? [message]
+  // Size-6 glyphs advance 6 units, so 24 characters end at x=152 of 160.
+  const lines = message.match(/.{1,24}(\s|$)/g) ?? [message]
 
   return createPortal(
     <div
@@ -564,7 +565,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           <Label x={9} y={23} size={6}>
             {foe.name}
           </Label>
-          <Label x={68} y={23} size={6}>
+          <Label x={70} y={23} size={6}>
             {`L${foe.level}`}
           </Label>
           <HpBar x={32} y={28} ratio={foe.hp / foe.maxHp} />
@@ -575,7 +576,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           <Label x={79} y={77} size={6}>
             {player.name}
           </Label>
-          <Label x={136} y={77} size={6}>
+          <Label x={137} y={77} size={6}>
             {`L${player.level}`}
           </Label>
           <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
@@ -588,10 +589,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
           {phase === "menu" ? (
             <>
-              <Label x={8} y={119}>
+              <Label x={8} y={119} size={6}>
                 What will
               </Label>
-              <Label x={8} y={132}>
+              <Label x={8} y={132} size={6}>
                 {`${player.name} do?`}
               </Label>
               <Box x={86} y={104} w={74} h={40} />
@@ -601,11 +602,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 return (
                   <g key={m.label}>
                     {cursor === m.index && (
-                      <Label x={cx - 7} y={cy}>
+                      <Label x={cx - 7} y={cy} size={6}>
                         &#9654;
                       </Label>
                     )}
-                    <Label x={cx} y={cy}>
+                    <Label x={cx} y={cy} size={6}>
                       {m.label}
                     </Label>
                   </g>
@@ -617,16 +618,16 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={5} y={MOVE_TOP + i * MOVE_STEP} size={7}>
+                    <Label x={5} y={MOVE_TOP + i * MOVE_STEP} size={6}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={13} y={MOVE_TOP + i * MOVE_STEP} size={7}>
+                  <Label x={13} y={MOVE_TOP + i * MOVE_STEP} size={6}>
                     {m.name}
                   </Label>
                 </g>
               ))}
-              <Label x={104} y={MOVE_TOP} size={7}>
+              <Label x={104} y={MOVE_TOP} size={6}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
             </>
@@ -635,14 +636,14 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {team.map((f, i) => (
                 <g key={f.name}>
                   {cursor === i && (
-                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
+                    <Label x={4} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
+                  <Label x={11} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                     {`${f.name}${i === active ? " *" : ""}`}
                   </Label>
-                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={4.5}>
+                  <Label x={104} y={PARTY_TOP + i * PARTY_STEP} size={5}>
                     {f.hp === 0 ? "FNT" : `${f.hp}/${f.maxHp}`}
                   </Label>
                 </g>
@@ -651,7 +652,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           ) : (
             <>
               {lines.slice(0, 2).map((line, i) => (
-                <Label key={i} x={8} y={120 + i * 13}>
+                <Label key={i} x={8} y={118 + i * 12} size={6}>
                   {line.trim()}
                 </Label>
               ))}
