@@ -24,7 +24,12 @@ interface ClippyProps {
 const GIF = (n: number) => `/images/clippy/clippyani${n}.gif`
 const NO_GIF = "/images/clippy/clippyNo.gif"
 
-/** Phrase and animation pairs, tailored to this desk. */
+/**
+ * Phrase and animation pairs, tailored to this desk.
+ *
+ * The pool is deliberately deep: he cycles through unsaid lines first, so the
+ * more he has, the longer a visit goes before anything repeats.
+ */
 const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "I'm Clippy, Joel's personal assistant. I'm here to help!", animation: GIF(1) },
   { phrase: "Sometimes I just pop up for no particular reason. Like now.", animation: GIF(7) },
@@ -38,6 +43,35 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Ctrl+Alt+R opens Run. Old habits, slightly relocated.", animation: GIF(4) },
   { phrase: "The screensavers are real. Leave the desk alone and see.", animation: GIF(6) },
   { phrase: "You're doing great! Keep up the good work.", animation: GIF(3) },
+  { phrase: "Alt+Q switches windows. Alt+Tab belongs to your other computer.", animation: GIF(4) },
+  { phrase: "Files you save here are still here tomorrow. I checked.", animation: GIF(6) },
+  { phrase: "Paint has a Save to Desktop now. Your art can live here.", animation: GIF(2) },
+  { phrase: "Find, under Start, genuinely searches this C: drive.", animation: GIF(5) },
+  { phrase: "The Sounds control panel plays the whole scheme. Try Critical Stop.", animation: GIF(1) },
+  { phrase: "I have been assisting since 1997. Nobody has ever thanked me.", animation: GIF(7) },
+  { phrase: "Tip: save your work. Tip: I am your work.", animation: GIF(3) },
+  { phrase: "The clock in the tray opens Date and Time. Double clicks are for 98.", animation: GIF(4) },
+  { phrase: "Every icon lines up on a grid. I straightened them while you were out.", animation: GIF(6) },
+  { phrase: "The Recycle Bin restores things. Regret is a feature here.", animation: GIF(5) },
+  { phrase: "FreeCell deal 11982 cannot be won. People have tried since 1995.", animation: GIF(2) },
+  { phrase: "The MS-DOS prompt accepts real commands. Type help and mean it.", animation: GIF(4) },
+  { phrase: "Solitaire pays out a cascade when you win. Worth it every time.", animation: GIF(6) },
+  { phrase: "I contain no AI. I contain if statements and enthusiasm.", animation: GIF(1) },
+  { phrase: "This entire computer fits in a browser tab. Do not tell the tower.", animation: GIF(7) },
+  { phrase: "The wall posts in About Me are the good part. I read them all.", animation: GIF(3) },
+  { phrase: "Drafts in Outlook Express hold the letters nobody sent.", animation: GIF(5) },
+  { phrase: "Press Tab. The desktop listens to keyboards now.", animation: GIF(4) },
+  { phrase: "The calculator gets 2 + 3 + 4 right. This was once worth announcing.", animation: GIF(2) },
+  { phrase: "Chess on Hard looks one move ahead. So do most managers.", animation: GIF(6) },
+  { phrase: "The Pong bot reads the ball late on purpose. Mercy, engineered.", animation: GIF(5) },
+  { phrase: "Every sound here is synthesised. The chord is four sine waves.", animation: GIF(1) },
+  { phrase: "The wallpapers tile. In 1995 everything tiled. It was a simpler grid.", animation: GIF(7) },
+  { phrase: "Screen too roomy? The little monitor in the tray sets a resolution.", animation: GIF(4) },
+  { phrase: "It looks like you're reading a portfolio. Would you like help hiring Joel?", animation: GIF(3) },
+  { phrase: "I am the only paperclip here with a job. The others are in a drawer.", animation: GIF(7) },
+  { phrase: "Nothing on this desk is a mockup. Click anything. I dare you.", animation: GIF(2) },
+  { phrase: "The guestbook drawings are permanent. Choose your doodle wisely.", animation: GIF(5) },
+  { phrase: "Shut Down is under Start. It really shuts down. See you tomorrow.", animation: GIF(6) },
 ]
 
 const INTERRUPTION = { phrase: "Please, do not interrupt me!", animation: NO_GIF }
@@ -47,8 +81,12 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   resume: [
     { phrase: "It looks like you're reading a resume. It is all editable. Click anywhere.", animation: GIF(3) },
     { phrase: "The zoom control in Word actually zooms. Try 75%.", animation: GIF(4) },
+    { phrase: "File, then Print. A real document comes out. I am as surprised as you.", animation: GIF(2) },
   ],
-  projects: [{ phrase: "Every project here has its source on GitHub. The related videos work too.", animation: GIF(2) }],
+  projects: [
+    { phrase: "Every project here has its source on GitHub. The related videos work too.", animation: GIF(2) },
+    { phrase: "The view counts are fake. The projects are not.", animation: GIF(7) },
+  ],
   contact: [
     { phrase: "It looks like you're writing a letter. Compose really sends.", animation: GIF(1) },
     { phrase: "Read the Drafts folder. Honesty lives there.", animation: GIF(7) },
@@ -56,13 +94,60 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   games: [
     { phrase: "It looks like you're avoiding work. Expert is 99 mines, if you are serious.", animation: GIF(5) },
     { phrase: "The Solitaire cascade at the end is worth winning for.", animation: GIF(6) },
+    { phrase: "Tetris keeps a high score table now. Initials optional, glory mandatory.", animation: GIF(2) },
+    { phrase: "Hearts is called Shooting the Moon for a reason. Try taking everything.", animation: GIF(4) },
   ],
-  gallery: [{ phrase: "The arrow keys step through the photos.", animation: GIF(4) }],
-  paint: [{ phrase: "It looks like you're making art. It saves to the desktop, genuinely.", animation: GIF(2) }],
-  guestbook: [{ phrase: "Drawings are allowed in the guestbook. Encouraged, even.", animation: GIF(5) }],
-  "internet-explorer": [{ phrase: "It is 1996 in that address bar. Try yahoo.com.", animation: GIF(6) }],
-  calculator: [{ phrase: "2 + 3 + 4 equals 9 here. That was not always true.", animation: GIF(3) }],
-  "about-me": [{ phrase: "It looks like you're reading about Joel. The wall posts are the good part.", animation: GIF(1) }],
+  gallery: [
+    { phrase: "The arrow keys step through the photos.", animation: GIF(4) },
+    { phrase: "View, then Slide Show. Then sit back. You have earned it.", animation: GIF(6) },
+  ],
+  paint: [
+    { phrase: "It looks like you're making art. Save to Desktop keeps it, permanently.", animation: GIF(2) },
+    { phrase: "The spray can was called the airbrush. Respect the classics.", animation: GIF(5) },
+  ],
+  guestbook: [
+    { phrase: "Drawings are allowed in the guestbook. Encouraged, even.", animation: GIF(5) },
+    { phrase: "Entries live in a real database. Your words outlast the session.", animation: GIF(1) },
+  ],
+  "internet-explorer": [
+    { phrase: "It is 1996 in that address bar. Try yahoo.com.", animation: GIF(6) },
+    { phrase: "The web weighed twelve kilobytes a page back then. It loaded fine.", animation: GIF(7) },
+  ],
+  calculator: [
+    { phrase: "2 + 3 + 4 equals 9 here. That was not always true.", animation: GIF(3) },
+    { phrase: "View, then Scientific. The window resizes itself, like it should.", animation: GIF(4) },
+  ],
+  "about-me": [
+    { phrase: "It looks like you're reading about Joel. The wall posts are the good part.", animation: GIF(1) },
+    { phrase: "The music player on the profile plays. Autoplay was legal in 2007.", animation: GIF(6) },
+  ],
+  notepad: [
+    { phrase: "It looks like you're writing. Save As keeps it on the C: drive, for good.", animation: GIF(3) },
+    { phrase: "F5 stamps the time and date. The oldest logging framework there is.", animation: GIF(4) },
+  ],
+  msdos: [
+    { phrase: "Type dir. Everything you see is really there.", animation: GIF(4) },
+    { phrase: "echo text > file.txt writes an actual file. With great power, and so on.", animation: GIF(2) },
+  ],
+  explorer: [
+    { phrase: "It looks like you're browsing the C: drive. The files are all real.", animation: GIF(6) },
+    { phrase: "My Documents has a Readme. Somebody finally reads one.", animation: GIF(1) },
+  ],
+  "recycle-bin": [
+    { phrase: "Restore puts things back exactly where they were. Regret, undone.", animation: GIF(5) },
+    { phrase: "Emptying it makes the crunch sound. That is the whole reward.", animation: GIF(7) },
+  ],
+  "find-files": [
+    { phrase: "Containing text searches inside the files. Grep, in a cardigan.", animation: GIF(4) },
+    { phrase: "Files you save from Notepad show up here the moment they land.", animation: GIF(2) },
+  ],
+  "sound-properties": [
+    { phrase: "Double-click an event to hear it. Critical Stop is my favourite.", animation: GIF(5) },
+    { phrase: "This slider and the tray slider are the same slider. Trust the system.", animation: GIF(1) },
+  ],
+  "patch-notes": [
+    { phrase: "The release notes are the site's own history, written as it happened.", animation: GIF(3) },
+  ],
 }
 
 /** How long a phrase and its animation stay up. */
