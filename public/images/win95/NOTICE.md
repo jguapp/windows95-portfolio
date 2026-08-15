@@ -65,3 +65,10 @@ The patterns in `../wallpapers/` named after the Windows 95 wallpaper set
 Metal Links, Pinstripe, Red Blocks, Sandstone, Straw Mat, Tiles, Triangles)
 are drawn imitations generated from scripted geometry for this project. They
 are not Microsoft's bitmap files and were not derived from them.
+
+## GitHub mark
+
+`../blob/github.png` is the Simple Icons GitHub glyph (CC0), rasterised at
+24x24 with every pixel hardened to full black or transparent so it stays
+crisp at the menu's display size. GitHub's mark remains a GitHub trademark,
+used here to link to GitHub.
