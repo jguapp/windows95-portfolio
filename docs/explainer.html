@@ -337,6 +337,16 @@ the stance, keep the ink outline, flatten highlights and dark face marks into
 the mid shades, and skin over the unpainted holes that eyes and mouths are
 made of, found by flood-filling the true outside of the silhouette. At Game
 Boy resolution the result is what a back sprite amounted to.</p>
+<h3>Paint's image transforms</h3>
+<p>Flip, mirror and the three rotations all take one path: the bitmap is drawn into a
+scratch canvas under the appropriate matrix and copied back, so the six cannot drift
+apart. A quarter turn keeps the canvas its own size and lands the result centred rather
+than resizing the drawing area mid-session. Stretch and Skew reads percentages and
+degrees as the original dialog did, and converts the degrees to the shear factor a
+matrix wants with a tangent. Cut and Copy lift the selection, or the whole bitmap when
+nothing is selected; Paste drops at the top left and leaves the pixels selected so they
+can be dragged. Set As Wallpaper writes the drawing into the same slot Display
+Properties fills from an upload.</p>
 <h3>The 28-colour palette</h3>
 <p>Paint's colour box is exactly MS Paint's 28, stored as fourteen dark-light pairs, and
 the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted to a
