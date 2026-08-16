@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { type FsNode, canonical, displayPath, listDir, parsePath, resolve } from "@/lib/filesystem"
+import { type AdvState, advance, newGame } from "@/lib/adventure"
 
 /**
  * MS-DOS Prompt.
@@ -31,8 +32,8 @@ export default function MsDos() {
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [busy, setBusy] = useState(false)
-  /** Nonzero while the text adventure has the prompt: the room number. */
-  const [advRoom, setAdvRoom] = useState(0)
+  /** Non-null while ADVENTURE.EXE holds the prompt. */
+  const [adv, setAdv] = useState<AdvState | null>(null)
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,62 +55,15 @@ export default function MsDos() {
       const arg = args.join(" ")
 
       /*
-        The adventure holds the prompt while it runs: three rooms, one joke,
-        and QUIT hands the prompt back. Everything else falls through to it.
+        The adventure holds the prompt while it runs. The engine in
+        lib/adventure.ts is pure: state and line in, state and lines out.
+        When it reports the game over, the prompt goes back to DOS.
       */
-      if (advRoom > 0) {
-        const go = (room: number, ...text: string[]) => {
-          setAdvRoom(room)
-          write(...text, "")
-        }
-        switch (cmd) {
-          case "QUIT":
-          case "EXIT":
-            setAdvRoom(0)
-            write("You wake at the C:\\ prompt. It was DOS all along.", "")
-            return
-          case "LOOK":
-            write(
-              advRoom === 1
-                ? "A server room. Racks hum. A door leads NORTH."
-                : advRoom === 2
-                  ? "A corridor of cables. Doors lead NORTH and SOUTH."
-                  : "The machine room. A single glowing REGISTER sits on a pedestal.",
-              "",
-            )
-            return
-          case "N":
-          case "NORTH":
-            if (advRoom === 1) return go(2, "You walk north into the corridor of cables.")
-            if (advRoom === 2) return go(3, "You enter the machine room. Something glows.")
-            write("The wall disagrees.", "")
-            return
-          case "S":
-          case "SOUTH":
-            if (advRoom === 3) return go(2, "Back in the corridor.")
-            if (advRoom === 2) return go(1, "Back in the server room.")
-            write("The wall disagrees.", "")
-            return
-          case "TAKE":
-            if (advRoom === 3 && arg.toUpperCase() === "REGISTER") {
-              setAdvRoom(0)
-              write(
-                "You take the REGISTER. It is warm and holds a single value:",
-                "",
-                "    0x1995",
-                "",
-                "Somewhere, a hiring manager smiles. You wake at the prompt.",
-                "*** You have won ADVENTURE.EXE ***",
-                "",
-              )
-              return
-            }
-            write("You cannot take that.", "")
-            return
-          default:
-            write("Commands: NORTH, SOUTH, LOOK, TAKE <thing>, QUIT", "")
-            return
-        }
+      if (adv) {
+        const { state, out } = advance(adv, line)
+        setAdv(state.over ? null : state)
+        write(...out)
+        return
       }
 
       switch (cmd) {
@@ -194,17 +148,12 @@ export default function MsDos() {
           )
           return
 
-        case "ADVENTURE":
-          setAdvRoom(1)
-          write(
-            "",
-            "ADVENTURE.EXE  (c) 1982-ish",
-            "",
-            "You are in a server room. Racks hum in the dark.",
-            "A door leads NORTH.  (LOOK, NORTH, SOUTH, TAKE, QUIT)",
-            "",
-          )
+        case "ADVENTURE": {
+          const fresh = newGame()
+          setAdv(fresh.state)
+          write("", ...fresh.out)
           return
+        }
 
         case "DISCO": {
           write("", "The floor is yours. Ten seconds.", "")
@@ -382,7 +331,7 @@ export default function MsDos() {
             "IPCONFIG Show the era-appropriate network.",
             "TRACERT  Trace the route to a host.",
             "FORMAT   Ask a dangerous question, answer it well.",
-            "ADVENTURE Three rooms. One prize.",
+            "ADVENTURE An office, a deadline, one gold master.",
             "DEFRAG   Analyze a drive that cannot fragment.",
             "",
           )
@@ -396,7 +345,7 @@ export default function MsDos() {
           write("Bad command or file name", "")
       }
     },
-    [advRoom, cwd, prompt, write],
+    [adv, cwd, prompt, write],
   )
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

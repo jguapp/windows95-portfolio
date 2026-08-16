@@ -213,7 +213,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
 <tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites, synthesised cries, full-screen party and item menus, and computed back sprites.</td></tr>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
-<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
+<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin, adventure (the DOS text adventure's pure engine).</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
 <tr><td><code>tests/checks/</code></td><td>Playwright behaviour checks, one file per area, with <code>run-all.js</code> as the runner behind <code>pnpm checks</code>. They expect a server on port 3000 and print PASS/FAIL lines.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
@@ -249,6 +249,17 @@ chess set models the modern chess.com shape, one wooden impact with layers). Mes
 sounds follow the icon: information dings, errors get the four-note falling chord. The
 startup chime arms itself on the first user gesture because browsers refuse audio before
 one.</p>
+<h3>ADVENTURE.EXE</h3>
+<p><code>lib/adventure.ts</code> is a pure state machine: <code>newGame()</code> returns a
+state, <code>advance(state, line)</code> returns the next state and the lines to print,
+and the DOS window owns nothing but the state object. Fourteen rooms across a 1995
+office, a two-word parser (USE A ON B, GIVE A TO B), and four locks in a chain: a dark
+basement wants the flashlight, the stairwell wants the keycard a sleeping programmer
+trades for brewed coffee, the manager's office wants the basement's brass key, and the
+server room keypad wants 0x1995, read off the glowing register in the QA lab. Feeding
+the source disk to the build machine yields the gold master; feeding that to the
+duplicator in shipping wins. Purity is what lets
+<code>tests/checks/adventure.js</code> play the whole game through the terminal.</p>
 <h3>Persistence</h3>
 <p>The virtual drive in <code>lib/filesystem.ts</code> hydrates from localStorage on
 first read and writes itself back on every mutation, under a version-salted key
