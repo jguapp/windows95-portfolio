@@ -137,6 +137,52 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const status = await p.locator("[data-table]").locator("..").innerText()
   ok("#73 the instant win lands", /Game Won!/.test(status), status.slice(0, 60))
 
+  // ---- FreeCell: the joke deals and Statistics -----------------------------
+  // A keydown stops the cascade; the win dialog then offers New Game.
+  await p.keyboard.press("Escape")
+  await p.waitForTimeout(500)
+  for (let i = 0; i < 6; i++) {
+    const newGame = p.getByRole("button", { name: "New Game", exact: true })
+    if (await newGame.count()) {
+      await newGame.first().click()
+      break
+    }
+    await p.keyboard.press("Escape")
+    await p.waitForTimeout(400)
+  }
+  await p.waitForTimeout(300)
+  await menuClick("Game", "Exit")
+  await p.waitForTimeout(400)
+  await p.getByText("FreeCell", { exact: true }).first().dblclick()
+  await p.waitForSelector("[data-freecell]", { timeout: 15000 })
+  await p.waitForTimeout(400)
+
+  // #79: deal -1 exists and announces itself.
+  await menuClick("Game", "Select Game...")
+  await p.locator("#deal-number").fill("-1")
+  await p.getByRole("button", { name: "OK", exact: true }).click()
+  await p.waitForTimeout(400)
+  let fcStatus = await p.locator("[data-freecell]").innerText()
+  ok("#79 game -1 deals", /#-1/.test(fcStatus), fcStatus.match(/#-?\d+/)?.[0] ?? "")
+  const colCards = await p.locator('[data-column="0"] [data-card]').count()
+  ok("#79 the unshuffled deal fills the columns", colCards === 7, `${colCards} in column 0`)
+
+  // #80: a resigned game counts as a loss in Statistics.
+  await p.locator('[data-column="0"] [data-card]').last().click()
+  await p.waitForTimeout(150)
+  await p.locator('[data-free="0"]').click()
+  await p.waitForTimeout(200)
+  await menuClick("Game", "New Game")
+  await menuClick("Game", "Statistics...")
+  const statsText = await p.locator("[data-stats]").innerText()
+  ok("#80 the resignation shows as a loss", /Games lost:\s*1/.test(statsText.replace(/\n/g, " ")), statsText.replace(/\n/g, " ").slice(0, 120))
+  await p.locator("[data-stats-clear]").click()
+  await p.waitForTimeout(150)
+  const cleared = await p.locator("[data-stats]").innerText()
+  ok("#80 Clear resets the table", /Games lost:\s*0/.test(cleared.replace(/\n/g, " ")))
+  await p.locator("[data-stats]").getByRole("button", { name: "Close" }).click()
+  await p.waitForTimeout(150)
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()

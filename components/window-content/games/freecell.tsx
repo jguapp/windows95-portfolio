@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { play } from "@/lib/sound"
 import FitBoard from "./fit-board"
 import { CARD_H, CardSlot, PlayingCard, SUITS, SUIT_SYMBOL, type Card, type Suit, cardId, isRed } from "./cards"
@@ -35,6 +35,28 @@ const COLUMNS = 8
  * that merely looks random.
  */
 function msDeal(gameNumber: number): Card[][] {
+  // The joke deals. The original hid games -1 and -2, laid out by hand as
+  // a prank rather than shuffled. Here they deal the deck unshuffled, aces
+  // first, which buries every ace under its whole suit: technically legal,
+  // practically hopeless, faithfully mean.
+  if (gameNumber === -1 || gameNumber === -2) {
+    const dealOrder: Suit[] = ["clubs", "diamonds", "hearts", "spades"]
+    const deck: Card[] = []
+    for (let n = 0; n < 52; n++) {
+      const rank = Math.floor(n / 4) + 1
+      const suit = dealOrder[n % 4]
+      deck.push({ id: cardId(rank, suit), rank, suit })
+    }
+    const columns: Card[][] = Array.from({ length: COLUMNS }, () => [])
+    deck.forEach((card, i) => {
+      // -1 deals across the row; -2 fills column by column. Same trap,
+      // different furniture.
+      if (gameNumber === -1) columns[i % COLUMNS].push(card)
+      else columns[Math.floor(i / 7)].push(card)
+    })
+    return columns
+  }
+
   let seed = gameNumber >>> 0
 
   const rand = () => {
@@ -64,6 +86,53 @@ function msDeal(gameNumber: number): Card[][] {
   }
 
   return columns
+}
+
+/**
+ * The Statistics table, as the original kept it: wins, losses, and the
+ * running streak (positive while winning, negative while losing), with the
+ * best of each remembered. Lives in localStorage so it means something.
+ */
+interface Stats {
+  wins: number
+  losses: number
+  streak: number
+  bestWin: number
+  bestLose: number
+}
+
+const STATS_KEY = "win95:freecell-stats"
+const EMPTY_STATS: Stats = { wins: 0, losses: 0, streak: 0, bestWin: 0, bestLose: 0 }
+
+function readStats(): Stats {
+  if (typeof window === "undefined") return EMPTY_STATS
+  try {
+    const raw = window.localStorage.getItem(STATS_KEY)
+    if (!raw) return EMPTY_STATS
+    const s = JSON.parse(raw)
+    return typeof s?.wins === "number" && typeof s?.losses === "number" ? { ...EMPTY_STATS, ...s } : EMPTY_STATS
+  } catch {
+    return EMPTY_STATS
+  }
+}
+
+function writeStats(s: Stats) {
+  try {
+    window.localStorage.setItem(STATS_KEY, JSON.stringify(s))
+  } catch {
+    // Storage disabled costs a statistic, not a crash.
+  }
+}
+
+function recordResult(win: boolean): Stats {
+  const s = readStats()
+  const next: Stats = win
+    ? { ...s, wins: s.wins + 1, streak: s.streak >= 0 ? s.streak + 1 : 1 }
+    : { ...s, losses: s.losses + 1, streak: s.streak <= 0 ? s.streak - 1 : -1 }
+  next.bestWin = Math.max(next.bestWin, next.streak)
+  next.bestLose = Math.min(next.bestLose, next.streak)
+  writeStats(next)
+  return next
 }
 
 type Zone = "free" | "foundation" | "column"
@@ -132,9 +201,18 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
   const [askNumber, setAskNumber] = useState(false)
   const [numberInput, setNumberInput] = useState("")
   const [won, setWon] = useState(false)
+  const [stats, setStats] = useState<Stats>(EMPTY_STATS)
+  const [showStats, setShowStats] = useState(false)
 
-  const deal = useCallback((n: number) => {
-    const clamped = Math.min(32000, Math.max(1, Math.floor(n) || 1))
+  // Stats come off the client after mount; reading during render would not
+  // match the server HTML.
+  useEffect(() => setStats(readStats()), [])
+
+  const deal = (n: number) => {
+    // Walking away from a live game is the loss it is, as the original ruled.
+    if (moves > 0 && !won) setStats(recordResult(false))
+    const special = n === -1 || n === -2
+    const clamped = special ? n : Math.min(32000, Math.max(1, Math.floor(n) || 1))
     setGameNumber(clamped)
     setBoard({ columns: msDeal(clamped), free: [null, null, null, null], foundations: [[], [], [], []] })
     setSelected(null)
@@ -143,7 +221,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     setHistory([])
     setStatus(`Game #${clamped}`)
     play("cardDeal")
-  }, [])
+  }
 
   // Deal a game on first mount.
   useEffect(() => {
@@ -156,6 +234,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     if (won52 && !won) {
       setWon(true)
       setStatus(`You won game #${gameNumber} in ${moves} moves.`)
+      setStats(recordResult(true))
       play("win")
     }
   }, [won52, won, gameNumber, moves])
@@ -357,6 +436,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
       { label: "New Game", action: () => deal(Math.floor(Math.random() * 32000) + 1) },
       { label: "Restart Game", action: () => deal(gameNumber) },
       { label: "Select Game...", action: () => { setNumberInput(String(gameNumber)); setAskNumber(true) } },
+      { label: "Statistics...", action: () => setShowStats(true) },
       { label: "Undo", action: undo },
       { label: "Move All Home", action: autoplay },
       { label: "Exit", action: onReturn },
@@ -507,7 +587,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
                   id="deal-number"
                   autoFocus
                   value={numberInput}
-                  onChange={(e) => setNumberInput(e.target.value.replace(/[^0-9]/g, ""))}
+                  onChange={(e) => setNumberInput(e.target.value.replace(/[^0-9-]/g, ""))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       deal(Number(numberInput))
@@ -534,6 +614,65 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
                     onClick={() => setAskNumber(false)}
                   >
                     Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Statistics dialog */}
+        {showStats && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40" data-stats>
+            <div className="w-[300px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]">
+              <div className="flex items-center justify-between bg-[#000080] px-2 py-[2px] text-white">
+                <span className="font-bold">FreeCell Statistics</span>
+              </div>
+              <div className="p-3">
+                <div className="mb-3 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white p-2">
+                  {(
+                    [
+                      ["Games won", String(stats.wins)],
+                      ["Games lost", String(stats.losses)],
+                      [
+                        "Win rate",
+                        stats.wins + stats.losses === 0
+                          ? "-"
+                          : `${Math.round((stats.wins / (stats.wins + stats.losses)) * 100)}%`,
+                      ],
+                      [
+                        "Current streak",
+                        stats.streak === 0
+                          ? "-"
+                          : `${Math.abs(stats.streak)} ${stats.streak > 0 ? "win" : "loss"}${Math.abs(stats.streak) === 1 ? "" : stats.streak > 0 ? "s" : "es"}`,
+                      ],
+                      ["Best winning streak", String(stats.bestWin)],
+                      ["Worst losing streak", String(Math.abs(stats.bestLose))],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label} className="flex justify-between py-[1px]">
+                      <span>{label}:</span>
+                      <span>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    data-stats-clear
+                    className="min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                    onClick={() => {
+                      writeStats(EMPTY_STATS)
+                      setStats(EMPTY_STATS)
+                    }}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    className="min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                    onClick={() => setShowStats(false)}
+                  >
+                    Close
                   </button>
                 </div>
               </div>
