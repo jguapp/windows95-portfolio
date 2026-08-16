@@ -325,42 +325,17 @@ export default function Paint() {
     return hex
   }
 
-  // Handle zoom (magnifier)
-  const handleZoom = (x: number, y: number, zoomIn: boolean) => {
-    const newZoom = zoomIn ? Math.min(zoomLevel * 2, 8) : Math.max(zoomLevel / 2, 0.25)
-    setZoomLevel(newZoom)
+  /*
+    The magnifier is a view, not an edit.
 
-    // Apply zoom to canvas
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext("2d", { willReadFrequently: true })
-    if (!ctx) return
-
-    // Save current state
-    const currentState = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    // Clear canvas
-    ctx.fillStyle = "#FFFFFF"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    // Create temporary canvas for zooming
-    const tempCanvas = document.createElement("canvas")
-    tempCanvas.width = currentState.width
-    tempCanvas.height = currentState.height
-    const tempCtx = tempCanvas.getContext("2d", { willReadFrequently: true })
-    if (!tempCtx) return
-
-    // Draw current state to temp canvas
-    tempCtx.putImageData(currentState, 0, 0)
-
-    // Draw zoomed image
-    ctx.save()
-    ctx.translate(x, y)
-    ctx.scale(newZoom, newZoom)
-    ctx.translate(-x, -y)
-    ctx.drawImage(tempCanvas, 0, 0)
-    ctx.restore()
+    The canvas element carries a CSS transform driven by zoomLevel and the
+    pointer math divides by it, so setting the level is the entire job. This
+    used to also redraw the bitmap scaled, which baked every zoom into the
+    drawing; zooming back out then shrank the already-scaled pixels and the
+    original was gone for good.
+  */
+  const handleZoom = (_x: number, _y: number, zoomIn: boolean) => {
+    setZoomLevel((z) => (zoomIn ? Math.min(z * 2, 8) : Math.max(z / 2, 1)))
   }
 
   // Create selection
