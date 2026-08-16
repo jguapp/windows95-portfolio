@@ -83,5 +83,5 @@ trojerror, fluttaflap, waysprite, gupphish, chillimp and xeon, credited
 per monster in the project's ATTRIBUTIONS.md and wiki, including
 josepharaoh99 (Pigabyte), Catch Challenger (Corvix), Spalding004
 (Fluttaflap), Chickenshowman (Chillimp) and Redshrike (Xeon). Each was
-trimmed, fitted to a 28x28 grid and quantised to four Game Boy tones;
+trimmed, fitted to a 56x56 grid and quantised to four Game Boy tones;
 the derived grids in components/pokemon-roster.ts remain CC BY-SA 4.0.

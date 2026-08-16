@@ -53,8 +53,6 @@ const SCALE = 6
  * the very bottom edge of the screen, so it was drawn off the panel and could
  * not be read. These keep all four inside the box.
  */
-const MOVE_TOP = 116
-const MOVE_STEP = 8
 
 /** Six party rows have to fit between the text box's frame lines at 104 and
  *  144. Starting where the two move rows start put the sixth name on the
@@ -65,7 +63,7 @@ const MOVE_STEP = 8
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
+import { FOE_TEAM, PLAYER_TEAM, PLAYER_TRAINER, RIVAL_TRAINER, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
 import { getVolume, isMuted } from "@/lib/sound"
 
 /**
@@ -129,7 +127,7 @@ function runs(grid: string[]) {
   return out
 }
 
-function Sprite({ grid, x, y, scale = 2 }: { grid: string[]; x: number; y: number; scale?: number }) {
+function Sprite({ grid, x, y, scale = 1 }: { grid: string[]; x: number; y: number; scale?: number }) {
   const cells = useMemo(() => runs(grid), [grid])
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>
@@ -149,16 +147,21 @@ function Box({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   return (
     <>
       <rect x={x} y={y} width={w} height={h} fill={P[0]} />
-      {/* Edges, held back from the corners. */}
-      <rect x={x + 4} y={y + 1} width={w - 8} height={2} fill={k} />
-      <rect x={x + 4} y={y + h - 3} width={w - 8} height={2} fill={k} />
-      <rect x={x + 1} y={y + 4} width={2} height={h - 8} fill={k} />
-      <rect x={x + w - 3} y={y + 4} width={2} height={h - 8} fill={k} />
-      {/* Stepped corner curls. */}
-      <rect x={x + 2} y={y + 2} width={2} height={2} fill={k} />
-      <rect x={x + w - 4} y={y + 2} width={2} height={2} fill={k} />
-      <rect x={x + 2} y={y + h - 4} width={2} height={2} fill={k} />
-      <rect x={x + w - 4} y={y + h - 4} width={2} height={2} fill={k} />
+      {/* Thin outer line, held back from the corners. */}
+      <rect x={x + 3} y={y} width={w - 6} height={1} fill={k} />
+      <rect x={x + 3} y={y + h - 1} width={w - 6} height={1} fill={k} />
+      <rect x={x} y={y + 3} width={1} height={h - 6} fill={k} />
+      <rect x={x + w - 1} y={y + 3} width={1} height={h - 6} fill={k} />
+      {/* Outer corner steps. */}
+      <rect x={x + 1} y={y + 1} width={2} height={2} fill={k} />
+      <rect x={x + w - 3} y={y + 1} width={2} height={2} fill={k} />
+      <rect x={x + 1} y={y + h - 3} width={2} height={2} fill={k} />
+      <rect x={x + w - 3} y={y + h - 3} width={2} height={2} fill={k} />
+      {/* Thick inner line, one unit in from the outer. */}
+      <rect x={x + 4} y={y + 2} width={w - 8} height={2} fill={k} />
+      <rect x={x + 4} y={y + h - 4} width={w - 8} height={2} fill={k} />
+      <rect x={x + 2} y={y + 4} width={2} height={h - 8} fill={k} />
+      <rect x={x + w - 4} y={y + 4} width={2} height={h - 8} fill={k} />
     </>
   )
 }
@@ -289,9 +292,9 @@ function Ground({
   ry: number
 }) {
   const { minX, maxX, maxY } = inkBounds(grid)
-  // Sprites are drawn at scale 2, so one grid cell is two screen units.
-  const cx = x + (minX + maxX + 1)
-  const feet = y + (maxY + 1) * 2
+  // Sprites are 56x56 drawn 1:1, so a grid cell is one screen unit.
+  const cx = x + (minX + maxX + 1) / 2
+  const feet = y + maxY + 1
   // Seat the feet just inside the top of the disc rather than on top of it.
   return <Platform cx={cx} cy={feet - ry} rx={rx} ry={ry} />
 }
@@ -387,8 +390,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     { name: "SUPER POTION", heal: 50, count: 2 },
     { name: "FULL RESTORE", heal: 999, count: 1 },
   ])
-  /** Ball rows show during the opening only, as the originals did. */
-  const [introDone, setIntroDone] = useState(false)
+  /** The opening shows the two trainers before any monster appears. */
+  const [trainersOnStage, setTrainersOnStage] = useState(true)
+  /** One-shot CSS animation classes for each side and the whole screen. */
+  const [playerAnim, setPlayerAnim] = useState<{ cls: string; t: number }>({ cls: "", t: 0 })
+  const [foeAnim, setFoeAnim] = useState<{ cls: string; t: number }>({ cls: "", t: 0 })
+  const [screenAnim, setScreenAnim] = useState<{ cls: string; t: number }>({ cls: "", t: 0 })
   /** The prompt line of the party and item screens; rejections land here. */
   const [note, setNote] = useState<string | null>(null)
   /** True while a faint forces the party screen: X cannot cancel, entry is free. */
@@ -399,31 +406,49 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [cursor, setCursor] = useState(0)
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
-  const musicRef = useRef<HTMLAudioElement | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const musicNodeRef = useRef<AudioBufferSourceNode | null>(null)
 
-  const playMusic = useCallback((src: string, loop: boolean) => {
-    musicRef.current?.pause()
-    /*
-      Probe before playing: an <audio> element pointed at a missing file logs
-      a red 404 in the console that no catch can silence, while a fetch that
-      answers 404 logs nothing. The folder ships empty, so the quiet path is
-      the common one.
-    */
-    fetch(encodeURI(src), { method: "HEAD" })
-      .then((res) => {
-        if (!res.ok) return
-        const audio = new Audio(encodeURI(src))
-        audio.loop = loop
-        audio.volume = isMuted() ? 0 : getVolume() * 0.6
-        musicRef.current = audio
-        audio.play().catch(() => {
-          // Autoplay refusals leave the synthesised jingles to carry it.
-        })
-      })
-      .catch(() => {
-        // Offline is the same story as absent.
-      })
+  const stopMusic = useCallback(() => {
+    try {
+      musicNodeRef.current?.stop()
+    } catch {
+      // Already stopped is fine.
+    }
+    musicNodeRef.current = null
   }, [])
+
+  /*
+    Web Audio rather than an <audio> element, for one reason: MP3 frames
+    carry encoder padding, so element-level looping leaves a beat of silence
+    at every join. A decoded buffer loops sample-accurately, which is what a
+    battle theme needs. The fetch also answers the missing-file case without
+    the red console 404 an element would log.
+  */
+  const playMusic = useCallback(
+    (src: string, loop: boolean) => {
+      fetch(encodeURI(src))
+        .then(async (res) => {
+          if (!res.ok) return
+          const ctx = (audioCtxRef.current ??= new AudioContext())
+          const buffer = await ctx.decodeAudioData(await res.arrayBuffer())
+          stopMusic()
+          const node = ctx.createBufferSource()
+          node.buffer = buffer
+          node.loop = loop
+          const gain = ctx.createGain()
+          gain.gain.value = isMuted() ? 0 : getVolume() * 0.6
+          node.connect(gain)
+          gain.connect(ctx.destination)
+          node.start()
+          musicNodeRef.current = node
+        })
+        .catch(() => {
+          // Absent or offline: the synthesised jingles carry the battle.
+        })
+    },
+    [stopMusic],
+  )
 
   /*
     The turn logic runs inside timer chains, where captured state goes stale
@@ -447,21 +472,25 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   useEffect(() => {
     sfx.battleStart()
     playMusic(MUSIC.battle, true)
-    cry(SPECIES[FOE_TEAM[0]].cry)
+    setMessage("RIVAL wants to fight!")
     const opening = setTimeout(() => {
-      setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
-      cry(SPECIES[PLAYER_TEAM[0]].cry)
-      const ready = setTimeout(() => {
-        setIntroDone(true)
-        setPhase("menu")
-      }, 1100)
-      timers.current.push(ready)
-    }, 1300)
+      setTrainersOnStage(false)
+      setMessage(`RIVAL sent out ${SPECIES[FOE_TEAM[0]].name}!`)
+      cry(SPECIES[FOE_TEAM[0]].cry)
+      const second = setTimeout(() => {
+        setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
+        cry(SPECIES[PLAYER_TEAM[0]].cry)
+        const ready = setTimeout(() => setPhase("menu"), 1100)
+        timers.current.push(ready)
+      }, 1300)
+      timers.current.push(second)
+    }, 1500)
     timers.current.push(opening)
     const list = timers.current
     return () => {
       list.forEach(clearTimeout)
-      musicRef.current?.pause()
+      stopMusic()
+      audioCtxRef.current?.close().catch(() => {})
     }
     // playMusic is stable; listing it would re-run the opening.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -503,6 +532,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setBusy(false)
     }
     setMessage(`Enemy ${foe.name} used ${move.name}!`)
+    setFoeAnim({ cls: "pkmn-lunge-foe", t: Date.now() })
     sfx.hit()
     after(900, () => {
       if (Math.random() * 100 >= move.accuracy) {
@@ -512,23 +542,27 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       }
       if (move.effect) {
         setMessage(runEffect(false, move))
+        setPlayerAnim({ cls: "pkmn-wobble", t: Date.now() })
         after(1100, backToMenu)
         return
       }
       const { dealt, eff } = damage(foe, player, move)
       const hp = Math.max(0, player.hp - dealt)
       setPlayer((f) => ({ ...f, hp }))
+      setPlayerAnim({ cls: "pkmn-blink", t: Date.now() })
+      if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
       const proceed = () => {
         if (hp !== 0) {
           backToMenu()
           return
         }
         setMessage(`${player.name} fainted!`)
+        setPlayerAnim({ cls: "pkmn-faint", t: Date.now() })
         sfx.lose()
         const survivors = teamRef.current.some((f, i) => i !== activeRef.current && f.hp > 0)
         if (!survivors) {
           after(900, () => {
-            musicRef.current?.pause()
+            stopMusic()
             setPhase("over")
           })
           return
@@ -568,6 +602,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setPhase("message")
       setPlayer((p) => ({ ...p, moves: p.moves.map((m, i) => (i === index ? { ...m, pp: m.pp - 1 } : m)) }))
       setMessage(`${player.name} used ${move.name}!`)
+      setPlayerAnim({ cls: "pkmn-lunge-player", t: Date.now() })
       sfx.hit()
 
       after(900, () => {
@@ -578,18 +613,22 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         }
         if (move.effect) {
           setMessage(runEffect(true, move))
+          setFoeAnim({ cls: "pkmn-wobble", t: Date.now() })
           after(1100, foeTurn)
           return
         }
         const { dealt, eff } = damage(player, foe, move)
         const hp = Math.max(0, foe.hp - dealt)
         setFoe((f) => ({ ...f, hp }))
+        setFoeAnim({ cls: "pkmn-blink", t: Date.now() })
+        if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
         const proceed = () => {
           if (hp !== 0) {
             foeTurn()
             return
           }
           setMessage(`Enemy ${foe.name} fainted!`)
+          setFoeAnim({ cls: "pkmn-faint", t: Date.now() })
           sfx.win()
           const next = foesRef.current.findIndex((f, i) => i !== foeActiveRef.current && f.hp > 0)
           if (next === -1) {
@@ -709,10 +748,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const run = useCallback(() => {
     setPhase("message")
     setMessage("Got away safely!")
-    musicRef.current?.pause()
+    stopMusic()
     sfx.menu()
     after(1100, onClose)
-  }, [after, onClose])
+  }, [after, onClose, stopMusic])
 
   // The Game Boy had no pointer, so this is keyboard-driven.
   useEffect(() => {
@@ -771,11 +810,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     return () => window.removeEventListener("keydown", onKey)
   }, [active, busy, cursor, items.length, mustSwitch, onClose, phase, player.moves.length, replaceFainted, run, performMove, switchTo, team.length, applyItem])
 
-  /** FIGHT and PKMN fill the left column, ITEM and RUN the right. */
+  /** The reference order: FIGHT and PkMn on top, ITEM and RUN below. */
   const MENU = [
     { label: "FIGHT", index: 0, col: 0, row: 0 },
-    { label: "PKMN", index: 1, col: 0, row: 1 },
-    { label: "ITEM", index: 2, col: 1, row: 0 },
+    { label: "PKMN", index: 1, col: 1, row: 0 },
+    { label: "ITEM", index: 2, col: 0, row: 1 },
     { label: "RUN", index: 3, col: 1, row: 1 },
   ]
 
@@ -802,61 +841,66 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           style={{ imageRendering: "pixelated", display: "block", border: "10px solid #5a5a5a", borderRadius: 6 }}
         >
           <rect width={SCREEN_W} height={SCREEN_H} fill={P[0]} />
+          <g key={`sa${screenAnim.t}`} className={screenAnim.cls}>
 
-          {/*
-            One ball per creature, filled while it is still standing. Red and
-            Blue showed these during the opening and cleared them once the
-            fight was on, so they appear here only until the first menu.
-          */}
-          {!introDone && (
+          {trainersOnStage ? (
             <>
+              {/*
+                The opening as the reference draws it: the rival top right,
+                the player's back bottom left, each side's ball row on its
+                line with the end hook.
+              */}
+              <Sprite grid={RIVAL_TRAINER} x={96} y={0} />
+              <Sprite grid={PLAYER_TRAINER} x={10} y={46} />
               {foes.map((f, i) => (
-                <Ball key={`fb${i}`} x={7 + i * 7.5} y={40} alive={f.hp > 0} />
+                <Ball key={`fb${i}`} x={8 + i * 8} y={38} alive={f.hp > 0} />
               ))}
+              <rect x={4} y={45} width={72} height={1} fill={P[3]} />
+              <rect x={74} y={45} width={2} height={5} fill={P[3]} />
               {team.map((f, i) => (
-                <Ball key={`pb${i}`} x={111 + i * 7.5} y={59} alive={f.hp > 0} />
+                <Ball key={`pb${i}`} x={104 + i * 8} y={86} alive={f.hp > 0} />
               ))}
+              <rect x={84} y={93} width={72} height={1} fill={P[3]} />
+              <rect x={84} y={89} width={2} height={5} fill={P[3]} />
+            </>
+          ) : (
+            <>
+              <Ground grid={foe.species.sprite} x={96} y={0} rx={30} ry={6} />
+              <Ground grid={playerBack} x={10} y={46} rx={34} ry={8} />
+
+              {/* Opponent: front sprite upper right, thin status area upper left */}
+              <g key={`fa${foeAnim.t}`} className={foeAnim.cls}>
+                <Sprite grid={foe.species.sprite} x={96} y={0} />
+              </g>
+              <Label x={8} y={16} size={6}>
+                {foe.name}
+              </Label>
+              <Label x={14} y={23} size={5}>
+                {`:L${foe.level}`}
+              </Label>
+              <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
+              {/* The era's underline with its end hook, not a dialog frame. */}
+              <rect x={4} y={33} width={68} height={1} fill={P[3]} />
+              <rect x={4} y={29} width={2} height={4} fill={P[3]} />
+
+              {/* Player: back sprite lower left, thin status area lower right */}
+              <g key={`pa${playerAnim.t}`} className={playerAnim.cls}>
+                <Sprite grid={playerBack} x={10} y={46} />
+              </g>
+              <Label x={84} y={72} size={6}>
+                {player.name}
+              </Label>
+              <Label x={90} y={79} size={5}>
+                {`:L${player.level}`}
+              </Label>
+              <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
+              <Label x={106} y={96} size={5}>
+                {`${player.hp}/${player.maxHp}`}
+              </Label>
+              <rect x={78} y={99} width={78} height={1} fill={P[3]} />
+              <rect x={78} y={95} width={2} height={4} fill={P[3]} />
             </>
           )}
-
-          {/*
-            The ground each fighter stands on.
-
-            Red and Blue drew a flat ellipse under each: a light disc with a
-            darker rim, the opponent's small and high on the field and the
-            player's wider and low, which is most of what makes the two look
-            like they are standing at different distances rather than floating.
-          */}
-          <Ground grid={foe.species.sprite} x={96} y={0} rx={30} ry={6} />
-          <Ground grid={playerBack} x={10} y={46} rx={34} ry={8} />
-
-          {/* Opponent: front sprite upper right, thin status area upper left */}
-          <Sprite grid={foe.species.sprite} x={96} y={0} />
-          <Label x={8} y={16} size={6}>
-            {foe.name}
-          </Label>
-          <Label x={14} y={23} size={5}>
-            {`:L${foe.level}`}
-          </Label>
-          <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
-          {/* The era's underline with its end hook, not a dialog frame. */}
-          <rect x={4} y={33} width={68} height={1} fill={P[3]} />
-          <rect x={4} y={29} width={2} height={4} fill={P[3]} />
-
-          {/* Player: back sprite lower left, thin status area lower right */}
-          <Sprite grid={playerBack} x={10} y={46} />
-          <Label x={84} y={72} size={6}>
-            {player.name}
-          </Label>
-          <Label x={90} y={79} size={5}>
-            {`:L${player.level}`}
-          </Label>
-          <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-          <Label x={106} y={96} size={5}>
-            {`${player.hp}/${player.maxHp}`}
-          </Label>
-          <rect x={78} y={99} width={78} height={1} fill={P[3]} />
-          <rect x={78} y={95} width={2} height={4} fill={P[3]} />
 
           {/* Text box across the bottom two rows */}
           <Box x={0} y={104} w={SCREEN_W} h={40} />
@@ -880,33 +924,59 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                         &#9654;
                       </Label>
                     )}
-                    <Label x={cx} y={cy} size={6}>
-                      {m.label}
-                    </Label>
+                    {m.label === "PKMN" ? (
+                      /* PkMn, with the small raised k and n of the original. */
+                      <>
+                        <Label x={cx} y={cy} size={6}>
+                          P
+                        </Label>
+                        <Label x={cx + 6} y={cy - 2} size={4}>
+                          K
+                        </Label>
+                        <Label x={cx + 10.5} y={cy} size={6}>
+                          M
+                        </Label>
+                        <Label x={cx + 16.5} y={cy - 2} size={4}>
+                          N
+                        </Label>
+                      </>
+                    ) : (
+                      <Label x={cx} y={cy} size={6}>
+                        {m.label}
+                      </Label>
+                    )}
                   </g>
                 )
               })}
             </>
           ) : phase === "fight" ? (
             <>
+              {/* The reference fight layout: PP box and TYPE box on the
+                  left, the move list in its own box reaching the edge. */}
+              <Box x={0} y={62} w={86} h={18} />
+              <Label x={10} y={74} size={6}>
+                {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
+              </Label>
+              <Box x={0} y={80} w={86} h={24} />
+              <Label x={8} y={90} size={5}>
+                TYPE/
+              </Label>
+              <Label x={14} y={98} size={6}>
+                {player.moves[cursor].type}
+              </Label>
+              <Box x={40} y={104} w={120} h={40} />
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={5} y={MOVE_TOP + i * MOVE_STEP} size={6}>
+                    <Label x={46} y={114 + i * 8} size={6}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={13} y={MOVE_TOP + i * MOVE_STEP} size={6}>
+                  <Label x={54} y={114 + i * 8} size={6}>
                     {m.name}
                   </Label>
                 </g>
               ))}
-              <Label x={104} y={MOVE_TOP} size={6}>
-                {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
-              </Label>
-              <Label x={104} y={MOVE_TOP + 9} size={5}>
-                {`TYPE/${player.moves[cursor].type}`}
-              </Label>
             </>
           ) : (
             <>
@@ -939,7 +1009,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                         &#9654;
                       </Label>
                     )}
-                    <Sprite grid={f.species.sprite} x={7} y={y} scale={0.55} />
+                    <Sprite grid={f.species.sprite} x={7} y={y} scale={0.275} />
                     <Label x={26} y={y + 8} size={5}>
                       {`${f.name}${i === active ? " *" : ""}`}
                     </Label>
@@ -961,6 +1031,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               ))}
             </g>
           )}
+
+          </g>
 
           {/* The item menu, with the bag the trainer packed. */}
           {phase === "items" && (
