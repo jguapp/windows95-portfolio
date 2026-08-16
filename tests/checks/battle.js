@@ -64,7 +64,7 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     const groups = [...document.querySelectorAll("[data-gameboy] g[transform*='scale(1)']")]
     const of = (frag) => groups.find((g) => (g.getAttribute("transform") || "").includes(frag))
     const back = of("translate(10 46)")
-    const front = of("translate(96 0)")
+    const front = of("translate(96 6)")
     return back && front ? { back: back.childElementCount, front: front.childElementCount } : "missing"
   })
   ok("the player sprite is a distinct back view", typeof backCells === "object" && backCells.back > 20 && backCells.back !== backCells.front, JSON.stringify(backCells))

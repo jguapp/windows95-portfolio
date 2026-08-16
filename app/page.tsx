@@ -8,11 +8,9 @@ import StartMenu from "@/components/start-menu"
 import Window from "@/components/window"
 import WelcomePopup from "@/components/welcome-popup"
 import BootSequence from "@/components/boot-sequence"
-import CloseProgram from "@/components/close-program"
 import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
 import RunDialog from "@/components/run-dialog"
-import Screensaver from "@/components/screensaver"
 import Clippy from "@/components/clippy"
 import dynamic from "next/dynamic"
 
@@ -34,9 +32,6 @@ export default function Home() {
   const [showStartMenu, setShowStartMenu] = useState(false)
   const [showWelcomePopup, setShowWelcomePopup] = useState(true)
   const [isBooting, setIsBooting] = useState(true)
-  // Ending Explorer from Close Program takes the taskbar away, as it did in 1995.
-  const [explorerRunning, setExplorerRunning] = useState(true)
-  const [isShutDown, setIsShutDown] = useState(false)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
   const [showRun, setShowRun] = useState(false)
   const [showWinamp, setShowWinamp] = useState(false)
@@ -243,11 +238,6 @@ export default function Home() {
   }, [handleOpenWindow])
 
 
-  /*
-    The screensaver lives in the Screensaver component, driven by the settings
-    the Display Properties dialog stores. A second, DOM-injected copy of each
-    saver used to be built here from innerHTML; one implementation is enough.
-  */
   // Close start menu when clicking elsewhere
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -289,18 +279,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // If still booting, show boot sequence
-  if (isShutDown) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-black">
-        <p className="text-center text-[#e8a33d]" style={{ fontFamily: '"MS Sans Serif", sans-serif', fontSize: 22 }}>
-          It&apos;s now safe to turn off
-          <br />
-          your computer.
-        </p>
-      </div>
-    )
-  }
 
   if (isBooting) {
     return <BootSequence onBootComplete={handleBootComplete} />
@@ -340,7 +318,6 @@ export default function Home() {
         />
       )}
 
-      {explorerRunning && (
       <Taskbar
         openWindows={openWindows}
         activeWindow={activeWindow}
@@ -348,34 +325,14 @@ export default function Home() {
         onWindowSelect={handleOpenWindow}
         onToggleStartMenu={toggleStartMenu}
       />
-      )}
 
       {showWelcomePopup && <WelcomePopup onClose={closeWelcomePopup} />}
-
-      <CloseProgram
-        openWindows={openWindows}
-        explorerRunning={explorerRunning}
-        onEndTask={handleCloseWindow}
-        onKillExplorer={() => setExplorerRunning(false)}
-        onShutDown={() => setIsShutDown(true)}
-        onReboot={() => {
-          setOpenWindows([])
-          setMinimizedWindows([])
-          setActiveWindow(null)
-          setExplorerRunning(true)
-          setShowWelcomePopup(true)
-          setIsBooting(true)
-        }}
-      />
 
       {/* Konami Code Detector */}
       <KonamiCodeDetector onCodeEntered={handleKonamiCodeEntered} />
 
       {/* Pokemon Battle */}
       {showPokemonBattle && <PokemonBattle onClose={() => setShowPokemonBattle(false)} />}
-
-      {/* The screensaver chosen in Display Properties, after the wait it sets. */}
-      <Screensaver />
 
       {/* The Office Assistant: beside your windows, behind none of them. */}
       <Clippy activeWindow={activeWindow} hidden={maximizedWindows.size > 0} />

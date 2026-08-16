@@ -275,9 +275,9 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
   const shade = ratio > 0.5 ? P[2] : P[3]
   return (
     <>
-      {/* The HP cap: small, and shy of the bar's lane. */}
-      <text x={x - 9} y={y + 2.5} fill={P[3]} fontSize={3.75} className="font-pixel">
-        HP
+      {/* The HP cap: small, with its colon ending just shy of the bar. */}
+      <text x={x - 12} y={y + 2.5} fill={P[3]} fontSize={3.75} className="font-pixel">
+        HP:
       </text>
       {/* A slim frameless gauge: light track, dark fill, nothing else. */}
       <rect x={x} y={y} width={WIDTH} height={2} fill={P[1]} />
@@ -385,11 +385,32 @@ function Ball({ x, y, alive }: { x: number; y: number; alive: boolean }) {
 }
 
 
-function Label({ x, y, children, size = 7 }: { x: number; y: number; children: string; size?: number }) {
+function Label({
+  x,
+  y,
+  children,
+  size = 7,
+  width,
+}: {
+  x: number
+  y: number
+  children: string
+  size?: number
+  /** Fit the text to exactly this width, for names that must match the bar. */
+  width?: number
+}) {
   // Press Start 2P is the classic 8x8 arcade face, which is as close to the
   // Game Boy character set as a web font gets.
   return (
-    <text x={x} y={y} fill={P[3]} fontSize={size} className="font-pixel">
+    <text
+      x={x}
+      y={y}
+      fill={P[3]}
+      fontSize={size}
+      className="font-pixel"
+      textLength={width}
+      lengthAdjust={width ? "spacingAndGlyphs" : undefined}
+    >
       {children}
     </text>
   )
@@ -1078,23 +1099,26 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {foes.map((f, i) => (
                 <Ball key={`fb${i}`} x={8 + i * 8} y={38} alive={f.hp > 0} />
               ))}
+              {/* The ball-row lines wear the same rising hooks as the HP
+                  panels: the riser climbs from the line toward the balls. */}
               <rect x={4} y={45} width={72} height={1} fill={P[3]} />
-              <rect x={74} y={45} width={2} height={5} fill={P[3]} />
+              <rect x={74} y={38} width={2} height={8} fill={P[3]} />
               {team.map((f, i) => (
                 <Ball key={`pb${i}`} x={104 + i * 8} y={86} alive={f.hp > 0} />
               ))}
               <rect x={84} y={93} width={72} height={1} fill={P[3]} />
-              <rect x={84} y={89} width={2} height={5} fill={P[3]} />
+              <rect x={84} y={86} width={2} height={8} fill={P[3]} />
             </>
           ) : (
             <>
               {/* Opponent: front sprite upper right, thin status area upper left */}
               {foeOut && (
                 <g key={`fa${foeAnim.t}`} className={foeAnim.cls}>
-                  <Sprite grid={foe.species.sprite} x={96} y={0} />
+                  <Sprite grid={foe.species.sprite} x={96} y={6} />
                 </g>
               )}
-              <Label x={8} y={16} size={4.5}>
+              {/* The name spans exactly the HP bar's width. */}
+              <Label x={8} y={16} size={4.5} width={48}>
                 {foe.name}
               </Label>
               <Label x={14} y={23} size={4}>
@@ -1112,7 +1136,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={playerBack} x={10} y={46} />
                 </g>
               )}
-              <Label x={84} y={72} size={4.5}>
+              <Label x={84} y={72} size={4.5} width={48}>
                 {player.name}
               </Label>
               <Label x={90} y={79} size={4}>

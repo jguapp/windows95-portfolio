@@ -93,7 +93,7 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   area.current = "display-properties"
   await p.evaluate(() => window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "background" } })))
   await p.waitForTimeout(500)
-  for (const tab of ["Screen Saver", "Appearance", "Settings"]) {
+  for (const tab of ["Appearance", "Settings"]) {
     await p.getByText(tab, { exact: true }).first().click().catch(() => {})
     await p.waitForTimeout(300)
   }

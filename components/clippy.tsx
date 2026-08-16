@@ -41,7 +41,6 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Winamp really whips the llama. Double-click and see.", animation: GIF(2) },
   { phrase: "Sign the guestbook. Drawings are allowed. Encouraged, even.", animation: GIF(5) },
   { phrase: "Ctrl+Alt+R opens Run. Old habits, slightly relocated.", animation: GIF(4) },
-  { phrase: "The screensavers are real. Leave the desk alone and see.", animation: GIF(6) },
   { phrase: "You're doing great! Keep up the good work.", animation: GIF(3) },
   { phrase: "Alt+Q switches windows. Alt+Tab belongs to your other computer.", animation: GIF(4) },
   { phrase: "Save a file in Notepad. With the Welcome box checked, it is here tomorrow.", animation: GIF(6) },
@@ -247,9 +246,16 @@ const QUIET_MS = 45_000
 
 export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const [dismissed, setDismissed] = useState(false)
-  /** He can be picked up and put down anywhere; offsets from his home corner. */
-  const [drag, setDrag] = useState({ x: 0, y: 0 })
-  const dragRef = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(null)
+  /**
+   * He can be picked up and put down anywhere. The drag works exactly like a
+   * desktop icon's: absolute position under the cursor with the grab offset
+   * kept, translucent while moving. Null means he is home in his corner.
+   */
+  const [pos, setPos] = useState<{ x: number; bottom: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragRef = useRef<{ startX: number; startY: number; offsetX: number; offsetBottom: number } | null>(null)
+  /** True after a real drag, so the click that follows does not also speak. */
+  const draggedRef = useRef(false)
   /** One visit in a hundred, he arrives gilded. */
   const goldenRef = useRef(Math.random() < 0.01)
   /** The hit-counter line, added once the visitor number arrives. */
@@ -369,8 +375,10 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   return (
     <div
       data-clippy
-      className="fixed bottom-[42px] right-3 z-[850] flex flex-col items-end"
-      style={{ transform: `translate(${drag.x}px, ${drag.y}px)` }}
+      // Anchored by his feet, so a tip bubble appearing grows upward and
+      // never shoves him, exactly as in his home corner.
+      className={`fixed z-[850] flex flex-col items-end ${pos ? "" : "bottom-[42px] right-3"} ${isDragging ? "opacity-70" : ""}`}
+      style={pos ? { left: pos.x, bottom: pos.bottom } : undefined}
     >
       {line && (
         <div
@@ -402,24 +410,44 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
           data-clippy-body
           aria-label="Ask the assistant for a tip"
           onClick={() => {
+            // A drag's mouse-up fires a click too; that one stays silent.
+            if (draggedRef.current) {
+              draggedRef.current = false
+              return
+            }
             // Clicking him mid-sentence gets the genuine reaction.
             if (speakingRef.current && line !== INTERRUPTION) speak(INTERRUPTION)
             else speakFresh()
           }}
-          onPointerDown={(e) => {
-            dragRef.current = { startX: e.clientX, startY: e.clientY, baseX: drag.x, baseY: drag.y }
-            const move = (ev: PointerEvent) => {
+          onMouseDown={(e) => {
+            if (e.button !== 0) return
+            // Stops text selection and the browser's native image drag, which
+            // would otherwise swallow every mouse event after the first move.
+            e.preventDefault()
+            const box = (e.currentTarget.closest("[data-clippy]") as HTMLElement).getBoundingClientRect()
+            dragRef.current = {
+              startX: e.clientX,
+              startY: e.clientY,
+              offsetX: e.clientX - box.left,
+              offsetBottom: box.bottom - e.clientY,
+            }
+            const move = (ev: MouseEvent) => {
               const d = dragRef.current
               if (!d) return
-              setDrag({ x: d.baseX + ev.clientX - d.startX, y: d.baseY + ev.clientY - d.startY })
+              // A few pixels of slack keep a plain click from moving him.
+              if (!draggedRef.current && Math.abs(ev.clientX - d.startX) + Math.abs(ev.clientY - d.startY) < 5) return
+              draggedRef.current = true
+              setIsDragging(true)
+              setPos({ x: ev.clientX - d.offsetX, bottom: window.innerHeight - ev.clientY - d.offsetBottom })
             }
             const up = () => {
               dragRef.current = null
-              window.removeEventListener("pointermove", move)
-              window.removeEventListener("pointerup", up)
+              setIsDragging(false)
+              window.removeEventListener("mousemove", move)
+              window.removeEventListener("mouseup", up)
             }
-            window.addEventListener("pointermove", move)
-            window.addEventListener("pointerup", up)
+            window.addEventListener("mousemove", move)
+            window.addEventListener("mouseup", up)
           }}
           className="block cursor-grab active:cursor-grabbing"
         >
@@ -428,6 +456,7 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
             alt=""
             width={96}
             height={96}
+            draggable={false}
             data-clippy-frame
             // The golden visit: same paperclip, more prestige.
             style={{ imageRendering: "auto", filter: goldenRef.current ? "sepia(1) saturate(3) hue-rotate(-15deg) brightness(1.1)" : undefined }}

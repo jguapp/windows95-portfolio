@@ -4,12 +4,10 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SAVERS, readSaverSettings, writeSaverSettings, type SaverId } from "@/lib/screensavers"
 import { WALLPAPERS } from "@/lib/wallpapers"
 import { COLOR_SCHEMES, applyScheme } from "@/lib/color-schemes"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import { CloseIcon } from "@/components/win95-controls"
-import SaverPreview from "@/components/saver-preview"
 
 interface DisplayPropertiesProps {
   onClose: () => void
@@ -19,9 +17,6 @@ interface DisplayPropertiesProps {
 
 // The shared wallpaper set; the desktop's restore path reads the same list.
 const backgroundImages = WALLPAPERS
-
-// The savers the engine actually implements, plus none.
-const screenSavers = [{ id: "none", name: "(None)" }, ...SAVERS]
 
 // The shared scheme table; the desktop's boot restore reads the same one.
 const colorSchemes = COLOR_SCHEMES
@@ -33,10 +28,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
     const saved = localStorage.getItem("win95-background-image")
     return saved || "windows-default"
   })
-  const [selectedScreenSaver, setSelectedScreenSaver] = useState<string>(() => readSaverSettings().saver)
   const [resolution, setResolution] = useState<string>(() => readResolution())
-  const [waitTime, setWaitTime] = useState(() => readSaverSettings().waitMinutes)
-  const [passwordProtected, setPasswordProtected] = useState(false)
   const [selectedColorScheme, setSelectedColorScheme] = useState(() => {
     const saved = localStorage.getItem("win95-color-scheme")
     return saved || "windows-standard"
@@ -81,15 +73,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
   useEffect(() => {
     applyResolution(resolution)
   }, [resolution])
-
-  /*
-    The saver itself runs from the Screensaver component, which watches the
-    stored settings. This dialog only edits them. A private DOM-injected copy
-    of each saver used to run from here, duplicating app/page.tsx.
-  */
-  useEffect(() => {
-    writeSaverSettings({ saver: selectedScreenSaver as SaverId | "none", waitMinutes: waitTime })
-  }, [selectedScreenSaver, waitTime])
 
   // Start dragging the dialog
   const startDrag = (e: React.MouseEvent) => {
@@ -140,7 +123,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
   const handleApply = () => {
     // Save all settings to localStorage
     localStorage.setItem("win95-background-image", selectedBackground)
-    writeSaverSettings({ saver: selectedScreenSaver as SaverId | "none", waitMinutes: waitTime })
     localStorage.setItem("win95-color-scheme", selectedColorScheme)
 
     // Apply background image
@@ -209,18 +191,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
               Background
             </TabsTrigger>
             <TabsTrigger
-              value="screen-saver"
-              className="py-1 px-3 text-xs border-none rounded-none data-[state=active]:bg-[#c0c0c0] data-[state=active]:shadow-none data-[state=active]:border-none data-[state=active]:font-bold"
-              style={{
-                borderBottom: activeTab === "screen-saver" ? "none" : "1px solid #808080",
-                borderLeft: activeTab === "screen-saver" ? "1px solid #ffffff" : "none",
-                borderRight: activeTab === "screen-saver" ? "1px solid #808080" : "none",
-                borderTop: activeTab === "screen-saver" ? "1px solid #ffffff" : "none",
-              }}
-            >
-              Screen Saver
-            </TabsTrigger>
-            <TabsTrigger
               value="appearance"
               className="py-1 px-3 text-xs border-none rounded-none data-[state=active]:bg-[#c0c0c0] data-[state=active]:shadow-none data-[state=active]:border-none data-[state=active]:font-bold"
               style={{
@@ -286,98 +256,6 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                   <div className="w-4 h-4 bg-white absolute left-1 top-6"></div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
-
-          {/* Screen Saver Tab */}
-          <TabsContent
-            value="screen-saver"
-            className="p-4 mt-0 border-none focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="flex">
-              <div className="flex-1 pr-2">
-                <div className="mb-3">
-                  <label className="block text-xs mb-1">Screen Saver:</label>
-                  <select
-                    className="w-full border border-[#808080] shadow-[inset_1px_1px_#000000] bg-white p-1 text-xs"
-                    value={selectedScreenSaver}
-                    onChange={(e) => setSelectedScreenSaver(e.target.value)}
-                  >
-                    {screenSavers.map((ss) => (
-                      <option key={ss.id} value={ss.id}>
-                        {ss.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <button
-                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
-                    style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
-                    disabled={selectedScreenSaver === "none"}
-                  >
-                    Settings...
-                  </button>
-                  <button
-                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs ml-2"
-                    style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
-                    disabled={selectedScreenSaver === "none"}
-                  >
-                    Preview
-                  </button>
-                </div>
-
-                <div className="mb-3">
-                  <label className="block text-xs mb-1">Wait: {waitTime} minutes</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="60"
-                    value={waitTime}
-                    onChange={(e) => setWaitTime(Number.parseInt(e.target.value, 10))}
-                    className="w-full"
-                    disabled={selectedScreenSaver === "none"}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={passwordProtected}
-                      onChange={() => setPasswordProtected(!passwordProtected)}
-                      disabled={selectedScreenSaver === "none"}
-                      className="mr-1"
-                    />
-                    <span className="text-xs">Password protected</span>
-                  </label>
-                </div>
-
-                <div className="mb-3">
-                  <button
-                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
-                    style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
-                    disabled={!passwordProtected || selectedScreenSaver === "none"}
-                  >
-                    Change...
-                  </button>
-                </div>
-              </div>
-
-              {/* Preview: the real renderer on a small canvas, so what the
-                  monitor shows is what full screen does. */}
-              <div className="w-40 h-32 border border-[#808080] shadow-[inset_1px_1px_#000000] bg-black">
-                {selectedScreenSaver === "none" ? (
-                  <div className="flex h-full items-center justify-center text-white text-xs">(None)</div>
-                ) : (
-                  <SaverPreview id={selectedScreenSaver as SaverId} />
-                )}
-              </div>
-            </div>
-
-            <div className="text-xs mt-4 bg-[#ffffff] p-2 border border-[#808080] shadow-[inset_1px_1px_#000000]">
-              Energy Star compliant monitors will turn off their screens after the time set here has elapsed.
             </div>
           </TabsContent>
 

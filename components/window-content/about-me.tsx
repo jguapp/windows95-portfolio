@@ -134,8 +134,12 @@ function FacebookHeader() {
           nav box from the same arithmetic keeps the links spread evenly
           under the logo, windowed and maximised alike.
         */}
+        {/*
+          justify-between pins the first and last link to the box's edges,
+          so the row cannot drift with centring slack when the box scales.
+        */}
         <div
-          className="absolute bottom-0 flex items-center justify-center gap-7 text-white text-sm"
+          className="absolute bottom-0 flex items-center justify-between text-white text-sm"
           style={{
             width: "calc(max(100%, 1300px) * 0.396)",
             right: "calc(max(100%, 1300px) * 0.092)",

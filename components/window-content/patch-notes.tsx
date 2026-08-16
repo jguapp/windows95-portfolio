@@ -27,7 +27,7 @@ const RELEASES: Release[] = [
       "Clippit at the bottom right: contextual tips, forty-plus lines, dismissible for good, and he knows your visitor number.",
       "A real C: drive. Notepad, MS-DOS, Explorer and Find share one tree; Find searches names and file contents.",
       "Saving is your choice: check the box on the welcome dialog and files, drawings and desktop icons survive between visits.",
-      "Display Properties applies for real: the wallpapers Windows 95 shipped, Appearance schemes that recolor the whole shell, five real screensavers, and resolutions from 640x480 up to 4K through a QuickRes tray menu.",
+      "Display Properties applies for real: the wallpapers Windows 95 shipped, Appearance schemes that recolor the whole shell, and resolutions from 640x480 up to 4K through a QuickRes tray menu.",
       "The Windows 95 sound scheme, synthesised, with a Sounds control panel that plays it.",
       "The resume in Word prints an actual document and saves as Word, PDF or HTML.",
       "Internet Explorer serves 1996 by way of the archive, and joel95.net counts your visit on a six-digit hit counter.",

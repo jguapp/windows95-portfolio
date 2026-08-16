@@ -123,38 +123,42 @@ export default function Taskbar({
       {barMenu && (
         <div
           data-taskbar-menu
-          className="absolute bottom-[36px] z-[1100] min-w-[170px] select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
+          // Identical metrics to the desktop's context menu, so the two
+          // right-click menus read as the same control.
+          className="absolute bottom-[36px] z-[1100] select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
           style={{
             left: barMenu.x,
+            minWidth: 138,
             border: "2px solid #eeeded",
             borderRightColor: "#000000",
             borderRightWidth: 1,
             borderBottomColor: "#000000",
             borderBottomWidth: 1,
-            fontSize: 12,
           }}
         >
-          <button
-            type="button"
-            className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("minimizeAllWindows"))
-              setBarMenu(null)
-            }}
-          >
-            Minimize All Windows
-          </button>
-          <div className="mx-0 my-1" style={{ borderBottom: "2.5px groove #eae8e8" }} />
-          <button
-            type="button"
-            className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "background" } }))
-              setBarMenu(null)
-            }}
-          >
-            Properties
-          </button>
+          <div className="p-0.5">
+            <button
+              type="button"
+              className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("minimizeAllWindows"))
+                setBarMenu(null)
+              }}
+            >
+              Minimize All Windows
+            </button>
+            <div className="mx-0 my-1" style={{ borderBottom: "2.5px groove #eae8e8" }} />
+            <button
+              type="button"
+              className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "background" } }))
+                setBarMenu(null)
+              }}
+            >
+              Properties
+            </button>
+          </div>
         </div>
       )}
       <div id="start-button" className="flex items-center cursor-pointer" onClick={onToggleStartMenu}>
@@ -234,30 +238,6 @@ export default function Taskbar({
           resolutions right there, which is what this does. Display Properties
           stays one entry away at the bottom of the list.
         */}
-        <span
-          title="Dial-Up Networking: connected at 28,800 bps"
-          className="flex h-full w-[20px] items-center justify-center"
-          aria-hidden
-        >
-          <svg width="16" height="14" viewBox="0 0 16 14" shapeRendering="crispEdges">
-            <rect x="1" y="4" width="6" height="5" fill="#c0c0c0" stroke="#000" />
-            <rect x="9" y="4" width="6" height="5" fill="#c0c0c0" stroke="#000" />
-            <rect x="2" y="5" width="4" height="2" fill="#00a000" />
-            <rect x="10" y="5" width="4" height="2" fill="#00a000" />
-            <rect x="7" y="6" width="2" height="1" fill="#000" />
-          </svg>
-        </span>
-        <span
-          title="Power: AC, battery at 100%"
-          className="flex h-full w-[18px] items-center justify-center"
-          aria-hidden
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" shapeRendering="crispEdges">
-            <rect x="2" y="4" width="9" height="6" fill="#c0c0c0" stroke="#000" />
-            <rect x="11" y="6" width="2" height="2" fill="#000" />
-            <rect x="3" y="5" width="7" height="4" fill="#00a000" />
-          </svg>
-        </span>
         <button
           type="button"
           id="resolution-button"

@@ -253,8 +253,9 @@ export default function InternetExplorer() {
   const toolButton =
     "flex flex-col items-center px-2 py-[2px] border-2 border-transparent enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] disabled:text-[#808080]"
 
+  // A loaded page shows nothing in the status bar; only a failure speaks.
   const status = useMemo(
-    () => (site || webby ? "Done" : "Cannot find server"),
+    () => (site || webby ? "" : "Cannot find server"),
     [site, webby],
   )
 
