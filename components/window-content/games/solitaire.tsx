@@ -197,8 +197,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Initialize game
-  const initGame = () => {
+  // Initialize game. The scoring mode is a parameter because the Options
+  // toggle re-deals in the same click that flips it, before the state lands.
+  const initGame = (vegasMode: boolean = vegas) => {
     // Create and shuffle deck
     const deck = createDeck()
 
@@ -238,7 +239,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     )
     setTableau(newTableau)
     setMoves(0)
-    setScore(0)
+    // Vegas buys the deck: every deal starts $52 down, and the game is
+    // getting back above water. Standard starts from nothing.
+    setScore(vegasMode ? -52 : 0)
     setGameWon(false)
     setCascadePiles(null)
     setTimeElapsed(0)
@@ -598,7 +601,12 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
     setGameWon(true)
     playWinSound()
-    setScore((s) => s + 100)
+    // Standard pays the original's time bonus, 700000 / seconds once the
+    // game has run past half a minute. Vegas pays only what the cards paid.
+    if (!vegas) {
+      const bonus = timeElapsed > 30 ? Math.round(700000 / timeElapsed) : 0
+      setScore((s) => s + 100 + bonus)
+    }
 
     // Measure where the piles sit before the cascade takes the table over, so
     // the cards appear to leave the foundations they were stacked on.
@@ -647,6 +655,26 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Alt+Shift+2 won the game on the spot in the original, cascade and all.
+  // Kept, because everyone who ever knew it will try it here.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.altKey && e.shiftKey && e.code === "Digit2")) return
+      e.preventDefault()
+      const suits: Suit[] = ["hearts", "diamonds", "clubs", "spades"]
+      const ranks: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+      setStock([])
+      setWaste([])
+      setTableau(Array(7).fill([]).map(() => []))
+      setFoundations(
+        suits.map((suit) => ranks.map((rank) => ({ suit, rank, faceUp: true, id: `${rank}-${suit}` }))),
+      )
+      setGameStarted(true)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // Game menu options
   const gameMenuOptions = [
     {
@@ -679,8 +707,9 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
     {
       label: `${vegas ? "Vegas" : "Standard"} scoring`,
       action: () => {
-        setVegas((v) => !v)
-        initGame()
+        const next = !vegas
+        setVegas(next)
+        initGame(next)
       },
     },
     {
@@ -964,7 +993,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
       <div className="w-full bg-[#c0c0c0] px-2 py-1 border-t border-white flex justify-between items-center text-sm">
         <span>{gameWon ? "Game Won!" : "Drag cards to move them. Double-click to send to foundation."}</span>
         <span className="flex gap-4">
-          <span>Score: {score}</span>
+          <span data-score>{vegas ? `$${score}` : `Score: ${score}`}</span>
           <span>Time: {formatTime(timeElapsed)}</span>
           <span>Moves: {moves}</span>
         </span>
@@ -1000,7 +1029,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
                 </button>
                 <button
                   className="px-4 py-2 bg-[#c0c0c0] border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] text-sm active:border-[#5a5a5a] active:border-r-white active:border-b-white"
-                  onClick={initGame}
+                  onClick={() => initGame()}
                 >
                   New Game
                 </button>

@@ -104,6 +104,39 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     ok("the dead face still appears", (await ms.locator('[data-face="dead"]').count()) === 1)
   }
 
+  // ---- Solitaire: Vegas buy-in, deck picker, the Alt+Shift+2 win -----------
+  await openMenu("Game", "Exit")
+  await p.waitForTimeout(400)
+  await p.getByText("Solitaire", { exact: true }).first().dblclick()
+  await p.waitForSelector("[data-table]", { timeout: 15000 })
+  await p.waitForTimeout(400)
+
+  const menuClick = async (name, item) => {
+    await p.getByRole("button", { name, exact: true }).first().click()
+    await p.waitForTimeout(150)
+    await p.getByRole("button", { name: item }).first().click()
+    await p.waitForTimeout(250)
+  }
+
+  // #70: switching to Vegas redeals $52 in the hole, shown in dollars.
+  await menuClick("Options", "Standard scoring")
+  let scoreText = await p.locator("[data-score]").innerText()
+  ok("#70 Vegas starts $52 down", scoreText.trim() === "$-52", scoreText)
+
+  // #72: the deck picker offers the twelve backs.
+  await menuClick("Game", "Deck...")
+  const backs = await p.locator("[data-deck-picker] [data-deck]").count()
+  ok("#72 twelve card backs on offer", backs === 12, `${backs}`)
+  await p.locator('[data-deck="4"]').click()
+  await p.waitForTimeout(200)
+  ok("#72 picking one closes the picker", (await p.locator("[data-deck-picker]").count()) === 0)
+
+  // #73: Alt+Shift+2 ends the game in a win.
+  await p.keyboard.press("Alt+Shift+Digit2")
+  await p.waitForTimeout(600)
+  const status = await p.locator("[data-table]").locator("..").innerText()
+  ok("#73 the instant win lands", /Game Won!/.test(status), status.slice(0, 60))
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()
