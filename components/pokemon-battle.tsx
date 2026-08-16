@@ -63,7 +63,7 @@ const SCALE = 6
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-import { FOE_TEAM, PLAYER_TEAM, PLAYER_TRAINER, RIVAL_TRAINER, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
+import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
 import { getVolume, isMuted } from "@/lib/sound"
 
 /**
@@ -276,21 +276,16 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
   return (
     <>
       {/* The HP cap. */}
-      <text x={x - 14} y={y + 4} fill={P[3]} fontSize={5.5} className="font-pixel">
+      <text x={x - 12} y={y + 3} fill={P[3]} fontSize={5} className="font-pixel">
         HP:
       </text>
-      {/* The channel: 1px frame, ends stepped to read as rounded. */}
-      <rect x={x - 1} y={y - 1} width={WIDTH + 2} height={6} fill={P[3]} />
-      <rect x={x - 1} y={y - 1} width={1} height={1} fill={P[0]} />
-      <rect x={x + WIDTH} y={y - 1} width={1} height={1} fill={P[0]} />
-      <rect x={x - 1} y={y + 4} width={1} height={1} fill={P[0]} />
-      <rect x={x + WIDTH} y={y + 4} width={1} height={1} fill={P[0]} />
-      <rect x={x} y={y} width={WIDTH} height={4} fill={P[0]} />
+      {/* A slim frameless gauge: light track, dark fill, nothing else. */}
+      <rect x={x} y={y} width={WIDTH} height={2} fill={P[1]} />
       {/* Full-width fill scaled to the ratio: scaling transitions, so damage
           trickles the bar down rather than cutting a chunk in one frame. */}
       <rect
         x={x}
-        y={y + 1}
+        y={y}
         width={WIDTH}
         height={2}
         fill={shade}
@@ -303,7 +298,7 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
       />
       {ratio <= 0.2 &&
         Array.from({ length: filled }).map((_, i) =>
-          i % 2 === 0 ? <rect key={i} x={x + i} y={y + 1} width={1} height={1} fill={P[0]} /> : null,
+          i % 2 === 0 ? <rect key={i} x={x + i} y={y} width={1} height={1} fill={P[0]} /> : null,
         )}
     </>
   )
@@ -553,15 +548,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const audioCtxRef = useRef<AudioContext | null>(null)
-  const musicNodeRef = useRef<AudioBufferSourceNode | null>(null)
+  /** Tears down whatever the scheduler has running: sources and timers. */
+  const musicStopRef = useRef<(() => void) | null>(null)
 
   const stopMusic = useCallback(() => {
-    try {
-      musicNodeRef.current?.stop()
-    } catch {
-      // Already stopped is fine.
-    }
-    musicNodeRef.current = null
+    musicStopRef.current?.()
+    musicStopRef.current = null
   }, [])
 
   /*
@@ -571,6 +563,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     battle theme needs. The fetch also answers the missing-file case without
     the red console 404 an element would log.
   */
+  /*
+    Looping by scheduler rather than by loop points: every join overlaps two
+    sources under a ninety-millisecond equal fade, so the seam is a mix
+    rather than a jump. The music also sits at a bed level, 0.35 of the
+    shell volume, so the battle effects read over it.
+  */
   const playMusic = useCallback(
     (track: { src: string; loop: boolean; loopStart: number }) => {
       fetch(encodeURI(track.src))
@@ -579,19 +577,72 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           const ctx = (audioCtxRef.current ??= new AudioContext())
           const buffer = await ctx.decodeAudioData(await res.arrayBuffer())
           stopMusic()
-          const node = ctx.createBufferSource()
-          node.buffer = buffer
-          if (track.loop) {
-            node.loop = true
-            node.loopStart = snapToZeroCrossing(buffer, Math.min(track.loopStart, buffer.duration / 2))
-            node.loopEnd = snapToZeroCrossing(buffer, findLoopEnd(buffer))
+          const master = ctx.createGain()
+          master.gain.value = isMuted() ? 0 : getVolume() * 0.35
+          master.connect(ctx.destination)
+
+          if (!track.loop) {
+            const node = ctx.createBufferSource()
+            node.buffer = buffer
+            node.connect(master)
+            node.start()
+            musicStopRef.current = () => {
+              try {
+                node.stop()
+              } catch {}
+              master.disconnect()
+            }
+            return
           }
-          const gain = ctx.createGain()
-          gain.gain.value = isMuted() ? 0 : getVolume() * 0.6
-          node.connect(gain)
-          gain.connect(ctx.destination)
-          node.start()
-          musicNodeRef.current = node
+
+          const FADE = 0.09
+          const loopStart = snapToZeroCrossing(buffer, Math.min(track.loopStart, buffer.duration / 2))
+          const loopEnd = snapToZeroCrossing(buffer, findLoopEnd(buffer))
+          const sources: AudioBufferSourceNode[] = []
+          const timers: ReturnType<typeof setTimeout>[] = []
+          let stopped = false
+
+          const spawn = (offset: number, when: number, duration: number) => {
+            const src = ctx.createBufferSource()
+            src.buffer = buffer
+            const g = ctx.createGain()
+            src.connect(g)
+            g.connect(master)
+            if (offset === 0) {
+              g.gain.setValueAtTime(1, when)
+            } else {
+              g.gain.setValueAtTime(0.0001, when)
+              g.gain.linearRampToValueAtTime(1, when + FADE)
+            }
+            g.gain.setValueAtTime(1, when + duration - FADE)
+            g.gain.linearRampToValueAtTime(0.0001, when + duration)
+            src.start(when, offset, duration)
+            sources.push(src)
+          }
+
+          let nextAt = ctx.currentTime + 0.05
+          let offset = 0
+          let duration = loopEnd
+          const tick = () => {
+            if (stopped) return
+            spawn(offset, nextAt, duration)
+            nextAt = nextAt + duration - FADE
+            offset = loopStart
+            duration = loopEnd - loopStart
+            timers.push(setTimeout(tick, Math.max(50, (nextAt - ctx.currentTime - 0.5) * 1000)))
+          }
+          tick()
+
+          musicStopRef.current = () => {
+            stopped = true
+            timers.forEach(clearTimeout)
+            sources.forEach((src) => {
+              try {
+                src.stop()
+              } catch {}
+            })
+            master.disconnect()
+          }
         })
         .catch(() => {
           // Absent or offline: the synthesised jingles carry the battle.
@@ -1051,8 +1102,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 the player's back bottom left, each side's ball row on its
                 line with the end hook.
               */}
-              <Sprite grid={customTrainers.rival ?? RIVAL_TRAINER} x={96} y={0} />
-              <Sprite grid={customTrainers.player ?? PLAYER_TRAINER} x={10} y={46} />
+              {customTrainers.rival && <Sprite grid={customTrainers.rival} x={96} y={0} />}
+              {customTrainers.player && <Sprite grid={customTrainers.player} x={10} y={46} />}
               {foes.map((f, i) => (
                 <Ball key={`fb${i}`} x={8 + i * 8} y={38} alive={f.hp > 0} />
               ))}
@@ -1075,16 +1126,16 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={foe.species.sprite} x={96} y={0} />
                 </g>
               )}
-              <Label x={8} y={16} size={5.5}>
+              <Label x={8} y={16} size={5}>
                 {foe.name}
               </Label>
-              <Label x={14} y={23} size={4.75}>
+              <Label x={14} y={23} size={4.5}>
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
-              {/* The era's underline with its end hook, not a dialog frame. */}
-              <rect x={4} y={33} width={68} height={1} fill={P[3]} />
-              <rect x={4} y={29} width={2} height={4} fill={P[3]} />
+              {/* The panel underline: full width, hook down at the far end. */}
+              <rect x={2} y={32} width={76} height={1} fill={P[3]} />
+              <rect x={76} y={32} width={2} height={4} fill={P[3]} />
 
               {/* Player: back sprite lower left, thin status area lower right */}
               {playerOut && (
@@ -1092,18 +1143,18 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={playerBack} x={10} y={46} />
                 </g>
               )}
-              <Label x={84} y={72} size={5.5}>
+              <Label x={84} y={72} size={5}>
                 {player.name}
               </Label>
-              <Label x={90} y={79} size={4.75}>
+              <Label x={90} y={79} size={4.5}>
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-              <Label x={106} y={96} size={4.75}>
+              <Label x={106} y={96} size={4.5}>
                 {`${player.hp}/${player.maxHp}`}
               </Label>
-              <rect x={78} y={99} width={78} height={1} fill={P[3]} />
-              <rect x={78} y={95} width={2} height={4} fill={P[3]} />
+              <rect x={80} y={99} width={78} height={1} fill={P[3]} />
+              <rect x={80} y={99} width={2} height={4} fill={P[3]} />
             </>
           )}
 
@@ -1112,10 +1163,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
           {phase === "menu" ? (
             <>
-              <Label x={8} y={119} size={5.5}>
+              <Label x={8} y={119} size={5}>
                 What will
               </Label>
-              <Label x={8} y={132} size={5.5}>
+              <Label x={8} y={132} size={5}>
                 {`${player.name} do?`}
               </Label>
               <Box x={86} y={104} w={74} h={40} />
@@ -1125,28 +1176,28 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 return (
                   <g key={m.label}>
                     {cursor === m.index && (
-                      <Label x={cx - 6} y={cy} size={5.5}>
+                      <Label x={cx - 6} y={cy} size={5}>
                         &#9654;
                       </Label>
                     )}
                     {m.label === "PKMN" ? (
                       /* PkMn, with the small raised k and n of the original. */
                       <>
-                        <Label x={cx} y={cy} size={5.5}>
+                        <Label x={cx} y={cy} size={5}>
                           P
                         </Label>
-                        <Label x={cx + 5.5} y={cy - 2} size={3.5}>
+                        <Label x={cx + 5} y={cy - 2} size={3.25}>
                           K
                         </Label>
-                        <Label x={cx + 9.5} y={cy} size={5.5}>
+                        <Label x={cx + 8.7} y={cy} size={5}>
                           M
                         </Label>
-                        <Label x={cx + 15} y={cy - 2} size={3.5}>
+                        <Label x={cx + 13.7} y={cy - 2} size={3.25}>
                           N
                         </Label>
                       </>
                     ) : (
-                      <Label x={cx} y={cy} size={5.5}>
+                      <Label x={cx} y={cy} size={5}>
                         {m.label}
                       </Label>
                     )}
@@ -1159,25 +1210,25 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {/* The reference fight layout: PP box and TYPE box on the
                   left, the move list in its own box reaching the edge. */}
               <Box x={0} y={60} w={86} h={18} />
-              <Label x={10} y={72} size={5.5}>
+              <Label x={10} y={72} size={5}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
               <Box x={0} y={78} w={86} h={22} />
-              <Label x={8} y={87} size={4.75}>
+              <Label x={8} y={87} size={4.5}>
                 TYPE/
               </Label>
-              <Label x={14} y={94} size={5.5}>
+              <Label x={14} y={94} size={5}>
                 {player.moves[cursor].type}
               </Label>
               <Box x={40} y={100} w={120} h={44} />
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={46} y={112 + i * 8} size={5.5}>
+                    <Label x={46} y={112 + i * 8} size={5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={54} y={112 + i * 8} size={5.5}>
+                  <Label x={54} y={112 + i * 8} size={5}>
                     {m.name}
                   </Label>
                 </g>
@@ -1186,7 +1237,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           ) : (
             <>
               {lines.slice(0, 2).map((line, i) => (
-                <Label key={i} x={8} y={118 + i * 12} size={5.5}>
+                <Label key={i} x={8} y={118 + i * 12} size={5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1210,19 +1261,19 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 return (
                   <g key={f.name}>
                     {cursor === i && (
-                      <Label x={1} y={y + 10} size={4.75}>
+                      <Label x={1} y={y + 10} size={4.5}>
                         &#9654;
                       </Label>
                     )}
                     <Sprite grid={f.species.sprite} x={7} y={y} scale={0.275} />
-                    <Label x={26} y={y + 8} size={4.75}>
+                    <Label x={26} y={y + 8} size={4.5}>
                       {`${f.name}${i === active ? " *" : ""}`}
                     </Label>
-                    <Label x={30} y={y + 15} size={4.25}>
+                    <Label x={30} y={y + 15} size={4}>
                       {f.hp === 0 ? "FNT" : `:L${f.level}`}
                     </Label>
                     <HpBar x={108} y={y + 4} ratio={f.hp / f.maxHp} />
-                    <Label x={108} y={y + 15} size={4.25}>
+                    <Label x={108} y={y + 15} size={4}>
                       {`${f.hp}/${f.maxHp}`}
                     </Label>
                   </g>
@@ -1230,7 +1281,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               })}
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")).map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={5.5}>
+                <Label key={i} x={8} y={127 + i * 10} size={5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1260,29 +1311,29 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {items.map((it, i) => (
                 <g key={it.name}>
                   {cursor === i && (
-                    <Label x={7} y={16 + i * 14} size={5.5}>
+                    <Label x={7} y={16 + i * 14} size={5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={16} y={16 + i * 14} size={5.5}>
+                  <Label x={16} y={16 + i * 14} size={5}>
                     {it.name}
                   </Label>
-                  <Label x={118} y={16 + i * 14} size={5.5}>
+                  <Label x={118} y={16 + i * 14} size={5}>
                     {`x${it.count}`}
                   </Label>
                 </g>
               ))}
               {cursor === items.length && (
-                <Label x={7} y={16 + items.length * 14} size={5.5}>
+                <Label x={7} y={16 + items.length * 14} size={5}>
                   &#9654;
                 </Label>
               )}
-              <Label x={16} y={16 + items.length * 14} size={5.5}>
+              <Label x={16} y={16 + items.length * 14} size={5}>
                 CANCEL
               </Label>
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? "Choose an ITEM.").map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={5.5}>
+                <Label key={i} x={8} y={127 + i * 10} size={5}>
                   {line.trim()}
                 </Label>
               ))}

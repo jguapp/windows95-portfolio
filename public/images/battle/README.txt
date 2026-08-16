@@ -1,6 +1,7 @@
-Custom trainer art for the hidden battle lives here. The two PNGs are
-the built-in drawn trainers; overwrite them with your own art, keeping
-the names:
+Trainer art for the hidden battle lives here, supplied by you. With
+no files present the intro shows the field, the ball rows and the
+text, and no trainers, which is the shipped behaviour. To add
+trainers, drop PNGs with exactly these names:
 
   trainer-player.png   the back view, bottom left of the intro
   trainer-rival.png    the front view, top right of the intro

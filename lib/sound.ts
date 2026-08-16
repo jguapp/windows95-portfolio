@@ -315,32 +315,34 @@ export const sfx = {
   lose: () => sequence([[392, 0], [330, 0.12], [262, 0.24, 0.4]], "sawtooth", 0.05),
 
   // Pokemon battle
-  battleStart: () => sequence([[440, 0], [554, 0.08], [659, 0.16], [880, 0.24, 0.3]], "square", 0.05),
+  battleStart: () => sequence([[440, 0], [554, 0.08], [659, 0.16], [880, 0.24, 0.3]], "square", 0.07),
+  // The battle effects sit above the soundtrack bed, so their gains run
+  // hotter than the shell's UI sounds.
   hit: () => {
-    noise(0.12, 0.05, 1400)
-    tone({ freq: 220, duration: 0.1, gain: 0.04, slideTo: 110, wave: "sawtooth" })
+    noise(0.12, 0.08, 1400)
+    tone({ freq: 220, duration: 0.1, gain: 0.065, slideTo: 110, wave: "sawtooth" })
   },
   /** A resisted hit: short and dull. */
   hitWeak: () => {
-    noise(0.08, 0.035, 700)
-    tone({ freq: 150, duration: 0.09, gain: 0.035, slideTo: 90, wave: "sawtooth" })
+    noise(0.08, 0.06, 700)
+    tone({ freq: 150, duration: 0.09, gain: 0.055, slideTo: 90, wave: "sawtooth" })
   },
   /** A super effective hit: sharp crack and a longer ring. */
   hitSuper: () => {
-    noise(0.16, 0.06, 2400)
-    tone({ freq: 320, duration: 0.16, gain: 0.05, slideTo: 120, wave: "sawtooth" })
-    tone({ freq: 640, duration: 0.05, gain: 0.03, delay: 0.02 })
+    noise(0.16, 0.09, 2400)
+    tone({ freq: 320, duration: 0.16, gain: 0.075, slideTo: 120, wave: "sawtooth" })
+    tone({ freq: 640, duration: 0.05, gain: 0.05, delay: 0.02 })
   },
   /** A stat falling: a descending warble. */
-  statDown: () => sequence([[420, 0], [340, 0.07], [260, 0.14], [200, 0.21, 0.3]], "triangle", 0.045),
+  statDown: () => sequence([[420, 0], [340, 0.07], [260, 0.14], [200, 0.21, 0.3]], "triangle", 0.07),
   /** A stat rising: the same figure upward. */
-  statUp: () => sequence([[200, 0], [260, 0.07], [340, 0.14], [420, 0.21, 0.3]], "triangle", 0.045),
+  statUp: () => sequence([[200, 0], [260, 0.07], [340, 0.14], [420, 0.21, 0.3]], "triangle", 0.07),
   /** A miss: air, nothing else. */
-  miss: () => noise(0.18, 0.03, 3200),
+  miss: () => noise(0.18, 0.055, 3200),
   /** A fighter coming out: the rising whoosh of the send. */
   sendOut: () => {
-    noise(0.14, 0.03, 1800)
-    tone({ freq: 300, duration: 0.18, gain: 0.04, slideTo: 900, wave: "sine" })
+    noise(0.14, 0.05, 1800)
+    tone({ freq: 300, duration: 0.18, gain: 0.06, slideTo: 900, wave: "sine" })
   },
   menu: () => tone({ freq: 700, duration: 0.03, gain: 0.03 }),
 }
