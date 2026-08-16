@@ -122,8 +122,9 @@ function FacebookHeader() {
             // Cropping from the right pins the wordmark to the right edge
             // at any window width, so the nav below can anchor to the same
             // edge and never drift from it.
-            className="w-full h-full object-cover object-right"
-            style={{ imageRendering: "auto" }}
+            className="w-full h-full object-cover"
+            // A touch above centre lifts the wordmark clear of the nav row.
+            style={{ imageRendering: "auto", objectPosition: "right 35%" }}
           />
         </div>
         {/*
@@ -134,7 +135,7 @@ function FacebookHeader() {
           under the logo, windowed and maximised alike.
         */}
         <div
-          className="absolute bottom-0 flex items-center justify-between text-white text-sm"
+          className="absolute bottom-0 flex items-center justify-center gap-7 text-white text-sm"
           style={{
             width: "calc(max(100%, 1300px) * 0.396)",
             right: "calc(max(100%, 1300px) * 0.092)",

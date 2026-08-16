@@ -76,6 +76,74 @@ export default function MsDos() {
           write("joel", "")
           return
 
+        case "MEM":
+          write(
+            "",
+            "  Memory Type        Total       Used       Free",
+            "  ----------------  --------  ---------  --------",
+            "  Conventional          640K       121K       519K",
+            "  Extended (XMS)     64,896K    31,204K    33,692K",
+            "  ----------------  --------  ---------  --------",
+            "  Largest executable program size       518K",
+            "  This desktop runs in a browser tab. The numbers stand.",
+            "",
+          )
+          return
+
+        case "VOL":
+          write(" Volume in drive C is PORTFOLIO", " Volume Serial Number is 1995-0824", "")
+          return
+
+        case "IPCONFIG":
+          write(
+            "",
+            "Windows 95 IP Configuration",
+            "",
+            "Ethernet adapter NE2000:",
+            "   IP Address . . . . . . : 192.168.0.95",
+            "   Subnet Mask  . . . . . : 255.255.255.0",
+            "   Default Gateway  . . . : 192.168.0.1",
+            "",
+          )
+          return
+
+        case "TRACERT":
+          write(
+            "",
+            `Tracing route to ${arg || "joel95.net"} over a maximum of 4 hops:`,
+            "",
+            "  1     2 ms     1 ms     2 ms  192.168.0.1",
+            "  2    11 ms    09 ms    12 ms  dialup-4-12.isp.net",
+            "  3    89 ms    94 ms    91 ms  core2.nyc.backbone.net",
+            `  4    23 ms    21 ms    22 ms  ${arg || "joel95.net"}`,
+            "",
+            "Trace complete.",
+            "",
+          )
+          return
+
+        case "FORMAT":
+          write(
+            "",
+            "WARNING: ALL DATA ON DRIVE C: WILL BE LOST!",
+            "Proceed with Format (Y/N)?  N",
+            "",
+            "Format cancelled. Wise choice.",
+            "",
+          )
+          return
+
+        case "DEFRAG":
+          write(
+            "",
+            "Analyzing drive C...",
+            "  [##########----------------------------]  26% fragmented",
+            "Defragmentation is not required. It never is. The drive is",
+            "a JavaScript object, and JavaScript objects do not fragment.",
+            "",
+          )
+          return
+
         case "DIR": {
           const here = resolve(cwd)
           if (!here || here.kind !== "dir") {
@@ -219,6 +287,12 @@ export default function MsDos() {
             "TYPE     Displays the contents of a text file.",
             "VER      Displays the Windows version.",
             "WHOAMI   Displays the current user.",
+            "MEM      Report memory the way MEM did.",
+            "VOL      Name the volume.",
+            "IPCONFIG Show the era-appropriate network.",
+            "TRACERT  Trace the route to a host.",
+            "FORMAT   Ask a dangerous question, answer it well.",
+            "DEFRAG   Analyze a drive that cannot fragment.",
             "",
           )
           return

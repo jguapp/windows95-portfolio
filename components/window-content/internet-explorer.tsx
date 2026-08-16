@@ -254,7 +254,7 @@ export default function InternetExplorer() {
     "flex flex-col items-center px-2 py-[2px] border-2 border-transparent enabled:hover:border-t-white enabled:hover:border-l-white enabled:hover:border-r-[#404040] enabled:hover:border-b-[#404040] disabled:text-[#808080]"
 
   const status = useMemo(
-    () => (site ? "Done" : webby ? "Opening page from 1996..." : "Cannot find server"),
+    () => (site || webby ? "Done" : "Cannot find server"),
     [site, webby],
   )
 

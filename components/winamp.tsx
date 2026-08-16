@@ -2,6 +2,26 @@
 
 import { useEffect, useRef } from "react"
 
+/** The owner's fifteen, as listed on the profile: artist, then title. */
+const PLAYLIST: [string, string][] = [
+  ["The Strokes", "Last Nite"],
+  ["Arctic Monkeys", "Do I Wanna Know"],
+  ["Radiohead", "Karma Police"],
+  ["Mac Miller", "Self Care"],
+  ["Kendrick Lamar", "Money Trees"],
+  ["Bob Dylan", "Like a Rolling Stone"],
+  ["Marvin Gaye", "What's Going On"],
+  ["Faye Webster", "Kingston"],
+  ["Stevie Wonder", "Superstition"],
+  ["Queen", "Don't Stop Me Now"],
+  ["Michael Jackson", "Rock with You"],
+  ["Billy Joel", "Vienna"],
+  ["Tame Impala", "The Less I Know the Better"],
+  ["The Strokes", "Reptilia"],
+  ["Arctic Monkeys", "505"],
+]
+
+
 /**
  * Winamp, the real one.
  *
@@ -106,6 +126,12 @@ export default function Winamp({ onClose }: WinampProps) {
       }
       trackUrl = url
 
+      /*
+        The playlist: the synthesised opener, then the owner's actual taste.
+        Each entry points at a drop-in slot in /audio/winamp; the repo ships
+        silent placeholders under those names, so the titles always list and
+        overwriting a file with the real recording is the whole installation.
+      */
       const instance = new Webamp({
         initialTracks: [
           {
@@ -113,6 +139,10 @@ export default function Winamp({ onClose }: WinampProps) {
             url,
             duration: 24,
           },
+          ...PLAYLIST.map(([artist, title], i) => ({
+            metaData: { artist, title },
+            url: encodeURI(`/audio/winamp/${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`),
+          })),
         ],
       })
       webamp = instance

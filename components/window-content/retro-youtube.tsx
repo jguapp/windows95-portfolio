@@ -99,19 +99,6 @@ Names pick up a colour-coded badge with the rating count spelled out, because a 
     repo: "https://github.com/jguapp/RMP-Extension",
   },
   {
-    id: "sportsflix",
-    title: "Sportsflix - Live Sport in a Streaming-Service Shape",
-    description: `A sports front end built in the shape of a premium streaming service and pointed at live sport instead of film and television.
-
-The mapping is the whole idea: genres become leagues, episodes become fixtures within a season, Top 10 becomes the top ten events today, Continue Watching becomes Live Now. Scores, fixtures and results come from ESPN's public endpoints, and playback resolves through the same pluggable source pattern a video site uses.`,
-    views: 1663,
-    added: "8/12/2026",
-    rating: 4,
-    ratings: 29,
-    tags: ["typescript", "nextjs", "espn-api", "streaming"],
-    repo: "https://github.com/jguapp/Sportsflix",
-  },
-  {
     id: "orbit",
     title: "ORBIT - A Productivity App for ADHD Minds",
     description: `A native iOS app in Swift for people whose executive function needs scaffolding rather than another checklist.
@@ -439,70 +426,6 @@ const COMMENTS: Record<string, Comment[]> = {
           text: "None. No analytics, no account, nothing leaves the browser except the rating lookups themselves, and those carry professor names only. The source is public if you would rather read than trust.",
         },
       ],
-    },
-  ],
-  sportsflix: [
-    {
-      name: "matchday_mike",
-      when: "4 days ago",
-      text: "Continue Watching as Live Now is such a clean mapping. Did the rest of the layout survive the swap?",
-      replies: [
-        {
-          name: "jguapp",
-          when: "4 days ago",
-          owner: true,
-          text: "Almost all of it. Rows, hero, hover cards, all the same. Sport is really a catalogue with a clock attached, so the browse patterns carry straight over.",
-        },
-      ],
-    },
-    {
-      name: "f1_or_nothing",
-      when: "6 days ago",
-      text: "Does it handle races or is it just ball sports with fixtures?",
-      replies: [
-        {
-          name: "jguapp",
-          when: "6 days ago",
-          owner: true,
-          text: "A race weekend is a season of events like any other league, so F1 slots in beside the NFL and the EPL without special casing.",
-        },
-      ],
-    },
-    {
-      name: "espn_watcher",
-      when: "1 week ago",
-      text: "how are the public endpoints holding up under any real traffic?",
-    },
-    {
-      name: "hero_banner_hater",
-      when: "2 weeks ago",
-      text: "Autoplaying hero video on a sports site is brave. Data usage?",
-      replies: [
-        {
-          name: "jguapp",
-          when: "2 weeks ago",
-          owner: true,
-          text: "The hero is a poster frame until you interact. Autoplay on a page you opened to browse fixtures is how you lose people on mobile plans.",
-        },
-      ],
-    },
-    {
-      name: "kickoff_karen",
-      when: "3 weeks ago",
-      text: "Timezones. Every sports site gets them wrong. Tell me kickoff shows in my time.",
-      replies: [
-        {
-          name: "jguapp",
-          when: "3 weeks ago",
-          owner: true,
-          text: "Everything renders from the viewer's clock. The schedule data is stored in UTC and formatted at the edge of the UI, never before.",
-        },
-      ],
-    },
-    {
-      name: "relegation_zone",
-      when: "1 month ago",
-      text: "the hover card showing form over the last five fixtures is a nice touch",
     },
   ],
   sentiment: [
