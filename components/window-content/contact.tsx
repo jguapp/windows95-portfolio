@@ -3,6 +3,7 @@
 import type React from "react"
 import { useRef, useState } from "react"
 import { sendEmail } from "@/actions/send-email"
+import { play } from "@/lib/sound"
 import { CloseIcon } from "@/components/win95-controls"
 import {
   AddressBookIcon,
@@ -1078,7 +1079,87 @@ this is too much. shorter. just say thank you and mean it
   },
 ]
 
-type FolderId = "inbox" | "outbox" | "sent" | "deleted" | "drafts"
+/**
+ * The Spam folder.
+ *
+ * 1996 had no filter, so this is the mail that arrived anyway: the
+ * chain letters, the millionaires, the free-modem offers. It is a folder
+ * rather than a joke in the Inbox because the joke is that it filled up
+ * on its own.
+ */
+const SPAM: Message[] = [
+  {
+    id: 9001,
+    fromName: "WEALTH SYSTEMS INTL",
+    from: "opportunity@wealth-systems.geocities.com",
+    subject: "MAKE MONEY FAST!!! (READ THIS)",
+    date: "3/14/96 4:02 AM",
+    read: false,
+    body: `Dear Friend,
+
+I was skeptical too. Then I mailed ten dollars to the six names
+on this list and within TWO WEEKS my mailbox was FULL.
+
+This is NOT a pyramid scheme. It is perfectly legal under
+Title 18 Section 1302 which I have definitely read.
+
+DO NOT BREAK THE CHAIN.`,
+  },
+  {
+    id: 9002,
+    fromName: "Dr. Emmanuel Okoro",
+    from: "e.okoro@transfer-dept.co",
+    subject: "URGENT BUSINESS PROPOSAL - CONFIDENTIAL",
+    date: "5/2/96 11:47 PM",
+    read: false,
+    body: `GREETINGS TO YOU,
+
+I am writing to you in strictest confidence regarding the sum of
+US$24,500,000 (TWENTY FOUR MILLION FIVE HUNDRED THOUSAND DOLLARS)
+which is currently trapped in a dormant account.
+
+I require only your account details and a modest processing fee
+of US$1,200 to release these funds, of which you shall receive
+30% for your trouble.
+
+Please reply with utmost urgency and discretion.`,
+  },
+  {
+    id: 9003,
+    fromName: "FREE MODEM OFFER",
+    from: "noreply@fastnet-deals.net",
+    subject: "You have been selected for a FREE 33.6k MODEM",
+    date: "7/19/96 8:15 AM",
+    read: false,
+    body: `CONGRATULATIONS!
+
+Your address has been chosen at random to receive a FREE US
+Robotics 33.6k modem, absolutely FREE, with the purchase of a
+36-month FastNet subscription at only $29.95/month.
+
+That is a value of over $200 for FREE.
+
+Act now. This offer expires when we say it does.`,
+  },
+  {
+    id: 9004,
+    fromName: "Chain of Fortune",
+    from: "luck@angelfire-chains.net",
+    subject: "Fwd: Fwd: Fwd: DO NOT DELETE THIS",
+    date: "9/30/96 2:22 PM",
+    read: false,
+    body: `This letter has been around the world nine times.
+
+Bill in Ohio broke the chain and lost his job the same week.
+Marjorie forwarded it to twelve people and found forty dollars
+in an old coat.
+
+Forward this to 12 people in the next 4 minutes or your computer
+will get sad. Science cannot explain it.`,
+  },
+]
+
+type FolderId = "inbox" | "outbox" | "sent" | "deleted" | "drafts" | "spam"
 
 const FOLDERS: { id: FolderId; label: string; icon: string }[] = [
   { id: "inbox", label: "Inbox", icon: "/images/win95/folder-closed-16.png" },
@@ -1086,6 +1167,7 @@ const FOLDERS: { id: FolderId; label: string; icon: string }[] = [
   { id: "sent", label: "Sent Items", icon: "/images/win95/folder-closed-16.png" },
   { id: "deleted", label: "Deleted Items", icon: "/images/win95/recycle-empty-16.png" },
   { id: "drafts", label: "Drafts", icon: "/images/win95/folder-closed-16.png" },
+  { id: "spam", label: "Spam", icon: "/images/win95/folder-closed-16.png" },
 ]
 
 /**
@@ -1127,6 +1209,7 @@ export default function Contact() {
   const [sent, setSent] = useState<Message[]>(SENT)
   /** Deleted Items: the shipped drawer plus whatever the visitor deletes. */
   const [deleted, setDeleted] = useState<Message[]>(DELETED)
+  const [spam, setSpam] = useState<Message[]>(SPAM)
 
   const [to] = useState("Joel Vasquez")
   const [subject, setSubject] = useState("")
@@ -1145,13 +1228,53 @@ export default function Contact() {
           ? deleted
           : folder === "drafts"
             ? DRAFTS
-            : []
+            : folder === "spam"
+              ? spam
+              : []
   const current = shown.find((m) => m.id === selected) ?? null
   const unread = messages.filter((m) => !m.read).length
 
   const open = (id: number) => {
     setSelected(id)
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
+    setSpam((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
+  }
+
+  /**
+   * The auto-reply.
+   *
+   * Send a message and the mailbox answers a few seconds later, the way an
+   * out-of-office rule did: it quotes your subject, promises a real reply,
+   * and lands in the Inbox unread so the folder count moves.
+   */
+  const scheduleAutoReply = (theirSubject: string, theirAddress: string) => {
+    window.setTimeout(() => {
+      setMessages((prev) => [
+        {
+          id: Date.now() + 1,
+          fromName: "Joel Vasquez",
+          from: "jfvasq1@gmail.com",
+          subject: `Re: ${theirSubject}`,
+          date: new Date().toLocaleString(),
+          read: false,
+          body: `Thanks for writing.
+
+This is an automatic reply, which means the mail really did go
+through: it is sitting in a real inbox belonging to a real person
+who will answer it himself, usually within a day.
+
+If it is about work, the resume is on this desktop in Word, and
+the Phone Dialer will book a call.
+
+  > Subject: ${theirSubject}
+  > From: ${theirAddress}
+
+- Joel`,
+        },
+        ...prev,
+      ])
+      play("ding")
+    }, 4000)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -1177,6 +1300,7 @@ export default function Contact() {
             body,
           },
         ])
+        scheduleAutoReply(subject, from)
         formRef.current?.reset()
         setSubject("")
         setFrom("")

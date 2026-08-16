@@ -24,6 +24,9 @@ import StubApp, { STUB_PROGRAMS } from "./window-content/stub-app"
 import FindFiles from "./window-content/find-files"
 import SoundProperties from "./window-content/sound-properties"
 import AddRemove from "./window-content/add-remove"
+import CdPlayer from "./window-content/cd-player"
+import PhoneDialer from "./window-content/phone-dialer"
+import { Defrag, ScanDisk } from "./window-content/disk-tools"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./win95-controls"
 import { windowIcon, windowTitle } from "@/lib/window-titles"
 
@@ -87,15 +90,15 @@ const DEFAULT_SIZE: Record<string, Size> = {
   "find-files": { width: 620, height: 460 },
   "sound-properties": { width: 380, height: 470 },
   "add-remove": { width: 420, height: 420 },
+  cdplayer: { width: 420, height: 420 },
+  phonedialer: { width: 360, height: 400 },
+  scandisk: { width: 400, height: 300 },
+  defrag: { width: 520, height: 420 },
   wordpad: { width: 460, height: 340 },
   charmap: { width: 460, height: 340 },
   mediaplayer: { width: 460, height: 340 },
   soundrec: { width: 460, height: 340 },
-  cdplayer: { width: 460, height: 340 },
-  phonedialer: { width: 460, height: 340 },
   hyperterm: { width: 460, height: 340 },
-  scandisk: { width: 460, height: 340 },
-  defrag: { width: 460, height: 340 },
 }
 
 const CURSOR: Record<ResizeEdge, string> = {
@@ -186,6 +189,14 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         return <SoundProperties />
       case "add-remove":
         return <AddRemove />
+      case "cdplayer":
+        return <CdPlayer />
+      case "phonedialer":
+        return <PhoneDialer />
+      case "scandisk":
+        return <ScanDisk />
+      case "defrag":
+        return <Defrag />
       default: {
         // The Windows 95 program set: stubs with the right icon and a line
         // about what each was.

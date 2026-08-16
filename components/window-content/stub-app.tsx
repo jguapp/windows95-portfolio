@@ -47,36 +47,11 @@ export const STUB_PROGRAMS: StubProgram[] = [
     was: "Sixty seconds of microphone to a .wav, with an oscilloscope to watch.",
   },
   {
-    id: "cdplayer",
-    name: "CD Player",
-    icon: "/images/win95/cdplayer-32.png",
-    was: "Track listings for the disc in your drive, if you typed them in yourself.",
-    instead: { label: "Winamp took this job in 1997", opens: "winamp" },
-  },
-  {
-    id: "phonedialer",
-    name: "Phone Dialer",
-    icon: "/images/win95/phone-32.png",
-    was: "Dialled a telephone through your modem so you could pick up the handset.",
-  },
-  {
     id: "hyperterm",
     name: "HyperTerminal",
     icon: "/images/win95/hyperterm-32.png",
     was: "Serial and dial-up terminal sessions: BBSes, routers, other computers.",
     instead: { label: "The MS-DOS Prompt is the terminal here", opens: "msdos" },
-  },
-  {
-    id: "scandisk",
-    name: "ScanDisk",
-    icon: "/images/win95/scandisk-32.png",
-    was: "Checked your disk for errors, mostly after you turned it off wrong.",
-  },
-  {
-    id: "defrag",
-    name: "Disk Defragmenter",
-    icon: "/images/win95/defrag-32.png",
-    was: "Shuffled file fragments into order while you watched the blocks move.",
   },
 ]
 

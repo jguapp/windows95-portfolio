@@ -155,6 +155,27 @@ export default function MsDos() {
           return
         }
 
+        case "VIRUS":
+        case "VIRUS.EXE": {
+          write(
+            "",
+            "VIRUS.EXE  [Definitely Not A Virus v1.0]",
+            "",
+            "Scanning for things to ruin........... 3 found",
+            "Encrypting your homework............. done",
+            "Renaming every file to AAAAA.TMP..... done",
+            "Emailing your search history to Mom.. done",
+            "",
+            "Just kidding. Nothing happened. Somebody should tell",
+            "the paperclip, though; he is taking it badly.",
+            "",
+          )
+          // The assistant is summoned, and panics on arrival.
+          window.dispatchEvent(new CustomEvent("summonClippy"))
+          window.dispatchEvent(new CustomEvent("clippyPanic"))
+          return
+        }
+
         case "DISCO": {
           write("", "The floor is yours. Ten seconds.", "")
           const root = document.documentElement.style
@@ -332,6 +353,7 @@ export default function MsDos() {
             "TRACERT  Trace the route to a host.",
             "FORMAT   Ask a dangerous question, answer it well.",
             "ADVENTURE An office, a deadline, one gold master.",
+            "VIRUS     Do not run this. (Nothing happens.)",
             "DEFRAG   Analyze a drive that cannot fragment.",
             "",
           )

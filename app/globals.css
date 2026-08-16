@@ -1432,6 +1432,19 @@ body.win95-busy * {
   cursor: wait !important;
 }
 
+/* VIRUS.EXE: the assistant, rattled. */
+@keyframes clippy-panic {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-3px) rotate(-2deg); }
+  40% { transform: translateX(3px) rotate(2deg); }
+  60% { transform: translateX(-2px) rotate(-1deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+}
+
+.anim-clippy-panic {
+  animation: clippy-panic 240ms linear infinite;
+}
+
 /* Hearts: the moon a shooter earns, rising from the table's edge. */
 @keyframes moon-rise {
   from {
@@ -1458,6 +1471,10 @@ body.win95-busy * {
   .anim-moon-rise {
     animation: none;
     transform: translate(-50%, -340px);
+  }
+
+  .anim-clippy-panic {
+    animation: none;
   }
 }
 

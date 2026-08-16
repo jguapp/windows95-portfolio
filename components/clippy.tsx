@@ -256,6 +256,8 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const dragRef = useRef<{ startX: number; startY: number; offsetX: number; offsetBottom: number } | null>(null)
   /** True after a real drag, so the click that follows does not also speak. */
   const draggedRef = useRef(false)
+  /** True while VIRUS.EXE has him rattled, which is visible. */
+  const [panicking, setPanicking] = useState(false)
   /** One visit in a hundred, he arrives gilded. */
   const goldenRef = useRef(Math.random() < 0.01)
   /** The hit-counter line, added once the visitor number arrives. */
@@ -368,6 +370,33 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
     return () => window.removeEventListener("summonClippy", summon)
   }, [])
 
+  /*
+    VIRUS.EXE.
+
+    The DOS prompt fires clippyPanic, and he takes it worse than anyone.
+    He shakes where he stands and says a run of increasingly worried
+    things, then recovers, because nothing actually happened.
+  */
+  useEffect(() => {
+    const panic = () => {
+      setDismissed(false)
+      setPanicking(true)
+      const lines = [
+        "It looks like you're running a virus. Would you like help with that?",
+        "OK. OK. Nobody panic. I am not panicking. YOU are panicking.",
+        "I have backed up my own paperclip. I did not back up anything else.",
+        "...",
+        "False alarm. Nothing happened. I would like that on the record.",
+      ]
+      lines.forEach((phrase, i) => {
+        window.setTimeout(() => speak({ phrase, animation: i === lines.length - 1 ? GIF(2) : NO_GIF }), i * 2600)
+      })
+      window.setTimeout(() => setPanicking(false), lines.length * 2600)
+    }
+    window.addEventListener("clippyPanic", panic)
+    return () => window.removeEventListener("clippyPanic", panic)
+  }, [speak])
+
   useEffect(() => () => clearTimeout(hideTimer.current), [])
 
   if (dismissed || hidden) return null
@@ -377,7 +406,7 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
       data-clippy
       // Anchored by his feet, so a tip bubble appearing grows upward and
       // never shoves him, exactly as in his home corner.
-      className={`fixed z-[850] flex flex-col items-end ${pos ? "" : "bottom-[42px] right-3"} ${isDragging ? "opacity-70" : ""}`}
+      className={`fixed z-[850] flex flex-col items-end ${pos ? "" : "bottom-[42px] right-3"} ${isDragging ? "opacity-70" : ""} ${panicking ? "anim-clippy-panic" : ""}`}
       style={pos ? { left: pos.x, bottom: pos.bottom } : undefined}
     >
       {line && (
