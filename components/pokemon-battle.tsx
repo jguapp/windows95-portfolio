@@ -219,7 +219,21 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
       <rect x={x - 1} y={y + 4} width={1} height={1} fill={P[0]} />
       <rect x={x + WIDTH} y={y + 4} width={1} height={1} fill={P[0]} />
       <rect x={x} y={y} width={WIDTH} height={4} fill={P[0]} />
-      <rect x={x} y={y + 1} width={filled} height={2} fill={shade} />
+      {/* Full-width fill scaled to the ratio: scaling transitions, so damage
+          trickles the bar down rather than cutting a chunk in one frame. */}
+      <rect
+        x={x}
+        y={y + 1}
+        width={WIDTH}
+        height={2}
+        fill={shade}
+        style={{
+          transform: `scaleX(${Math.max(0, ratio)})`,
+          transformBox: "fill-box",
+          transformOrigin: "left center",
+          transition: "transform 0.55s linear",
+        }}
+      />
       {ratio <= 0.2 &&
         Array.from({ length: filled }).map((_, i) =>
           i % 2 === 0 ? <rect key={i} x={x + i} y={y + 1} width={1} height={1} fill={P[0]} /> : null,
@@ -1012,26 +1026,26 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             <>
               {/* The reference fight layout: PP box and TYPE box on the
                   left, the move list in its own box reaching the edge. */}
-              <Box x={0} y={62} w={86} h={18} />
-              <Label x={10} y={74} size={6}>
+              <Box x={0} y={60} w={86} h={18} />
+              <Label x={10} y={72} size={6}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
-              <Box x={0} y={80} w={86} h={24} />
-              <Label x={8} y={90} size={5}>
+              <Box x={0} y={78} w={86} h={22} />
+              <Label x={8} y={87} size={5}>
                 TYPE/
               </Label>
-              <Label x={14} y={98} size={6}>
+              <Label x={14} y={96} size={6}>
                 {player.moves[cursor].type}
               </Label>
-              <Box x={40} y={104} w={120} h={40} />
+              <Box x={40} y={100} w={120} h={44} />
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={46} y={114 + i * 8} size={6}>
+                    <Label x={46} y={112 + i * 8} size={6}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={54} y={114 + i * 8} size={6}>
+                  <Label x={54} y={112 + i * 8} size={6}>
                     {m.name}
                   </Label>
                 </g>
