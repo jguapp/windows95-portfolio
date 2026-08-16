@@ -196,7 +196,8 @@ follows what Windows would have done.</p>
 <tr><th>Path</th><th>What it is</th></tr>
 <tr><td><code>app/page.tsx</code></td><td>The one route. Window list state, boot flag, global shortcuts, hosts every overlay.</td></tr>
 <tr><td><code>app/globals.css</code></td><td>The Win95 look: bevels, scrollbars, cursors, the type scale, the blanket font rule and its <code>.win95-mono</code> escape hatch.</td></tr>
-<tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell and the social preview image.</td></tr>
+<tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell, the self-hosted pixel fonts, the metadata, and the social preview image.</td></tr>
+<tr><td><code>app/sitemap.ts</code>, <code>app/robots.ts</code></td><td>One route, declared honestly, and the robots file that points at it.</td></tr>
 <tr><td><code>app/not-found.tsx</code></td><td>The 404: a Windows 95 error dialog on the teal desktop with one button back to C:\.</td></tr>
 <tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
 <tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>

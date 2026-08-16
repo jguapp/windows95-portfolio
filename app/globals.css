@@ -87,9 +87,6 @@
   font-display: swap;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
-
 .text-shadow {
   text-shadow: 1px 1px 0;
 }
@@ -101,7 +98,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: "MS Sans Serif", "VT323", monospace !important;
+  font-family: "MS Sans Serif", var(--font-vt323), "VT323", monospace !important;
 }
 
 body {
@@ -110,11 +107,11 @@ body {
   background-color: #008080 !important; /* Authentic Windows 95 teal */
   font-size: 16px; /* Increased from 12px to 14px */
   color: black;
-  font-family: "MS Sans Serif", "VT323", monospace !important;
+  font-family: "MS Sans Serif", var(--font-vt323), "VT323", monospace !important;
 }
 
 * {
-  font-family: "MS Sans Serif", "VT323", monospace !important;
+  font-family: "MS Sans Serif", var(--font-vt323), "VT323", monospace !important;
 }
 
 /*
@@ -253,7 +250,7 @@ body {
 }
 
 .font-pixel {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
 }
 
 #taskbar {
@@ -418,13 +415,13 @@ h6 {
 }
 
 .arcade-title {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff00de, 0 0 35px #ff00de, 0 0 40px #ff00de;
   letter-spacing: 2px;
 }
 
 .neon-subtitle {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   letter-spacing: 1px;
 }
 
@@ -465,7 +462,7 @@ h6 {
 }
 
 .cabinet-title {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -520,7 +517,7 @@ h6 {
 
 .blink-text {
   animation: blink 1s infinite;
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   color: #ff0;
   text-shadow: 0 0 5px #ff0;
 }
@@ -538,7 +535,7 @@ h6 {
 
 /* Override for arcade games */
 .arcade-background .font-pixel * {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
 }
 
 /* Add these styles to the end of your globals.css file */
@@ -683,7 +680,7 @@ h6 {
 .tron-theme *,
 .arkanoid-theme *,
 .pacman-theme * {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
 }
 
 /* Retro CRT effect */
@@ -874,7 +871,7 @@ h6 {
 }
 
 .gameboy-text {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   color: #0f380f;
 }
 
@@ -888,7 +885,7 @@ h6 {
 }
 
 .gameboy-menu-item {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
   color: #0f380f;
 }
 
@@ -1266,7 +1263,7 @@ h6 {
 
 /* Add a specific override for the Pokemon battle move text */
 .font-pixel {
-  font-family: "Press Start 2P", monospace !important;
+  font-family: var(--font-press-start), "Press Start 2P", monospace !important;
 }
 
 /* Override for move text */
@@ -1279,7 +1276,7 @@ h6 {
 
 /* Ensure the font is loaded */
 @font-face {
-  font-family: "Press Start 2P";
+  font-family: var(--font-press-start), "Press Start 2P";
   font-style: normal;
   font-weight: 400;
   font-display: swap;

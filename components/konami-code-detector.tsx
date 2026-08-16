@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useCallback } from "react"
+import { track } from "@vercel/analytics"
 
 interface KonamiCodeDetectorProps {
   onCodeEntered: () => void
@@ -39,6 +40,16 @@ export default function KonamiCodeDetector({ onCodeEntered }: KonamiCodeDetector
         // If completed the sequence
         if (newProgress === KONAMI_CODE.length) {
           konamiCodeElement.setAttribute("data-progress", "0")
+          /*
+            The one thing worth measuring: how many visitors find the secret.
+            track() is a no-op off Vercel, so this costs nothing locally and
+            carries no personal data either way.
+          */
+          try {
+            track("konami_code")
+          } catch {
+            // Analytics is never worth breaking the easter egg over.
+          }
           onCodeEntered()
         }
       } else {

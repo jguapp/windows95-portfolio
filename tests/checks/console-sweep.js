@@ -123,6 +123,21 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   // browser's own 'Failed to load resource' line for it is unavoidable.
   const real = errors.filter((e) => !e.includes('favicon') && !(e.startsWith('[404]') && e.includes('404')))
   ok("no console errors anywhere on the desk", real.length === 0, "")
+
+  // ---- #152 and #153: the shipping meta ------------------------------------
+  await p.goto("http://localhost:3000/", { waitUntil: "domcontentloaded" })
+  await p.waitForTimeout(1200)
+  const sitemap = await p.evaluate(async () => (await fetch("/sitemap.xml")).text())
+  ok("#153 the sitemap serves the site", sitemap.includes("builtbyjoel.dev"))
+  const robotsTxt = await p.evaluate(async () => (await fetch("/robots.txt")).text())
+  ok("#153 robots.txt points at the sitemap", robotsTxt.includes("sitemap.xml"))
+  const meta = await p.evaluate(() => ({
+    description: document.querySelector('meta[name="description"]')?.content ?? "",
+    canonical: document.querySelector('link[rel="canonical"]')?.href ?? "",
+  }))
+  ok("#153 description and canonical are declared", meta.description.length > 60 && meta.canonical.includes("builtbyjoel"))
+  const pixelFace = await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--font-press-start"))
+  ok("#152 the pixel faces are self-hosted", pixelFace.trim().length > 0, pixelFace.trim().slice(0, 30))
   if (real.length) {
     const seen = new Set()
     for (const e of real) {
