@@ -7,7 +7,8 @@ interface BlueScreenOfDeathProps {
 }
 
 export default function BlueScreenOfDeath({ onRestart }: BlueScreenOfDeathProps) {
-  const [countdown, setCountdown] = useState(10)
+  // Thirty seconds: enough to actually read the screen. Any key still skips.
+  const [countdown, setCountdown] = useState(30)
 
   // Separate useEffect for countdown
   useEffect(() => {
