@@ -42,7 +42,7 @@ interface InfoRow {
 const ACCOUNT_ROWS: InfoRow[] = [
   { label: "Name:", value: "Joel Vasquez" },
   { label: "Member Since:", value: "February 4, 2004" },
-  { label: "Last Update:", value: "August 13, 2026" },
+  { label: "Last Update:", value: "August 16, 2026" },
 ]
 
 const BASIC_ROWS: InfoRow[] = [
@@ -126,7 +126,20 @@ function FacebookHeader() {
             style={{ imageRendering: "auto" }}
           />
         </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-10 space-x-6 text-white text-sm">
+        {/*
+          The wordmark spans fractions 0.512 to 0.908 of the source bitmap,
+          and the bitmap's displayed width is max(container, 1300px) because
+          the art is 10:1 cropped from the right at 130px tall. Sizing the
+          nav box from the same arithmetic keeps the links spread evenly
+          under the logo, windowed and maximised alike.
+        */}
+        <div
+          className="absolute bottom-0 flex items-center justify-between text-white text-sm"
+          style={{
+            width: "calc(max(100%, 1300px) * 0.396)",
+            right: "calc(max(100%, 1300px) * 0.092)",
+          }}
+        >
           {NAV_LINKS.map((link) => (
             <a key={link} href="#" className="hover:underline">
               {link}
