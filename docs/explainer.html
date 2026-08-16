@@ -295,6 +295,17 @@ and 3840x2160 modes shrink the shell below 1x for more desktop area, which is wh
 more pixels bought. The tray monitor pops a QuickRes-style menu of the six modes; the
 Settings tab offers the same list, because discrete modes deserve rows rather than a
 slider.</p>
+<h3>The battle engine</h3>
+<p>Damage is <code>power x level / 40</code> scaled by the attacker's and
+defender's stat stages (Gen I arithmetic: stage s multiplies by (2+s)/2 above
+zero and 2/(2-s) below) and by the type chart: four types in one ring, CODE
+beats DATA beats METAL beats CHAOS beats CODE, 2x with the ring and 0.5x
+against it. Every move carries an accuracy score rolled per use; status moves
+move a stage instead of dealing damage and fail at the +-6 caps. A faint
+opens the party screen as a forced, penalty-free pick. All turn logic reads
+state through refs rather than closures, because the timer chains that pace
+the messages otherwise read stale team arrays, which once re-sent a fainted
+fighter.</p>
 <h3>The computed back sprite</h3>
 <p>The player's fighter is shown from behind, as Red and Blue drew it. Rather
 than hand-drawing twelve back views, <code>backView</code> derives one: mirror

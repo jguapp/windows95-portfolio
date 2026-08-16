@@ -32,7 +32,7 @@ const RELEASES: Release[] = [
       "The resume in Word prints an actual document and saves as Word, PDF or HTML.",
       "Internet Explorer serves 1996 by way of the archive, and joel95.net counts your visit on a six-digit hit counter.",
       "A guestbook on Postgres, drawings included, behind rate limits and row level security.",
-      "The hidden battle went full Gen I: six a side, a party screen with mini sprites, a real item bag, computed back sprites, and platforms measured from each fighter's feet.",
+      "The hidden battle went full Gen I: six a side, a type chart, status moves and stat stages, accuracy rolls that miss, a party screen with mini sprites, a real item bag, computed back sprites, and choosing who comes out when a fighter faints.",
       "The keyboard drives the desktop: Tab, arrows and Enter on the icons, Alt+Q to switch windows.",
       "Run on Ctrl+Alt+R with the real executable names, Date/Time Properties on the clock, a Properties sheet on every icon.",
       "Mail became Outlook Express with 59 messages spanning two years, spam included.",

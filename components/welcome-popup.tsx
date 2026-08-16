@@ -254,7 +254,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
             <ul className="list-disc pl-5 text-xs mb-4">
               <li className="mb-1">The resume saves as Word and PDF, and Winamp's eject button takes your own music</li>
               <li className="mb-1">Readme.txt on the C:\ drive is now the guide to everything hard to find</li>
-              <li className="mb-1">The secret battle plays by Gen I rules: a party screen, a real item bag, back sprites</li>
+              <li className="mb-1">The secret battle plays by Gen I rules: types, status moves, misses, a real bag</li>
               <li className="mb-1">Saving is your choice now: the checkbox below decides what this browser remembers</li>
               <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the whole shell</li>
               <li className="mb-1">A QuickRes menu in the tray, from 640x480 up to 4K</li>
