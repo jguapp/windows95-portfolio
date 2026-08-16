@@ -66,6 +66,16 @@ export function saveScore(game: string, entry: ScoreEntry, lower = true): ScoreE
   return next
 }
 
+/** Clears a game's table, which is what a Reset Scores button is for. */
+export function resetScores(game: string) {
+  if (typeof window === "undefined") return
+  try {
+    window.localStorage.removeItem(PREFIX + game)
+  } catch {
+    // Storage disabled reads as already reset.
+  }
+}
+
 /** True when a score would make the table, so the name prompt is worth showing. */
 export function isBestTime(game: string, value: number, category?: string, lower = true): boolean {
   const all = (read(game) ?? []).filter((e) => e.category === category)

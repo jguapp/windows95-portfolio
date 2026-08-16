@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { CloseIcon } from "@/components/win95-controls"
 import { createSound, type SynthAudio } from "@/lib/sound"
 import { messageBox } from "@/components/win95-dialog"
-import { loadScores, saveScore, type ScoreEntry } from "@/lib/high-scores"
-import { Counter, Flag, Mine, Smiley, type Face } from "./minesweeper-parts"
+import { loadScores, resetScores, saveScore, type ScoreEntry } from "@/lib/high-scores"
+import { Counter, Flag, Flower, Mine, Smiley, type Face } from "./minesweeper-parts"
 
 interface MinesweeperProps {
   onReturn: () => void
@@ -23,10 +23,20 @@ const CELL_PX = 16
 const BOARD_ZOOM = 2
 
 /** The three boards Windows 95 shipped, with their mine counts. */
-const BOARDS: Record<Difficulty, { rows: number; cols: number; mines: number }> = {
+const BOARDS: Record<Exclude<Difficulty, "custom">, { rows: number; cols: number; mines: number }> = {
   easy: { rows: 9, cols: 9, mines: 10 },
   medium: { rows: 16, cols: 16, mines: 40 },
   hard: { rows: 16, cols: 30, mines: 99 },
+}
+
+/** The limits the real Custom Field dialog clamped to. */
+const CUSTOM_LIMITS = { rows: [9, 24], cols: [9, 30] } as const
+
+/** What each preset was called in the Fastest Mine Sweepers dialog. */
+const LEVEL_NAMES: Record<Exclude<Difficulty, "custom">, string> = {
+  easy: "Beginner",
+  medium: "Intermediate",
+  hard: "Expert",
 }
 
 function reducedMotion(): boolean {
@@ -43,7 +53,7 @@ type CellState = {
   neighborMines: number
 }
 
-type Difficulty = "easy" | "medium" | "hard"
+type Difficulty = "easy" | "medium" | "hard" | "custom"
 
 interface HighScore {
   name: string
@@ -69,11 +79,8 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   const [difficulty, setDifficulty] = useState<Difficulty>("easy")
   const [showHelp, setShowHelp] = useState(false)
   const [showHighScores, setShowHighScores] = useState(false)
-  const [highScores, setHighScores] = useState<HighScore[]>([
-    { name: "BOM", time: 45, difficulty: "easy" },
-    { name: "MAN", time: 78, difficulty: "medium" },
-    { name: "TNT", time: 120, difficulty: "hard" },
-  ])
+  // The real dialog's empty slate: 999 seconds by Anonymous at every level.
+  const [highScores, setHighScores] = useState<HighScore[]>([])
 
   // Best times are read once on the client. Reading during render would not
   // match what the server sent and would blow up hydration.
@@ -93,6 +100,15 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   const [pressing, setPressing] = useState(false)
   /** Marks toggles the question-mark step in the right-click cycle. */
   const [marks, setMarks] = useState(true)
+  /** Flowers redraws every mine as a flower, the gentler later-Windows skin. */
+  const [flowers, setFlowers] = useState(false)
+  /** The Custom Field dialog and its three fields, kept as text while typing. */
+  const [showCustom, setShowCustom] = useState(false)
+  const [customForm, setCustomForm] = useState({ rows: "16", cols: "16", mines: "40" })
+  /** The xyzzy cheat: typed letters accumulate, Shift+Enter arms it. */
+  const [cheat, setCheat] = useState(false)
+  const typedRef = useRef("")
+  const [hovered, setHovered] = useState<{ row: number; col: number } | null>(null)
 
   // Initialize sounds
   useEffect(() => {
@@ -120,12 +136,35 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   }, [])
 
   // Set difficulty
-  const setGameDifficulty = (level: Difficulty) => {
+  const setGameDifficulty = (level: Exclude<Difficulty, "custom">) => {
     const size = BOARDS[level]
     setGridSize({ rows: size.rows, cols: size.cols })
     setMineCount(size.mines)
     setDifficulty(level)
     initializeGrid()
+  }
+
+  /**
+   * Applies the Custom Field dialog, clamping each value the way the real
+   * dialog did: height 9-24, width 9-30, mines 10 up to (h-1)(w-1) capped
+   * at 667. Bad input is clamped rather than rejected, so OK always works.
+   */
+  const applyCustom = () => {
+    const clamp = (raw: string, lo: number, hi: number) => {
+      const n = Number.parseInt(raw, 10)
+      return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : lo
+    }
+    const rows = clamp(customForm.rows, CUSTOM_LIMITS.rows[0], CUSTOM_LIMITS.rows[1])
+    const cols = clamp(customForm.cols, CUSTOM_LIMITS.cols[0], CUSTOM_LIMITS.cols[1])
+    const mines = clamp(customForm.mines, 10, Math.min(667, (rows - 1) * (cols - 1)))
+    setCustomForm({ rows: String(rows), cols: String(cols), mines: String(mines) })
+    setGridSize({ rows, cols })
+    setMineCount(mines)
+    setDifficulty("custom")
+    setShowCustom(false)
+    // A size change re-initialises through the effect below; a same-size
+    // apply (or a mines-only change) would otherwise leave the old board.
+    if (rows === gridSize.rows && cols === gridSize.cols) initializeGrid()
   }
 
 
@@ -162,6 +201,8 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     setShowHighScores(false)
     setShowNameInput(false)
     setShowSettings(false)
+    setShowCustom(false)
+    setHovered(null)
   }, [gridSize])
 
   // Place mines after first click
@@ -402,6 +443,23 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     return () => window.removeEventListener("keydown", onKey)
   }, [initializeGrid])
 
+  // The xyzzy cheat, exactly as shipped in 1995: type xyzzy, press
+  // Shift+Enter, and one corner pixel reports what the pointer is over.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.shiftKey) {
+        if (typedRef.current.endsWith("xyzzy")) setCheat((c) => !c)
+        typedRef.current = ""
+        return
+      }
+      if (e.key.length === 1 && /[a-z]/i.test(e.key)) {
+        typedRef.current = (typedRef.current + e.key.toLowerCase()).slice(-5)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // Check if the player has won
   const checkWinCondition = (currentGrid: CellState[][]) => {
     let allNonMinesRevealed = true
@@ -424,25 +482,37 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       }
 
       setGameStatus("won")
-      setShowNameInput(true)
+      // The real game only asked for a name on a new fastest time for a
+      // preset level; custom boards never recorded one.
+      if (difficulty !== "custom" && timeElapsed < bestTimeFor(difficulty)) {
+        setShowNameInput(true)
+      }
     }
+  }
+
+  /** The fastest recorded time for a preset level, 999 when none is. */
+  const bestTimeFor = (level: Difficulty): number => {
+    const times = highScores.filter((s) => s.difficulty === level).map((s) => s.time)
+    return times.length > 0 ? Math.min(...times) : 999
+  }
+
+  /** The name attached to a level's fastest time. */
+  const bestNameFor = (level: Difficulty): string => {
+    const rows = highScores.filter((s) => s.difficulty === level)
+    if (rows.length === 0) return "Anonymous"
+    return rows.reduce((a, b) => (b.time < a.time ? b : a)).name
   }
 
   // Save high score
   const saveHighScore = () => {
-    if (playerName.trim() === "") return
-
-    const newScore: HighScore = {
-      name: playerName.substring(0, 3).toUpperCase(),
-      time: timeElapsed,
-      difficulty,
-    }
+    // The real dialog filed a blank as Anonymous rather than refusing.
+    const name = playerName.trim().substring(0, 20) || "Anonymous"
 
     // Written to localStorage so a best time survives the window closing,
     // which is the only thing that makes it a best time.
     const stored: ScoreEntry[] = saveScore(
       "minesweeper",
-      { name: newScore.name, value: newScore.time, category: difficulty },
+      { name, value: timeElapsed, category: difficulty },
       true,
     )
     setHighScores(
@@ -450,6 +520,12 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     )
     setShowNameInput(false)
     setShowHighScores(true)
+  }
+
+  /** Reset Scores: every level back to 999 seconds by Anonymous. */
+  const resetBestTimes = () => {
+    resetScores("minesweeper")
+    setHighScores([])
   }
 
   // Timer effect
@@ -505,7 +581,17 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       { label: "Beginner", action: () => setGameDifficulty("easy"), checked: difficulty === "easy", sep: true },
       { label: "Intermediate", action: () => setGameDifficulty("medium"), checked: difficulty === "medium" },
       { label: "Expert", action: () => setGameDifficulty("hard"), checked: difficulty === "hard" },
+      {
+        label: "Custom...",
+        action: () => {
+          // Opens showing the board you already have, as the original did.
+          setCustomForm({ rows: String(gridSize.rows), cols: String(gridSize.cols), mines: String(mineCount) })
+          setShowCustom(true)
+        },
+        checked: difficulty === "custom",
+      },
       { label: "Marks (?)", action: () => setMarks((m) => !m), checked: marks, sep: true },
+      { label: "Flowers", action: () => setFlowers((f) => !f), checked: flowers },
       { label: "Best Times...", action: () => setShowHighScores(true) },
       { label: "Exit", action: onReturn, sep: true },
     ],
@@ -520,10 +606,25 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
 
   return (
     <div
-      className="win95-type flex h-full w-full flex-col bg-[#c0c0c0]"
+      className="win95-type relative flex h-full w-full flex-col bg-[#c0c0c0]"
       style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
       data-minesweeper
     >
+      {/* The xyzzy pixel: white over a safe square, black over a mine. */}
+      {cheat && hovered && grid[hovered.row]?.[hovered.col] && (
+        <div
+          data-xyzzy
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: 2,
+            height: 2,
+            zIndex: 60,
+            backgroundColor: grid[hovered.row][hovered.col].isMine ? "#000000" : "#ffffff",
+          }}
+        />
+      )}
       {/* Menu bar */}
       <div className="flex border-b border-[#808080] px-1" onMouseLeave={() => setMenu(null)}>
         {Object.keys(menus).map((name) => (
@@ -608,7 +709,10 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
             }}
             onMouseDown={() => setPressing(true)}
             onMouseUp={() => setPressing(false)}
-            onMouseLeave={() => setPressing(false)}
+            onMouseLeave={() => {
+              setPressing(false)
+              setHovered(null)
+            }}
           >
             {grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => {
@@ -636,6 +740,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                       color: getCellColor(cell.neighborMines),
                     }}
                     onClick={() => revealCell(rowIndex, colIndex)}
+                    onMouseEnter={() => setHovered({ row: rowIndex, col: colIndex })}
                     onContextMenu={(e) => {
                       e.preventDefault()
                       toggleFlag(rowIndex, colIndex)
@@ -651,7 +756,11 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                   >
                     {cell.isRevealed ? (
                       cell.isMine ? (
-                        <Mine size={CELL_PX - 2} />
+                        flowers ? (
+                          <Flower size={CELL_PX - 2} />
+                        ) : (
+                          <Mine size={CELL_PX - 2} />
+                        )
                       ) : cell.neighborMines > 0 ? (
                         cell.neighborMines
                       ) : null
@@ -785,12 +894,15 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
         </div>
       )}
 
-      {/* High Scores Modal */}
+      {/* Best Times, laid out as the real Fastest Mine Sweepers dialog. */}
       {showHighScores && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 max-w-md">
+          <div
+            data-best-times
+            className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 w-[340px]"
+          >
             <div className="flex justify-between items-center mb-4 border-b-2 border-gray-400 pb-2">
-              <h2 className="text-xl font-bold">High Scores</h2>
+              <h2 className="text-lg font-bold">Fastest Mine Sweepers</h2>
               <button
                 onClick={() => setShowHighScores(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
@@ -798,23 +910,72 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 <CloseIcon />
               </button>
             </div>
-            <div className="text-black text-sm">
-              <div className="grid grid-cols-3 gap-4 mb-2 font-bold border-b border-gray-400 pb-1">
-                <div>Name</div>
-                <div>Time</div>
-                <div>Level</div>
-              </div>
-              {highScores.slice(0, 5).map((score, index) => (
-                <div key={index} className="grid grid-cols-3 gap-4 mb-1 border-b border-gray-200 py-1">
-                  <div>{score.name}</div>
-                  <div>{formatTime(score.time)}</div>
-                  <div>{score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</div>
+            <div className="text-black text-sm mb-4">
+              {(["easy", "medium", "hard"] as const).map((level) => (
+                <div key={level} className="grid grid-cols-[92px_92px_1fr] gap-2 mb-1 py-1">
+                  <div>{LEVEL_NAMES[level]}:</div>
+                  <div>{bestTimeFor(level)} seconds</div>
+                  <div className="truncate">{bestNameFor(level)}</div>
                 </div>
               ))}
             </div>
-            <button className="mt-4 win95-button" onClick={() => setShowHighScores(false)}>
-              Close
-            </button>
+            <div className="flex justify-between">
+              <button className="win95-button" onClick={resetBestTimes} data-reset-scores>
+                Reset Scores
+              </button>
+              <button className="win95-button" onClick={() => setShowHighScores(false)}>
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Field, with the original's clamping. */}
+      {showCustom && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            data-custom-field
+            className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 w-[260px]"
+          >
+            <div className="flex justify-between items-center mb-4 border-b-2 border-gray-400 pb-2">
+              <h2 className="text-lg font-bold">Custom Field</h2>
+              <button
+                onClick={() => setShowCustom(false)}
+                className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="text-black text-sm space-y-2 mb-4">
+              {(
+                [
+                  ["Height", "rows"],
+                  ["Width", "cols"],
+                  ["Mines", "mines"],
+                ] as const
+              ).map(([label, field]) => (
+                <label key={field} className="flex items-center justify-between gap-2">
+                  <span>{label}:</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={customForm[field]}
+                    onChange={(e) => setCustomForm((f) => ({ ...f, [field]: e.target.value }))}
+                    className="w-16 border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[1px] text-right"
+                    data-custom={field}
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-between">
+              <button className="win95-button" onClick={applyCustom} data-custom-ok>
+                OK
+              </button>
+              <button className="win95-button" onClick={() => setShowCustom(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -824,7 +985,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 max-w-md">
             <div className="flex justify-between items-center mb-4 border-b-2 border-gray-400 pb-2">
-              <h2 className="text-xl font-bold">New High Score!</h2>
+              <h2 className="text-xl font-bold">Fastest Time!</h2>
               <button
                 onClick={() => setShowNameInput(false)}
                 className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
@@ -832,12 +993,15 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
                 <CloseIcon />
               </button>
             </div>
-            <p className="text-black text-sm mb-4">Enter your name (3 characters):</p>
+            <p className="text-black text-sm mb-4">
+              You have the fastest time for {difficulty === "custom" ? "this" : LEVEL_NAMES[difficulty].toLowerCase()}{" "}
+              level. Please enter your name.
+            </p>
             <input
               type="text"
-              maxLength={3}
+              maxLength={20}
               value={playerName}
-              onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
+              onChange={(e) => setPlayerName(e.target.value)}
               className="bg-white text-black border-2 border-inset p-2 w-full text-center text-xl mb-4"
               autoFocus
             />

@@ -191,6 +191,33 @@ export function Mine({ size = 16 }: { size?: number }) {
   )
 }
 
+/**
+ * The flower that stands in for a mine when Flowers is on, the gentler
+ * skin later Windows versions offered. Same silhouette weight as the
+ * mine so the board reads identically.
+ */
+export function Flower({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" data-flower {...grid}>
+      {/* Petals: four red lobes around the centre. */}
+      <rect x="6" y="2" width="4" height="3" fill="#ff0000" />
+      <rect x="2" y="6" width="3" height="4" fill="#ff0000" />
+      <rect x="11" y="6" width="3" height="4" fill="#ff0000" />
+      <rect x="6" y="11" width="4" height="2" fill="#ff0000" />
+      <rect x="4" y="4" width="2" height="2" fill="#ff0000" />
+      <rect x="10" y="4" width="2" height="2" fill="#ff0000" />
+      <rect x="4" y="10" width="2" height="2" fill="#ff0000" />
+      <rect x="10" y="10" width="2" height="2" fill="#ff0000" />
+      {/* Centre. */}
+      <rect x="6" y="6" width="4" height="4" fill="#ffff00" />
+      {/* Stem and leaves. */}
+      <rect x="7" y="12" width="2" height="3" fill="#008000" />
+      <rect x="5" y="13" width="2" height="1" fill="#008000" />
+      <rect x="9" y="14" width="2" height="1" fill="#008000" />
+    </svg>
+  )
+}
+
 /** The flag: red pennant on a black pole with a black base. */
 export function Flag({ size = 16 }: { size?: number }) {
   return (
