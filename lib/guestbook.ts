@@ -155,3 +155,24 @@ export async function addEntry(entry: GuestbookEntry): Promise<void> {
     )
   `
 }
+
+/**
+ * Removes one entry, for moderation.
+ *
+ * Returns whether a row was actually removed, so the caller can tell a
+ * successful delete from an id that was already gone. Authorisation is not
+ * decided here: the server action checks the key before it ever calls this.
+ */
+export async function deleteEntry(id: string): Promise<boolean> {
+  const client = db()
+  if (!client) {
+    const at = memory.findIndex((entry) => entry.id === id)
+    if (at === -1) return false
+    memory.splice(at, 1)
+    return true
+  }
+
+  await ensureTable(client)
+  const removed = await client`DELETE FROM guestbook WHERE id = ${id} RETURNING id`
+  return removed.length > 0
+}

@@ -3,7 +3,7 @@
 import type React from "react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { getEntries, signGuestbook } from "@/actions/guestbook"
+import { getEntries, moderationAvailable, removeEntry, signGuestbook, verifyModerator } from "@/actions/guestbook"
 import type { GuestbookEntry } from "@/lib/guestbook"
 import { messageBox } from "@/components/win95-dialog"
 
@@ -50,6 +50,18 @@ export default function Guestbook() {
   const drawing = useRef(false)
   /** Whether anything has been drawn, so an untouched pad is not submitted. */
   const [hasDrawing, setHasDrawing] = useState(false)
+  /**
+   * Moderation.
+   *
+   * The key lives in this component's state for the life of the window and
+   * nowhere else: not in localStorage, where a shared machine would keep
+   * it, and not in the bundle. Every delete sends it back to be checked
+   * again, so what is held here is a convenience, not an authorisation.
+   */
+  const [canModerate, setCanModerate] = useState(false)
+  const [askingKey, setAskingKey] = useState(false)
+  const [keyInput, setKeyInput] = useState("")
+  const [moderatorKey, setModeratorKey] = useState<string | null>(null)
 
   /** White to start with, otherwise the PNG saves a transparent rectangle. */
   const clearPad = useCallback(() => {
@@ -82,6 +94,47 @@ export default function Guestbook() {
     ctx.lineTo(point.x, point.y)
     ctx.stroke()
     setHasDrawing(true)
+  }
+
+  // Whether the server has a key configured at all. With none, the door is
+  // not merely locked; it is not drawn.
+  useEffect(() => {
+    let live = true
+    moderationAvailable()
+      .then((available) => live && setCanModerate(available))
+      .catch(() => {
+        // A server that cannot answer offers no moderation, which is the
+        // safe direction to fail in.
+      })
+    return () => {
+      live = false
+    }
+  }, [])
+
+  const signIn = async () => {
+    const result = await verifyModerator(keyInput)
+    setStatus(result.message)
+    if (result.ok) {
+      setModeratorKey(keyInput)
+      setAskingKey(false)
+    }
+    setKeyInput("")
+  }
+
+  const removeOne = async (id: string, name: string) => {
+    if (!moderatorKey) return
+    const confirmed = await messageBox({
+      title: "Guestbook",
+      text: `Remove the entry by ${name}?`,
+      icon: "warning",
+      cancel: true,
+    })
+    if (!confirmed) return
+    const result = await removeEntry(id, moderatorKey)
+    setStatus(result.message)
+    if (result.entries) setEntries(result.entries)
+    // A key the server has stopped accepting is a key worth forgetting.
+    if (!result.ok && /not right/i.test(result.message)) setModeratorKey(null)
   }
 
   useEffect(() => {
@@ -132,7 +185,7 @@ export default function Guestbook() {
 
   return (
     <div
-      className="win95-type flex h-full w-full flex-col bg-[#c0c0c0]"
+      className="win95-type relative flex h-full w-full flex-col bg-[#c0c0c0]"
       style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
       data-guestbook
     >
@@ -145,6 +198,30 @@ export default function Guestbook() {
         </div>
         {/* Folding the form away gives the entries the whole window, which is
             what you want once you are reading rather than writing. */}
+        {canModerate &&
+          (moderatorKey ? (
+            <button
+              type="button"
+              data-moderation-off
+              onClick={() => {
+                setModeratorKey(null)
+                setStatus("Moderation off.")
+              }}
+              className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+            >
+              Moderating
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-moderation-on
+              title="Owner only"
+              onClick={() => setAskingKey(true)}
+              className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+            >
+              Moderate
+            </button>
+          ))}
         <button
           type="button"
           data-toggle-form
@@ -167,7 +244,19 @@ export default function Guestbook() {
             <div key={entry.id} data-entry className="mb-2 border-b border-[#c0c0c0] pb-2 last:border-b-0">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="font-bold">{entry.name}</span>
-                <span className="shrink-0 text-[#808080]">{formatDate(entry.at)}</span>
+                <span className="flex shrink-0 items-baseline gap-2">
+                  <span className="text-[#808080]">{formatDate(entry.at)}</span>
+                  {moderatorKey && (
+                    <button
+                      type="button"
+                      data-delete-entry={entry.id}
+                      onClick={() => removeOne(entry.id, entry.name)}
+                      className="border border-[#808080] bg-[#c0c0c0] px-1 text-[#800000]"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </span>
               </div>
               {/* Rendered as text, never as markup. */}
               <div className="whitespace-pre-wrap break-words">{entry.message}</div>
@@ -279,6 +368,53 @@ export default function Guestbook() {
           </div>
         )}
       </form>
+      )}
+
+      {/* The moderator prompt. A password field, so a shoulder learns nothing. */}
+      {askingKey && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setAskingKey(false)}>
+          <form
+            data-key-prompt
+            className="w-[300px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault()
+              void signIn()
+            }}
+          >
+            <div className="bg-[#000080] px-2 py-[3px] font-bold text-white">Moderator</div>
+            <div className="p-3">
+              <label className="mb-2 block">Enter the moderator key:</label>
+              <input
+                autoFocus
+                type="password"
+                data-key-input
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                className="mb-3 w-full border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[2px]"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="submit"
+                  data-key-ok
+                  className="h-[23px] min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] active:border-t-[#404040] active:border-l-[#404040]"
+                >
+                  OK
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAskingKey(false)
+                    setKeyInput("")
+                  }}
+                  className="h-[23px] min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] active:border-t-[#404040] active:border-l-[#404040]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   )

@@ -281,6 +281,16 @@ node so pasting twice cannot alias one object into two folders. A name already i
 takes the original's naming: "Copy of Thing.txt", then "Copy (2) of Thing.txt", extension
 untouched, compared case-insensitively because the drive is. A folder cannot be pasted
 into itself or its own descendant, which <code>isInside</code> decides.</p>
+<h3>Guestbook moderation</h3>
+<p>The guestbook shows writing from strangers, so the owner can take an entry down.
+There are no accounts and exactly one moderator, so the control is a shared secret:
+<code>GUESTBOOK_ADMIN_KEY</code>, read on the server and never sent to the browser. The
+window asks for it, the server compares it with <code>timingSafeEqual</code> over
+equal-width padded buffers (a plain <code>===</code> leaks the matching prefix through
+how long it takes to fail), and every delete carries the key to be checked again, so the
+client holds a convenience rather than an authorisation. Wrong guesses are rate limited
+to five per ten minutes per address. With the variable unset there is no moderation at
+all and the button is not drawn.</p>
 <h3>Persistence</h3>
 <p>The virtual drive in <code>lib/filesystem.ts</code> hydrates from localStorage on
 first read and writes itself back on every mutation, under a version-salted key
@@ -397,7 +407,9 @@ the drawn battle uses the four Game Boy tones with sprites from a CC0 set fitted
 
 <h2 id="security">Part IX. Security and governance</h2>
 <p>Secrets live in environment variables, documented in <code>.env.example</code>, never
-in the repository. The two write paths are server actions: the contact form validates
+in the repository. <code>GUESTBOOK_ADMIN_KEY</code> is the moderator secret: it is read
+in a server action only, compared in constant time, rate limited, and never included in
+anything sent to the browser. The two write paths are server actions: the contact form validates
 with zod, carries a honeypot field and an in-memory rate limit
 (<code>lib/rate-limit.ts</code>); the guestbook caps lengths and rate limits by IP. The
 Postgres client uses a pooled connection string. <code>next.config.mjs</code> sets a
@@ -417,7 +429,7 @@ appeared in the repository's git history, and rotating it is tracked as issue #1
 
 <h2 id="running">Part X. Running the project</h2>
 <pre><code>pnpm install
-cp .env.example .env.local   # fill in WEB3FORMS_ACCESS_KEY and DATABASE_URL, both optional locally
+cp .env.example .env.local   # WEB3FORMS_ACCESS_KEY, DATABASE_URL, GUESTBOOK_ADMIN_KEY: all optional locally
 pnpm dev                     # http://localhost:3000
 pnpm typecheck && pnpm lint  # checks
 pnpm build && pnpm start     # production</code></pre>

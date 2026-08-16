@@ -1,9 +1,10 @@
 "use server"
 
+import { timingSafeEqual } from "node:crypto"
 import { headers } from "next/headers"
 import { z } from "zod"
 
-import { addEntry, isPersistent, listEntries, type GuestbookEntry } from "@/lib/guestbook"
+import { addEntry, deleteEntry, isPersistent, listEntries, type GuestbookEntry } from "@/lib/guestbook"
 import { rateLimit } from "@/lib/rate-limit"
 
 /**
@@ -20,6 +21,45 @@ import { rateLimit } from "@/lib/rate-limit"
 
 const MAX_SIGNINGS = 3
 const WINDOW_MS = 15 * 60 * 1000
+
+/**
+ * Moderation.
+ *
+ * A public guestbook needs a way to take something down, and this site has
+ * exactly one moderator and no accounts, so the right weight is a shared
+ * secret: GUESTBOOK_ADMIN_KEY, read here on the server and never sent to
+ * the browser. The client holds a session flag only for showing buttons;
+ * every delete carries the key and is checked again here, so the flag on
+ * its own is worth nothing.
+ *
+ * With the variable unset, moderation is off rather than open.
+ */
+const MAX_KEY_ATTEMPTS = 5
+const KEY_WINDOW_MS = 10 * 60 * 1000
+
+function adminKey(): string | null {
+  const key = process.env.GUESTBOOK_ADMIN_KEY?.trim()
+  return key ? key : null
+}
+
+/**
+ * Constant-time comparison.
+ *
+ * A plain === leaks the length of the matching prefix through how long it
+ * takes to fail, which is exactly how a secret gets guessed a character at
+ * a time. Both sides are padded into equal-width buffers first, because
+ * timingSafeEqual throws on mismatched lengths and that throw would itself
+ * be a length oracle. The length check runs after the comparison, never
+ * instead of it.
+ */
+function keyMatches(supplied: string, expected: string): boolean {
+  const width = Math.max(supplied.length, expected.length)
+  const a = Buffer.alloc(width, 0)
+  const b = Buffer.alloc(width, 0)
+  a.write(supplied)
+  b.write(expected)
+  return timingSafeEqual(a, b) && supplied.length === expected.length
+}
 
 const EntrySchema = z.object({
   name: z
@@ -123,5 +163,65 @@ export async function signGuestbook(
   } catch (error) {
     console.error("Could not sign the guestbook:", error)
     return { success: false, message: "Something went wrong. Please try again." }
+  }
+}
+
+/** True when a moderator key is configured at all, so the UI can offer it. */
+export async function moderationAvailable(): Promise<boolean> {
+  return adminKey() !== null
+}
+
+/**
+ * Checks a key without changing anything, for the sign-in prompt.
+ *
+ * Rate limited per IP: five wrong guesses in ten minutes and the door is
+ * shut for a while, which is what stops a shared secret being brute forced.
+ */
+export async function verifyModerator(key: string): Promise<{ ok: boolean; message: string }> {
+  const expected = adminKey()
+  if (!expected) return { ok: false, message: "Moderation is not configured on this server." }
+
+  const limit = rateLimit(`guestbook-admin:${await clientIp()}`, MAX_KEY_ATTEMPTS, KEY_WINDOW_MS)
+  if (!limit.allowed) {
+    const minutes = Math.ceil(limit.retryAfterSeconds / 60)
+    return { ok: false, message: `Too many attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.` }
+  }
+
+  if (!keyMatches(key ?? "", expected)) return { ok: false, message: "That key is not right." }
+  return { ok: true, message: "Moderating. Entries can be removed." }
+}
+
+/**
+ * Removes an entry, if the key is right.
+ *
+ * The key travels with every delete rather than being exchanged for a
+ * token: there is one moderator and no session store, and re-checking a
+ * secret costs nothing next to the round trip it rides along with.
+ */
+export async function removeEntry(
+  id: string,
+  key: string,
+): Promise<{ ok: boolean; message: string; entries?: GuestbookEntry[] }> {
+  try {
+    const expected = adminKey()
+    if (!expected) return { ok: false, message: "Moderation is not configured on this server." }
+
+    const limit = rateLimit(`guestbook-admin:${await clientIp()}`, MAX_KEY_ATTEMPTS, KEY_WINDOW_MS)
+    if (!limit.allowed) return { ok: false, message: "Too many attempts. Try again later." }
+
+    if (!keyMatches(key ?? "", expected)) return { ok: false, message: "That key is not right." }
+    if (typeof id !== "string" || id.length === 0 || id.length > 80) {
+      return { ok: false, message: "That entry could not be found." }
+    }
+
+    const removed = await deleteEntry(id)
+    return {
+      ok: removed,
+      message: removed ? "Entry removed." : "That entry was already gone.",
+      entries: await listEntries(),
+    }
+  } catch (error) {
+    console.error("Could not remove a guestbook entry:", error)
+    return { ok: false, message: "Something went wrong. Please try again." }
   }
 }
