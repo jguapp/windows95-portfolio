@@ -119,11 +119,14 @@ function FacebookHeader() {
           <img
             src="/images/blob/thefacebook-header.png"
             alt="TheFacebook Header"
-            className="w-full h-full object-cover object-center"
+            // Cropping from the right pins the wordmark to the right edge
+            // at any window width, so the nav below can anchor to the same
+            // edge and never drift from it.
+            className="w-full h-full object-cover object-right"
             style={{ imageRendering: "auto" }}
           />
         </div>
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-[19%] space-x-6 text-white text-sm">
+        <div className="absolute inset-x-0 bottom-0 flex items-center justify-end pr-10 space-x-6 text-white text-sm">
           {NAV_LINKS.map((link) => (
             <a key={link} href="#" className="hover:underline">
               {link}
