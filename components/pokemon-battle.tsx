@@ -63,7 +63,7 @@ const SCALE = 6
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
+import { FOE_TEAM, PLAYER_TEAM, SPECIES, effectiveness, type Move, type Species } from "./pokemon-roster"
 import { getVolume, isMuted } from "@/lib/sound"
 
 /**
@@ -275,9 +275,9 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
   const shade = ratio > 0.5 ? P[2] : P[3]
   return (
     <>
-      {/* The HP cap. */}
-      <text x={x - 12} y={y + 3} fill={P[3]} fontSize={5} className="font-pixel">
-        HP:
+      {/* The HP cap: small, and shy of the bar's lane. */}
+      <text x={x - 9} y={y + 2.5} fill={P[3]} fontSize={3.75} className="font-pixel">
+        HP
       </text>
       {/* A slim frameless gauge: light track, dark fill, nothing else. */}
       <rect x={x} y={y} width={WIDTH} height={2} fill={P[1]} />
@@ -353,59 +353,7 @@ function backView(grid: string[]): string[] {
   )
 }
 
-/**
- * Where a sprite's painted pixels actually sit inside its 28x28 grid.
- *
- * The species are not the same size or shape. A squat one fills the bottom
- * rows; a tall one with antennae reaches the top row and leaves its feet well
- * short of the bottom. One hard-coded platform position therefore fitted one
- * of them and left the rest standing beside their disc rather than on it.
- */
-function inkBounds(grid: string[]) {
-  let minX = SPRITE_SIZE
-  let maxX = -1
-  let maxY = -1
-  grid.forEach((row, y) => {
-    for (let x = 0; x < row.length; x++) {
-      if (row[x] === ".") continue
-      if (x < minX) minX = x
-      if (x > maxX) maxX = x
-      if (y > maxY) maxY = y
-    }
-  })
-  return { minX, maxX, maxY }
-}
 
-/**
- * The disc under a fighter, measured from the fighter rather than guessed.
- *
- * @param grid  The sprite the disc goes under.
- * @param x     Where that sprite is drawn, in screen units.
- * @param y     Likewise, vertically.
- * @param rx    Half-width of the disc. The opponent's is small and the
- *              player's wide, which is most of what sells the distance.
- * @param ry    Half-height.
- */
-function Ground({
-  grid,
-  x,
-  y,
-  rx,
-  ry,
-}: {
-  grid: string[]
-  x: number
-  y: number
-  rx: number
-  ry: number
-}) {
-  const { minX, maxX, maxY } = inkBounds(grid)
-  // Sprites are 56x56 drawn 1:1, so a grid cell is one screen unit.
-  const cx = x + (minX + maxX + 1) / 2
-  const feet = y + maxY + 1
-  // Seat the feet just inside the top of the disc rather than on top of it.
-  return <Platform cx={cx} cy={feet - ry} rx={rx} ry={ry} />
-}
 
 /**
  * The party marker: a tiny ball, drawn from the supplied pixel art.
@@ -436,20 +384,6 @@ function Ball({ x, y, alive }: { x: number; y: number; alive: boolean }) {
   return <g data-ball>{cells}</g>
 }
 
-/** A flat disc for a fighter to stand on, drawn a row at a time. */
-function Platform({ cx, cy, rx, ry }: { cx: number; cy: number; rx: number; ry: number }) {
-  const rows = []
-  for (let i = -ry; i <= ry; i++) {
-    const half = Math.round(rx * Math.sqrt(Math.max(0, 1 - (i / ry) ** 2)))
-    if (half <= 0) continue
-    // The rim is a shade darker than the face, which is what gives it an edge.
-    const edge = Math.abs(i) >= ry - 1
-    rows.push(
-      <rect key={i} x={cx - half} y={cy + i} width={half * 2} height={1} fill={P[edge ? 2 : 1]} />,
-    )
-  }
-  return <g data-platform>{rows}</g>
-}
 
 function Label({ x, y, children, size = 7 }: { x: number; y: number; children: string; size?: number }) {
   // Press Start 2P is the classic 8x8 arcade face, which is as close to the
@@ -579,7 +513,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           const buffer = await ctx.decodeAudioData(await res.arrayBuffer())
           stopMusic()
           const master = ctx.createGain()
-          master.gain.value = isMuted() ? 0 : getVolume() * 0.35
+          master.gain.value = isMuted() ? 0 : getVolume() * 0.25
           master.connect(ctx.destination)
 
           if (!track.loop) {
@@ -596,13 +530,26 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             return
           }
 
-          const FADE = 0.09
+          const FADE = 0.3
           const loopStart = snapToZeroCrossing(buffer, Math.min(track.loopStart, buffer.duration / 2))
           const loopEnd = snapToZeroCrossing(buffer, findLoopEnd(buffer))
           const sources: AudioBufferSourceNode[] = []
           const timers: ReturnType<typeof setTimeout>[] = []
           let stopped = false
 
+          /*
+            Equal-power fades: a linear crossfade dips in the middle, which
+            is the cut the ear catches at the seam. Sine and cosine curves
+            hold the summed power flat across the overlap.
+          */
+          const STEPS = 64
+          const fadeIn = new Float32Array(STEPS)
+          const fadeOut = new Float32Array(STEPS)
+          for (let i = 0; i < STEPS; i++) {
+            const t = i / (STEPS - 1)
+            fadeIn[i] = Math.sin((t * Math.PI) / 2)
+            fadeOut[i] = Math.cos((t * Math.PI) / 2)
+          }
           const spawn = (offset: number, when: number, duration: number) => {
             const src = ctx.createBufferSource()
             src.buffer = buffer
@@ -612,11 +559,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             if (offset === 0) {
               g.gain.setValueAtTime(1, when)
             } else {
-              g.gain.setValueAtTime(0.0001, when)
-              g.gain.linearRampToValueAtTime(1, when + FADE)
+              g.gain.setValueCurveAtTime(fadeIn, when, FADE)
             }
-            g.gain.setValueAtTime(1, when + duration - FADE)
-            g.gain.linearRampToValueAtTime(0.0001, when + duration)
+            g.gain.setValueCurveAtTime(fadeOut, when + duration - FADE, FADE)
             src.start(when, offset, duration)
             sources.push(src)
           }
@@ -740,8 +685,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setBusy(false)
     }
     setMessage(`Enemy ${foe.name} used ${move.name}!`)
-    setFoeAnim({ cls: "pkmn-lunge-foe", t: Date.now() })
-    sfx.hit()
+    if (!move.effect) setFoeAnim({ cls: "pkmn-lunge-foe", t: Date.now() })
+    if (!move.effect) sfx.hit()
+    else sfx.menu()
     after(900, () => {
       if (Math.random() * 100 >= move.accuracy) {
         setMessage(`Enemy ${foe.name}'s attack missed!`)
@@ -754,7 +700,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         setMessage(line)
         if (line.includes("rose")) sfx.statUp()
         else if (line.includes("fell")) sfx.statDown()
-        setPlayerAnim({ cls: "pkmn-wobble", t: Date.now() })
+        // The wobble lands on whoever the stage change landed on.
+        if (move.effect === "defUp") setFoeAnim({ cls: "pkmn-wobble", t: Date.now() })
+        else setPlayerAnim({ cls: "pkmn-wobble", t: Date.now() })
         after(1100, backToMenu)
         return
       }
@@ -818,8 +766,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setPhase("message")
       setPlayer((p) => ({ ...p, moves: p.moves.map((m, i) => (i === index ? { ...m, pp: m.pp - 1 } : m)) }))
       setMessage(`${player.name} used ${move.name}!`)
-      setPlayerAnim({ cls: "pkmn-lunge-player", t: Date.now() })
-      sfx.hit()
+      // Only an attack lunges; a status move is a stance, not a strike.
+      if (!move.effect) setPlayerAnim({ cls: "pkmn-lunge-player", t: Date.now() })
+      if (!move.effect) sfx.hit()
+      else sfx.menu()
 
       after(900, () => {
         if (Math.random() * 100 >= move.accuracy) {
@@ -833,7 +783,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           setMessage(line)
           if (line.includes("rose")) sfx.statUp()
           else if (line.includes("fell")) sfx.statDown()
-          setFoeAnim({ cls: "pkmn-wobble", t: Date.now() })
+          // The wobble lands on whoever the stage change landed on.
+          if (move.effect === "defUp") setPlayerAnim({ cls: "pkmn-wobble", t: Date.now() })
+          else setFoeAnim({ cls: "pkmn-wobble", t: Date.now() })
           after(1100, foeTurn)
           return
         }
@@ -1136,25 +1088,23 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             </>
           ) : (
             <>
-              <Ground grid={foe.species.sprite} x={96} y={0} rx={30} ry={6} />
-              <Ground grid={playerBack} x={10} y={46} rx={34} ry={8} />
-
               {/* Opponent: front sprite upper right, thin status area upper left */}
               {foeOut && (
                 <g key={`fa${foeAnim.t}`} className={foeAnim.cls}>
                   <Sprite grid={foe.species.sprite} x={96} y={0} />
                 </g>
               )}
-              <Label x={8} y={16} size={5}>
+              <Label x={8} y={16} size={4.5}>
                 {foe.name}
               </Label>
-              <Label x={14} y={23} size={4.5}>
+              <Label x={14} y={23} size={4}>
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
-              {/* The panel underline: full width, hook down at the far end. */}
-              <rect x={2} y={32} width={76} height={1} fill={P[3]} />
-              <rect x={76} y={32} width={2} height={4} fill={P[3]} />
+              {/* The panel's bracket: a full underline whose end rises past
+                  the bar, framing the panel without touching it. */}
+              <rect x={2} y={33} width={82} height={1} fill={P[3]} />
+              <rect x={82} y={26} width={2} height={8} fill={P[3]} />
 
               {/* Player: back sprite lower left, thin status area lower right */}
               {playerOut && (
@@ -1162,18 +1112,18 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={playerBack} x={10} y={46} />
                 </g>
               )}
-              <Label x={84} y={72} size={5}>
+              <Label x={84} y={72} size={4.5}>
                 {player.name}
               </Label>
-              <Label x={90} y={79} size={4.5}>
+              <Label x={90} y={79} size={4}>
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-              <Label x={106} y={96} size={4.5}>
+              <Label x={106} y={96} size={4}>
                 {`${player.hp}/${player.maxHp}`}
               </Label>
-              <rect x={80} y={99} width={78} height={1} fill={P[3]} />
-              <rect x={80} y={99} width={2} height={4} fill={P[3]} />
+              <rect x={74} y={100} width={84} height={1} fill={P[3]} />
+              <rect x={74} y={93} width={2} height={8} fill={P[3]} />
             </>
           )}
 
@@ -1182,10 +1132,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
           {phase === "menu" ? (
             <>
-              <Label x={8} y={119} size={5}>
+              <Label x={8} y={119} size={4.5}>
                 What will
               </Label>
-              <Label x={8} y={132} size={5}>
+              <Label x={8} y={132} size={4.5}>
                 {`${player.name} do?`}
               </Label>
               <Box x={86} y={104} w={74} h={40} />
@@ -1195,28 +1145,28 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 return (
                   <g key={m.label}>
                     {cursor === m.index && (
-                      <Label x={cx - 6} y={cy} size={5}>
+                      <Label x={cx - 6} y={cy} size={4.5}>
                         &#9654;
                       </Label>
                     )}
                     {m.label === "PKMN" ? (
                       /* PkMn, with the small raised k and n of the original. */
                       <>
-                        <Label x={cx} y={cy} size={5}>
+                        <Label x={cx} y={cy} size={4.5}>
                           P
                         </Label>
-                        <Label x={cx + 5} y={cy - 2} size={3.25}>
+                        <Label x={cx + 4.5} y={cy - 2} size={3}>
                           K
                         </Label>
-                        <Label x={cx + 8.7} y={cy} size={5}>
+                        <Label x={cx + 7.8} y={cy} size={4.5}>
                           M
                         </Label>
-                        <Label x={cx + 13.7} y={cy - 2} size={3.25}>
+                        <Label x={cx + 12.3} y={cy - 2} size={3}>
                           N
                         </Label>
                       </>
                     ) : (
-                      <Label x={cx} y={cy} size={5}>
+                      <Label x={cx} y={cy} size={4.5}>
                         {m.label}
                       </Label>
                     )}
@@ -1229,25 +1179,25 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {/* The reference fight layout: PP box and TYPE box on the
                   left, the move list in its own box reaching the edge. */}
               <Box x={0} y={60} w={86} h={18} />
-              <Label x={10} y={72} size={5}>
+              <Label x={10} y={72} size={4.5}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
               <Box x={0} y={78} w={86} h={22} />
-              <Label x={8} y={87} size={4.5}>
+              <Label x={8} y={89} size={3.75}>
                 TYPE/
               </Label>
-              <Label x={14} y={94} size={5}>
+              <Label x={14} y={96} size={4.5}>
                 {player.moves[cursor].type}
               </Label>
               <Box x={40} y={100} w={120} h={44} />
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={46} y={112 + i * 8} size={5}>
+                    <Label x={46} y={112 + i * 8} size={4.5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={54} y={112 + i * 8} size={5}>
+                  <Label x={54} y={112 + i * 8} size={4.5}>
                     {m.name}
                   </Label>
                 </g>
@@ -1256,7 +1206,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           ) : (
             <>
               {lines.slice(0, 2).map((line, i) => (
-                <Label key={i} x={8} y={118 + i * 12} size={5}>
+                <Label key={i} x={8} y={118 + i * 12} size={4.5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1288,11 +1238,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                     <Label x={26} y={y + 8} size={4.5}>
                       {`${f.name}${i === active ? " *" : ""}`}
                     </Label>
-                    <Label x={30} y={y + 15} size={4}>
+                    <Label x={30} y={y + 15} size={3.75}>
                       {f.hp === 0 ? "FNT" : `:L${f.level}`}
                     </Label>
                     <HpBar x={108} y={y + 4} ratio={f.hp / f.maxHp} />
-                    <Label x={108} y={y + 15} size={4}>
+                    <Label x={108} y={y + 15} size={3.75}>
                       {`${f.hp}/${f.maxHp}`}
                     </Label>
                   </g>
@@ -1300,7 +1250,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               })}
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")).map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={5}>
+                <Label key={i} x={8} y={127 + i * 10} size={4.5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1330,29 +1280,29 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {items.map((it, i) => (
                 <g key={it.name}>
                   {cursor === i && (
-                    <Label x={7} y={16 + i * 14} size={5}>
+                    <Label x={7} y={16 + i * 14} size={4.5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={16} y={16 + i * 14} size={5}>
+                  <Label x={16} y={16 + i * 14} size={4.5}>
                     {it.name}
                   </Label>
-                  <Label x={118} y={16 + i * 14} size={5}>
+                  <Label x={118} y={16 + i * 14} size={4.5}>
                     {`x${it.count}`}
                   </Label>
                 </g>
               ))}
               {cursor === items.length && (
-                <Label x={7} y={16 + items.length * 14} size={5}>
+                <Label x={7} y={16 + items.length * 14} size={4.5}>
                   &#9654;
                 </Label>
               )}
-              <Label x={16} y={16 + items.length * 14} size={5}>
+              <Label x={16} y={16 + items.length * 14} size={4.5}>
                 CANCEL
               </Label>
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? "Choose an ITEM.").map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={5}>
+                <Label key={i} x={8} y={127 + i * 10} size={4.5}>
                   {line.trim()}
                 </Label>
               ))}
