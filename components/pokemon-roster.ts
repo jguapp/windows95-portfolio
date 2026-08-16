@@ -36,15 +36,43 @@ interface Cry {
   grit: number
 }
 
+/**
+ * The four types, in a single cycle: CODE beats DATA beats METAL beats CHAOS
+ * beats CODE. One ring keeps the chart learnable inside a battle or two while
+ * still making the choice of move matter.
+ */
+export type MonType = "CODE" | "DATA" | "METAL" | "CHAOS"
+
+const BEATS: Record<MonType, MonType> = {
+  CODE: "DATA",
+  DATA: "METAL",
+  METAL: "CHAOS",
+  CHAOS: "CODE",
+}
+
+/** 2 super effective along the ring, 0.5 against the ring, 1 otherwise. */
+export function effectiveness(attack: MonType, defend: MonType): number {
+  if (BEATS[attack] === defend) return 2
+  if (BEATS[defend] === attack) return 0.5
+  return 1
+}
+
 export interface Move {
   name: string
+  /** Zero for a status move; the effect is the whole point of using it. */
   power: number
   pp: number
   maxPp: number
+  type: MonType
+  /** Per-use chance to land, out of 100. */
+  accuracy: number
+  /** Stat-stage moves: lower the foe's attack or defence, or raise your own. */
+  effect?: "atkDown" | "defDown" | "defUp"
 }
 
 export interface Species {
   name: string
+  type: MonType
   level: number
   maxHp: number
   moves: Move[]
@@ -54,16 +82,24 @@ export interface Species {
   sprite: string[]
 }
 
-const mv = (name: string, power: number, pp: number): Move => ({ name, power, pp, maxPp: pp })
+const mv = (
+  name: string,
+  power: number,
+  pp: number,
+  type: MonType,
+  accuracy: number,
+  effect?: Move["effect"],
+): Move => ({ name, power, pp, maxPp: pp, type, accuracy, effect })
 
 /** Every creature, its sprite and its cry. */
 export const SPECIES: Record<string, Species> = {
   // --- the player's side ----------------------------------------------------
   VIRUSITE: {
     name: "VIRUSITE",
+    type: "CHAOS",
     level: 37,
     maxHp: 118,
-    moves: [mv("SEG FAULT", 34, 15), mv("FORK BOMB", 28, 20), mv("NULL PTR", 22, 25), mv("KERNELPANIC", 45, 5)],
+    moves: [mv("SEG FAULT", 34, 15, "CHAOS", 90), mv("FORK BOMB", 28, 20, "CHAOS", 100), mv("NULL PTR", 0, 20, "CODE", 100, "defDown"), mv("KERNELPANIC", 45, 5, "CHAOS", 80)],
     cry: { from: 420, to: 190, duration: 0.34, wave: "square", grit: 0.35 },
     sprite: [
       "........333.................",
@@ -98,9 +134,10 @@ export const SPECIES: Record<string, Species> = {
   },
   PIXELPUP: {
     name: "PIXELPUP",
+    type: "DATA",
     level: 33,
     maxHp: 96,
-    moves: [mv("BYTE BITE", 30, 20), mv("TAIL LOOP", 20, 25), mv("YIP", 14, 35)],
+    moves: [mv("BYTE BITE", 30, 20, "DATA", 100), mv("TAIL LOOP", 20, 25, "CODE", 100), mv("YIP", 0, 30, "DATA", 100, "atkDown"), mv("SCANLINE", 24, 15, "METAL", 95)],
     cry: { from: 700, to: 520, duration: 0.2, wave: "square", grit: 0.15 },
     sprite: [
       "............................",
@@ -135,9 +172,10 @@ export const SPECIES: Record<string, Species> = {
   },
   CACHEWYRM: {
     name: "CACHEWYRM",
+    type: "METAL",
     level: 35,
     maxHp: 104,
-    moves: [mv("COIL", 26, 20), mv("EVICT", 33, 12), mv("THRASH", 40, 8)],
+    moves: [mv("COIL", 0, 20, "METAL", 100, "defUp"), mv("EVICT", 33, 12, "METAL", 90), mv("THRASH", 40, 8, "CHAOS", 85), mv("PREFETCH", 24, 20, "DATA", 100)],
     cry: { from: 260, to: 640, duration: 0.4, wave: "sawtooth", grit: 0.2 },
     sprite: [
       "3333..33333.................",
@@ -172,9 +210,10 @@ export const SPECIES: Record<string, Species> = {
   },
   HEAPHOG: {
     name: "HEAPHOG",
+    type: "METAL",
     level: 34,
     maxHp: 126,
-    moves: [mv("ALLOC", 18, 30), mv("FRAGMENT", 31, 15), mv("OVERFLOW", 44, 6)],
+    moves: [mv("ALLOC", 0, 25, "METAL", 100, "defUp"), mv("FRAGMENT", 31, 15, "CHAOS", 90), mv("OVERFLOW", 44, 6, "METAL", 75), mv("GC SWEEP", 26, 15, "CODE", 95)],
     cry: { from: 180, to: 120, duration: 0.42, wave: "sawtooth", grit: 0.6 },
     sprite: [
       "............................",
@@ -209,9 +248,10 @@ export const SPECIES: Record<string, Species> = {
   },
   BITWING: {
     name: "BITWING",
+    type: "DATA",
     level: 36,
     maxHp: 88,
-    moves: [mv("PARITY", 24, 20), mv("SWOOP", 32, 15), mv("XOR GUST", 38, 10)],
+    moves: [mv("PARITY", 0, 20, "DATA", 90, "defDown"), mv("SWOOP", 32, 15, "METAL", 90), mv("XOR GUST", 38, 10, "DATA", 85), mv("BITSHIFT", 24, 20, "CODE", 100)],
     cry: { from: 900, to: 1500, duration: 0.22, wave: "triangle", grit: 0.1 },
     sprite: [
       "...................3.3.3....",
@@ -246,9 +286,10 @@ export const SPECIES: Record<string, Species> = {
   },
   STACKTOAD: {
     name: "STACKTOAD",
+    type: "CODE",
     level: 32,
     maxHp: 112,
-    moves: [mv("PUSH", 22, 25), mv("POP", 22, 25), mv("UNWIND", 36, 10)],
+    moves: [mv("PUSH", 22, 25, "CODE", 100), mv("POP", 22, 25, "CODE", 100), mv("UNWIND", 36, 10, "CHAOS", 85), mv("GUARD PAGE", 0, 15, "CODE", 100, "defUp")],
     cry: { from: 150, to: 300, duration: 0.28, wave: "square", grit: 0.45 },
     sprite: [
       "............................",
@@ -285,9 +326,10 @@ export const SPECIES: Record<string, Species> = {
   // --- the opposing side ----------------------------------------------------
   DARKBYTE: {
     name: "DARKBYTE",
+    type: "CHAOS",
     level: 34,
     maxHp: 104,
-    moves: [mv("STACK SMASH", 30, 10), mv("RACE COND", 24, 15), mv("DEADLOCK", 36, 8)],
+    moves: [mv("STACK SMASH", 30, 10, "CHAOS", 90), mv("RACE COND", 24, 15, "CODE", 85), mv("DEADLOCK", 0, 15, "CHAOS", 90, "atkDown"), mv("HEAP SPRAY", 28, 12, "METAL", 95)],
     cry: { from: 320, to: 150, duration: 0.36, wave: "sawtooth", grit: 0.5 },
     sprite: [
       "..........333333............",
@@ -322,9 +364,10 @@ export const SPECIES: Record<string, Species> = {
   },
   NULLMOTH: {
     name: "NULLMOTH",
+    type: "CODE",
     level: 33,
     maxHp: 92,
-    moves: [mv("DUST", 18, 30), mv("VOID BEAM", 34, 10), mv("LULL", 12, 20)],
+    moves: [mv("DUST", 0, 30, "CODE", 100, "defDown"), mv("VOID BEAM", 34, 10, "CODE", 90), mv("LULL", 0, 20, "DATA", 100, "atkDown"), mv("NULL WING", 27, 15, "DATA", 95)],
     cry: { from: 1100, to: 700, duration: 0.3, wave: "sine", grit: 0.05 },
     sprite: [
       "..........33................",
@@ -359,9 +402,10 @@ export const SPECIES: Record<string, Species> = {
   },
   RAMSPRITE: {
     name: "RAMSPRITE",
+    type: "METAL",
     level: 35,
     maxHp: 98,
-    moves: [mv("REFRESH", 16, 30), mv("BIT FLIP", 29, 15), mv("LATENCY", 33, 12)],
+    moves: [mv("REFRESH", 0, 25, "METAL", 100, "defUp"), mv("BIT FLIP", 29, 15, "CHAOS", 90), mv("LATENCY", 0, 15, "DATA", 95, "atkDown"), mv("DDR BLAST", 31, 10, "METAL", 90)],
     cry: { from: 1300, to: 1900, duration: 0.18, wave: "triangle", grit: 0.05 },
     sprite: [
       "3333.......3333.............",
@@ -396,9 +440,10 @@ export const SPECIES: Record<string, Species> = {
   },
   LOOPFISH: {
     name: "LOOPFISH",
+    type: "CODE",
     level: 31,
     maxHp: 86,
-    moves: [mv("WHILE", 20, 25), mv("RECURSE", 35, 8), mv("BREAK", 26, 15)],
+    moves: [mv("WHILE", 20, 25, "CODE", 100), mv("RECURSE", 35, 8, "CODE", 80), mv("BREAK", 0, 15, "CODE", 100, "defDown"), mv("TAILCALL", 26, 15, "DATA", 95)],
     cry: { from: 560, to: 380, duration: 0.24, wave: "sine", grit: 0.25 },
     sprite: [
       ".....333....................",
@@ -433,9 +478,10 @@ export const SPECIES: Record<string, Species> = {
   },
   GLITCHIMP: {
     name: "GLITCHIMP",
+    type: "CHAOS",
     level: 30,
     maxHp: 82,
-    moves: [mv("SCRAMBLE", 21, 20), mv("HEX HEX", 27, 12), mv("CORRUPT", 33, 8)],
+    moves: [mv("SCRAMBLE", 0, 20, "CHAOS", 95, "atkDown"), mv("HEX HEX", 27, 12, "CHAOS", 90), mv("CORRUPT", 33, 8, "CHAOS", 85), mv("ARTIFACT", 24, 15, "DATA", 95)],
     cry: { from: 800, to: 200, duration: 0.26, wave: "square", grit: 0.55 },
     sprite: [
       ".......333.3333.333.........",
@@ -470,9 +516,10 @@ export const SPECIES: Record<string, Species> = {
   },
   DAEMONYX: {
     name: "DAEMONYX",
+    type: "METAL",
     level: 40,
     maxHp: 140,
-    moves: [mv("ROOT KIT", 38, 10), mv("SIGKILL", 48, 5), mv("ZOMBIE", 26, 15), mv("FORK", 30, 12)],
+    moves: [mv("ROOT KIT", 38, 10, "METAL", 85), mv("SIGKILL", 48, 5, "CODE", 70), mv("ZOMBIE", 0, 15, "METAL", 100, "defUp"), mv("FORK", 30, 12, "CHAOS", 95)],
     cry: { from: 240, to: 90, duration: 0.5, wave: "sawtooth", grit: 0.7 },
     sprite: [
       "............................",

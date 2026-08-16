@@ -65,9 +65,9 @@ const MOVE_STEP = 8
  * box Generation I used while staying legible in source. Each digit indexes
  * the palette; a dot is transparent.
  */
-import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, type Move, type Species } from "./pokemon-roster"
+import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
 
-/** A creature in play: its species, plus the health and PP it has left. */
+/** A creature in play: its species, plus the health, PP and stages it has. */
 interface Fighter {
   species: Species
   name: string
@@ -75,6 +75,9 @@ interface Fighter {
   hp: number
   maxHp: number
   moves: Move[]
+  /** Stat stages, -6 to +6, reset whenever the fighter is sent out. */
+  atkStage: number
+  defStage: number
 }
 
 /** Rolls a species out into a fighter at full health. */
@@ -87,8 +90,13 @@ function toFighter(key: string): Fighter {
     hp: species.maxHp,
     maxHp: species.maxHp,
     moves: species.moves.map((m) => ({ ...m })),
+    atkStage: 0,
+    defStage: 0,
   }
 }
+
+/** Gen I stage arithmetic: +2 doubles, -2 halves, by way of (2+s)/2. */
+const stageMult = (s: number) => (s >= 0 ? (2 + s) / 2 : 2 / (2 - s))
 
 /** Collapse a sprite grid into horizontal runs so it renders as few rects. */
 function runs(grid: string[]) {
@@ -372,12 +380,29 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [introDone, setIntroDone] = useState(false)
   /** The prompt line of the party and item screens; rejections land here. */
   const [note, setNote] = useState<string | null>(null)
+  /** True while a faint forces the party screen: X cannot cancel, entry is free. */
+  const [mustSwitch, setMustSwitch] = useState(false)
 
   const [phase, setPhase] = useState<Phase>("message")
   const [message, setMessage] = useState(`Enemy ${SPECIES[FOE_TEAM[0]].name} sent out!`)
   const [cursor, setCursor] = useState(0)
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  /*
+    The turn logic runs inside timer chains, where captured state goes stale
+    between renders. Every read goes through these refs instead: a timer always
+    fires long after the render that followed the set, so the refs are current.
+    The old direct reads once re-sent a fainted fighter for exactly this reason.
+  */
+  const teamRef = useRef(team)
+  teamRef.current = team
+  const foesRef = useRef(foes)
+  foesRef.current = foes
+  const activeRef = useRef(active)
+  activeRef.current = active
+  const foeActiveRef = useRef(foeActive)
+  foeActiveRef.current = foeActive
 
   const after = useCallback((ms: number, fn: () => void) => {
     timers.current.push(setTimeout(fn, ms))
@@ -400,55 +425,95 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     return () => list.forEach(clearTimeout)
   }, [])
 
-  const damage = (attacker: Fighter, move: Move) =>
-    Math.max(1, Math.round((move.power * attacker.level) / 40 + Math.random() * 6))
+  /** Damage under the type chart and both fighters' stages. */
+  const damage = (attacker: Fighter, defender: Fighter, move: Move) => {
+    const eff = effectiveness(move.type, defender.species.type)
+    const base = (move.power * attacker.level) / 40
+    const scaled = (base * stageMult(attacker.atkStage)) / stageMult(defender.defStage)
+    return { dealt: Math.max(1, Math.round(scaled * eff + Math.random() * 6)), eff }
+  }
 
-  const foeTurn = useCallback(
-    (playerHp: number) => {
-      const move = foe.moves[Math.floor(Math.random() * foe.moves.length)]
-      setMessage(`Enemy ${foe.name} used ${move.name}!`)
-      sfx.hit()
-      after(900, () => {
-        const dealt = damage(foe, move)
-        const hp = Math.max(0, playerHp - dealt)
-        setPlayer((p) => ({ ...p, hp }))
-        after(700, () => {
-          if (hp !== 0) {
-            setCursor(0)
-            setPhase("menu")
-            setBusy(false)
-            return
-          }
+  /**
+   * A stat-stage move lands: atkDown and defDown hit the user's opponent,
+   * defUp the user itself. Returns the line to show; a stage already at its
+   * cap fails the way Gen I said it did.
+   */
+  const runEffect = useCallback((userIsPlayer: boolean, move: Move): string => {
+    const targetIsPlayer = move.effect === "defUp" ? userIsPlayer : !userIsPlayer
+    const key = move.effect === "atkDown" ? "atkStage" : "defStage"
+    const delta = move.effect === "defUp" ? 1 : -1
+    const target = targetIsPlayer ? teamRef.current[activeRef.current] : foesRef.current[foeActiveRef.current]
+    if ((delta > 0 && target[key] >= 6) || (delta < 0 && target[key] <= -6)) return "But it failed!"
+    const apply = (f: Fighter) => ({ ...f, [key]: Math.max(-6, Math.min(6, f[key] + delta)) })
+    if (targetIsPlayer) setPlayer(apply)
+    else setFoe(apply)
+    const owner = targetIsPlayer ? target.name : `Enemy ${target.name}`
+    return `${owner}'s ${move.effect === "atkDown" ? "ATTACK" : "DEFENSE"} ${delta > 0 ? "rose" : "fell"}!`
+  }, [setFoe, setPlayer])
 
-          setMessage(`${player.name} fainted!`)
-          sfx.lose()
-          const next = team.findIndex((f, i) => i !== active && f.hp > 0)
-          if (next === -1) {
-            after(900, () => setPhase("over"))
-            return
-          }
-          after(1000, () => {
-            setActive(next)
-            setMessage(`Go! ${team[next].name}!`)
-            cry(team[next].species.cry)
-            after(900, () => {
-              setCursor(0)
-              setPhase("menu")
-              setBusy(false)
-            })
-          })
+  const foeTurn = useCallback(() => {
+    const foe = foesRef.current[foeActiveRef.current]
+    const player = teamRef.current[activeRef.current]
+    const move = foe.moves[Math.floor(Math.random() * foe.moves.length)]
+    const backToMenu = () => {
+      setCursor(0)
+      setPhase("menu")
+      setBusy(false)
+    }
+    setMessage(`Enemy ${foe.name} used ${move.name}!`)
+    sfx.hit()
+    after(900, () => {
+      if (Math.random() * 100 >= move.accuracy) {
+        setMessage(`Enemy ${foe.name}'s attack missed!`)
+        after(1000, backToMenu)
+        return
+      }
+      if (move.effect) {
+        setMessage(runEffect(false, move))
+        after(1100, backToMenu)
+        return
+      }
+      const { dealt, eff } = damage(foe, player, move)
+      const hp = Math.max(0, player.hp - dealt)
+      setPlayer((f) => ({ ...f, hp }))
+      const proceed = () => {
+        if (hp !== 0) {
+          backToMenu()
+          return
+        }
+        setMessage(`${player.name} fainted!`)
+        sfx.lose()
+        const survivors = teamRef.current.some((f, i) => i !== activeRef.current && f.hp > 0)
+        if (!survivors) {
+          after(900, () => setPhase("over"))
+          return
+        }
+        // The player chooses the replacement; coming in after a faint is free.
+        after(1000, () => {
+          setMustSwitch(true)
+          setNote(null)
+          setCursor(teamRef.current.findIndex((f, i) => i !== activeRef.current && f.hp > 0))
+          setPhase("party")
         })
-      })
-    },
-    // The team and active index are read through their setters, so listing
-    // them would rebuild this callback mid-turn.
+      }
+      if (eff !== 1) {
+        after(700, () => {
+          setMessage(eff > 1 ? "It's super effective!" : "It's not very effective...")
+          after(900, proceed)
+        })
+      } else {
+        after(700, proceed)
+      }
+    })
+    // State is read through refs, which timers always see fresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [after, foe],
-  )
+  }, [after, runEffect])
 
   const performMove = useCallback(
     (index: number) => {
       if (busy) return
+      const player = teamRef.current[activeRef.current]
+      const foe = foesRef.current[foeActiveRef.current]
       const move = player.moves[index]
       if (move.pp === 0) {
         setMessage("No PP left for this move!")
@@ -461,18 +526,27 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       sfx.hit()
 
       after(900, () => {
-        const dealt = damage(player, move)
+        if (Math.random() * 100 >= move.accuracy) {
+          setMessage(`${player.name}'s attack missed!`)
+          after(1000, foeTurn)
+          return
+        }
+        if (move.effect) {
+          setMessage(runEffect(true, move))
+          after(1100, foeTurn)
+          return
+        }
+        const { dealt, eff } = damage(player, foe, move)
         const hp = Math.max(0, foe.hp - dealt)
         setFoe((f) => ({ ...f, hp }))
-        after(700, () => {
+        const proceed = () => {
           if (hp !== 0) {
-            foeTurn(player.hp)
+            foeTurn()
             return
           }
-
           setMessage(`Enemy ${foe.name} fainted!`)
           sfx.win()
-          const next = foes.findIndex((f, i) => i !== foeActive && f.hp > 0)
+          const next = foesRef.current.findIndex((f, i) => i !== foeActiveRef.current && f.hp > 0)
           if (next === -1) {
             after(900, () => {
               setMessage("You won the battle!")
@@ -481,32 +555,43 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             return
           }
           after(1000, () => {
+            setFoes((t) => t.map((f, i) => (i === next ? { ...f, atkStage: 0, defStage: 0 } : f)))
             setFoeActive(next)
-            setMessage(`Enemy sent out ${foes[next].name}!`)
-            cry(foes[next].species.cry)
+            setMessage(`Enemy sent out ${foesRef.current[next].name}!`)
+            cry(foesRef.current[next].species.cry)
             after(900, () => {
               setCursor(0)
               setPhase("menu")
               setBusy(false)
             })
           })
-        })
+        }
+        if (eff !== 1) {
+          after(700, () => {
+            setMessage(eff > 1 ? "It's super effective!" : "It's not very effective...")
+            after(900, proceed)
+          })
+        } else {
+          after(700, proceed)
+        }
       })
     },
-    // Same: the foe list and both setters are used functionally.
+    // Same ref discipline as foeTurn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [after, busy, foe, foeTurn, player],
+    [after, busy, foeTurn, runEffect],
   )
 
   /**
-   * Bring another of the six out.
+   * Bring another of the six out by choice.
    *
    * The switch takes the turn, so the opponent gets a free hit, which is what
-   * stops it being a way to dodge every attack.
+   * stops it being a way to dodge every attack. Stages reset on the way in,
+   * as they always did.
    */
   const switchTo = useCallback(
     (index: number) => {
-      if (index === active) {
+      const team = teamRef.current
+      if (index === activeRef.current) {
         setNote(`${team[index].name} is already out!`)
         return
       }
@@ -517,12 +602,36 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
       setBusy(true)
       setPhase("message")
+      setTeam((t) => t.map((f, i) => (i === index ? { ...f, atkStage: 0, defStage: 0 } : f)))
       setActive(index)
       setMessage(`Go! ${team[index].name}!`)
       cry(team[index].species.cry)
-      after(1000, () => foeTurn(team[index].hp))
+      after(1000, foeTurn)
     },
-    [active, after, foeTurn, team],
+    [after, foeTurn],
+  )
+
+  /** The pick after a faint: free of the switch penalty, and X cannot skip it. */
+  const replaceFainted = useCallback(
+    (index: number) => {
+      const team = teamRef.current
+      if (index === activeRef.current || team[index].hp === 0) {
+        setNote(`${team[index].name} has no energy left!`)
+        return
+      }
+      setMustSwitch(false)
+      setPhase("message")
+      setTeam((t) => t.map((f, i) => (i === index ? { ...f, atkStage: 0, defStage: 0 } : f)))
+      setActive(index)
+      setMessage(`Go! ${team[index].name}!`)
+      cry(team[index].species.cry)
+      after(1000, () => {
+        setCursor(0)
+        setPhase("menu")
+        setBusy(false)
+      })
+    },
+    [after],
   )
 
   const applyItem = useCallback(
@@ -540,13 +649,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setBusy(true)
       setPhase("message")
       setItems((list) => list.map((it, i) => (i === index ? { ...it, count: it.count - 1 } : it)))
-      const healed = Math.min(player.maxHp, player.hp + item.heal)
       setMessage(`JOEL used ${item.name}!`)
       sfx.menu()
       after(900, () => {
         setPlayer((f) => ({ ...f, hp: Math.min(f.maxHp, f.hp + item.heal) }))
         setMessage(`${player.name}'s HP was restored!`)
-        after(1000, () => foeTurn(healed))
+        after(1000, foeTurn)
       })
     },
     [after, busy, foeTurn, items, player, setPlayer],
@@ -567,7 +675,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         if (e.key === "Enter") onClose()
         return
       }
-      if (busy || phase === "message") return
+      if (phase === "message") return
+      if (busy && !(phase === "party" && mustSwitch)) return
 
       const count =
         phase === "menu" ? 4 : phase === "party" ? team.length : phase === "items" ? items.length + 1 : player.moves.length
@@ -592,7 +701,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             setCursor(0)
           } else run()
         } else if (phase === "party") {
-          switchTo(cursor)
+          if (mustSwitch) replaceFainted(cursor)
+          else switchTo(cursor)
         } else if (phase === "items") {
           // The last row is CANCEL, as the original menu had.
           if (cursor === items.length) {
@@ -603,7 +713,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           performMove(cursor)
         }
       } else if (e.key.toLowerCase() === "x" || e.key === "Backspace") {
-        if (phase === "fight" || phase === "party" || phase === "items") {
+        // A forced pick after a faint cannot be backed out of.
+        if ((phase === "fight" || phase === "party" || phase === "items") && !mustSwitch) {
           setPhase("menu")
           setCursor(0)
         }
@@ -611,7 +722,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [active, busy, cursor, items.length, onClose, phase, player.moves.length, run, performMove, switchTo, team.length, applyItem])
+  }, [active, busy, cursor, items.length, mustSwitch, onClose, phase, player.moves.length, replaceFainted, run, performMove, switchTo, team.length, applyItem])
 
   /** FIGHT and PKMN fill the left column, ITEM and RUN the right. */
   const MENU = [
@@ -680,7 +791,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
           {/* The era's underline with its end hook, not a dialog frame. */}
           <rect x={4} y={33} width={68} height={1} fill={P[3]} />
-          <rect x={70} y={33} width={2} height={4} fill={P[3]} />
+          <rect x={4} y={29} width={2} height={4} fill={P[3]} />
 
           {/* Player: back sprite lower left, thin status area lower right */}
           <Sprite grid={playerBack} x={10} y={46} />
@@ -743,6 +854,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <Label x={104} y={MOVE_TOP} size={6}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
+              <Label x={104} y={MOVE_TOP + 9} size={5}>
+                {`TYPE/${player.moves[cursor].type}`}
+              </Label>
             </>
           ) : (
             <>
@@ -791,7 +905,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               })}
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               <Label x={8} y={131} size={6}>
-                {note ?? "Choose a POKeMON."}
+                {note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")}
               </Label>
             </g>
           )}
