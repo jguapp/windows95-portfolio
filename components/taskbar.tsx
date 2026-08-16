@@ -184,7 +184,7 @@ export default function Taskbar({
         {showRes && (
           <div
             data-resolution-panel
-            className="win95-type absolute bottom-[36px] right-1 z-[1100] w-[170px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_6px_rgba(0,0,0,0.5)]"
+            className="win95-type absolute bottom-[36px] right-1 z-[1100] w-[190px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] py-1 shadow-[2px_2px_6px_rgba(0,0,0,0.5)]"
             style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
           >
             {RESOLUTIONS.map((res) => (
@@ -212,7 +212,7 @@ export default function Taskbar({
                 setShowRes(false)
                 window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "settings" } }))
               }}
-              className="flex w-full items-center gap-1 px-2 py-[3px] text-left hover:bg-[#000080] hover:text-white"
+              className="flex w-full items-center gap-1 whitespace-nowrap px-2 py-[3px] text-left hover:bg-[#000080] hover:text-white"
             >
               <span className="inline-block w-[12px]" />
               Adjust Display Properties...

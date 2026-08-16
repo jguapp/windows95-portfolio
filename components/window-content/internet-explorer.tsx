@@ -174,12 +174,12 @@ const SITES: Record<string, Site> = {
 }
 
 /**
- * The home page. Microsoft's own 1996 snapshot is archived in pieces and
- * renders broken, so this opens on Yahoo, whose directory survived intact and
- * is the page most people actually started at. Joel's page stays reachable
- * through the address bar and the WebRing.
+ * The home page: the built-in joel95.net, which renders instantly. Opening on
+ * an archived page meant the window's first paint waited on the Wayback
+ * Machine's multi-second fetch; the archive is still one address away, and
+ * yahoo.com is the first suggestion on the page.
  */
-const HOME = "http://www.yahoo.com/"
+const HOME = "http://www.joel95.net/"
 
 /** Normalises whatever was typed into something the site table might hold. */
 function normalise(input: string): string {
@@ -192,6 +192,18 @@ function normalise(input: string): string {
 
 export default function InternetExplorer() {
   const [history, setHistory] = useState<string[]>([HOME])
+
+  // Typed addresses go to the Wayback Machine; starting the TLS handshake
+  // the moment the window opens shaves the slowest part off the first fetch.
+  useEffect(() => {
+    const link = document.createElement("link")
+    link.rel = "preconnect"
+    link.href = "https://web.archive.org"
+    document.head.appendChild(link)
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
   const [at, setAt] = useState(0)
   const [typed, setTyped] = useState(HOME)
 
