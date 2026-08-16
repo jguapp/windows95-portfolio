@@ -497,6 +497,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     { name: "POTION", heal: 20, count: 3 },
     { name: "SUPER POTION", heal: 50, count: 2 },
     { name: "FULL RESTORE", heal: 999, count: 1 },
+    { name: "ETHER", heal: 0, count: 1 },
   ])
   /** The opening shows the two trainers before any monster appears. */
   const [trainersOnStage, setTrainersOnStage] = useState(true)
@@ -954,6 +955,24 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       const item = items[index]
       if (item.count === 0) {
         setNote("There is none left!")
+        return
+      }
+      // The ETHER restores PP rather than health.
+      if (item.name === "ETHER") {
+        if (player.moves.every((m) => m.pp === m.maxPp)) {
+          setNote("It won't have any effect.")
+          return
+        }
+        setBusy(true)
+        setPhase("message")
+        setItems((list) => list.map((it, i) => (i === index ? { ...it, count: it.count - 1 } : it)))
+        setPlayer((f) => ({ ...f, moves: f.moves.map((m) => ({ ...m, pp: m.maxPp })) }))
+        setMessage("JOEL used ETHER!")
+        sfx.menu()
+        after(900, () => {
+          setMessage(`${player.name}'s PP was restored!`)
+          after(1000, foeTurn)
+        })
         return
       }
       if (player.hp === player.maxHp) {

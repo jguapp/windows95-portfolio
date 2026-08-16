@@ -247,6 +247,11 @@ const QUIET_MS = 45_000
 
 export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   const [dismissed, setDismissed] = useState(false)
+  /** He can be picked up and put down anywhere; offsets from his home corner. */
+  const [drag, setDrag] = useState({ x: 0, y: 0 })
+  const dragRef = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(null)
+  /** One visit in a hundred, he arrives gilded. */
+  const goldenRef = useRef(Math.random() < 0.01)
   /** The hit-counter line, added once the visitor number arrives. */
   const [guestLine, setGuestLine] = useState<{ phrase: string; animation: string } | null>(null)
   const [line, setLine] = useState<{ phrase: string; animation: string } | null>(null)
@@ -329,7 +334,10 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
             // The greeting still works this visit; he just forgets by next time.
           }
           setGuestLine({
-            phrase: `You are visitor number ${count.toLocaleString()}. I counted you myself.`,
+            phrase:
+              count % 100 === 0
+                ? `Visitor number ${count.toLocaleString()}. A round hundred. Confetti is imaginary but heartfelt.`
+                : `You are visitor number ${count.toLocaleString()}. I counted you myself.`,
             animation: GIF(5),
           })
         } else {
@@ -359,7 +367,11 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
   if (dismissed || hidden) return null
 
   return (
-    <div data-clippy className="fixed bottom-[42px] right-3 z-[850] flex flex-col items-end">
+    <div
+      data-clippy
+      className="fixed bottom-[42px] right-3 z-[850] flex flex-col items-end"
+      style={{ transform: `translate(${drag.x}px, ${drag.y}px)` }}
+    >
       {line && (
         <div
           data-clippy-tip
@@ -394,7 +406,22 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
             if (speakingRef.current && line !== INTERRUPTION) speak(INTERRUPTION)
             else speakFresh()
           }}
-          className="block"
+          onPointerDown={(e) => {
+            dragRef.current = { startX: e.clientX, startY: e.clientY, baseX: drag.x, baseY: drag.y }
+            const move = (ev: PointerEvent) => {
+              const d = dragRef.current
+              if (!d) return
+              setDrag({ x: d.baseX + ev.clientX - d.startX, y: d.baseY + ev.clientY - d.startY })
+            }
+            const up = () => {
+              dragRef.current = null
+              window.removeEventListener("pointermove", move)
+              window.removeEventListener("pointerup", up)
+            }
+            window.addEventListener("pointermove", move)
+            window.addEventListener("pointerup", up)
+          }}
+          className="block cursor-grab active:cursor-grabbing"
         >
           <img
             src={line?.animation ?? GIF(1)}
@@ -402,7 +429,8 @@ export default function Clippy({ activeWindow, hidden }: ClippyProps) {
             width={96}
             height={96}
             data-clippy-frame
-            style={{ imageRendering: "auto" }}
+            // The golden visit: same paperclip, more prestige.
+            style={{ imageRendering: "auto", filter: goldenRef.current ? "sepia(1) saturate(3) hue-rotate(-15deg) brightness(1.1)" : undefined }}
           />
         </button>
       </div>

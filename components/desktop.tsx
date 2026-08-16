@@ -180,6 +180,16 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   /** Which tab Display Properties should open on, when the caller cares. */
   const [propertiesTab, setPropertiesTab] = useState<string | undefined>(undefined)
 
+  // DISCO in the DOS prompt borrows the scheme variables and puts them back
+  // by asking for a reapply.
+  useEffect(() => {
+    const reapply = () => {
+      applyScheme(localStorage.getItem("win95-color-scheme"))
+    }
+    window.addEventListener("reapplyColorScheme", reapply)
+    return () => window.removeEventListener("reapplyColorScheme", reapply)
+  }, [])
+
   // Control Panel opens the applet; the tray's resolution button asks for its
   // Settings tab directly.
   useEffect(() => {
