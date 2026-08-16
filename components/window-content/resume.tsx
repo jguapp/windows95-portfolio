@@ -1906,7 +1906,7 @@ export default function Resume() {
                   <em>TypeScript, Node.js, PostgreSQL, ONNX</em>
                 </p>
                 <a
-                  href="https://github.com/jguapp"
+                  href="https://github.com/jguapp/Booklet"
                   className="text-blue-800 underline"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1938,7 +1938,7 @@ export default function Resume() {
                   <strong>Calligraphy — Distributed Task Queue System</strong> | <em>Go, Redis, gRPC, Docker</em>
                 </p>
                 <a
-                  href="https://github.com/jguapp"
+                  href="https://github.com/jguapp/Calligraphy"
                   className="text-blue-800 underline"
                   target="_blank"
                   rel="noopener noreferrer"
