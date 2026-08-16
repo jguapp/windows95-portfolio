@@ -1125,6 +1125,8 @@ export default function Contact() {
   const [selected, setSelected] = useState<number | null>(INBOX[0].id)
   const [composing, setComposing] = useState(false)
   const [sent, setSent] = useState<Message[]>(SENT)
+  /** Deleted Items: the shipped drawer plus whatever the visitor deletes. */
+  const [deleted, setDeleted] = useState<Message[]>(DELETED)
 
   const [to] = useState("Joel Vasquez")
   const [subject, setSubject] = useState("")
@@ -1140,7 +1142,7 @@ export default function Contact() {
       : folder === "sent"
         ? sent
         : folder === "deleted"
-          ? DELETED
+          ? deleted
           : folder === "drafts"
             ? DRAFTS
             : []
@@ -1217,7 +1219,14 @@ export default function Contact() {
           disabled={!current}
           onClick={() => {
             if (!current) return
-            setMessages((prev) => prev.filter((m) => m.id !== current.id))
+            // Outlook moved deletions to Deleted Items; so does this.
+            if (folder === "deleted") {
+              setDeleted((prev) => prev.filter((m) => m.id !== current.id))
+            } else {
+              setDeleted((prev) => [current, ...prev])
+              if (folder === "sent") setSent((prev) => prev.filter((m) => m.id !== current.id))
+              else setMessages((prev) => prev.filter((m) => m.id !== current.id))
+            }
             setSelected(null)
           }}
         />
@@ -1240,7 +1249,7 @@ export default function Contact() {
               // Outlook bolded a folder count only for unread mail. Deleted
               // Items carries one unread newsletter, which is accurate.
               const count =
-                f.id === "inbox" ? unread : f.id === "deleted" ? DELETED.filter((m) => !m.read).length : 0
+                f.id === "inbox" ? unread : f.id === "deleted" ? deleted.filter((m) => !m.read).length : 0
               return (
                 <li key={f.id}>
                   <button
