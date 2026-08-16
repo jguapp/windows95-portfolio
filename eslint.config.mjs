@@ -11,7 +11,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname })
 // Next 16. Run with `eslint .` (see the "lint" script).
 const eslintConfig = [
   {
-    ignores: [".next/**", "node_modules/**", "next-env.d.ts"],
+    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "tests/checks/**"],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
