@@ -79,6 +79,46 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Display Properties has an Appearance tab. Rose turns everything pink. Everything.", animation: GIF(7) },
   { phrase: "Type joel95.net into Internet Explorer. The home page counts your visit.", animation: GIF(6) },
   { phrase: "Winamp's eject button takes your own music. It never leaves your browser.", animation: GIF(2) },
+  { phrase: "The playlist in Winamp is Joel's actual taste. The Strokes lead, obviously.", animation: GIF(6) },
+  { phrase: "In the battle, METAL beats CHAOS beats CODE beats DATA beats METAL. Now you know.", animation: GIF(4) },
+  { phrase: "Status moves are worth it. A foe at minus six attack is a foe defeated politely.", animation: GIF(3) },
+  { phrase: "The battle music loops seamlessly. It took four attempts. I watched.", animation: GIF(7) },
+  { phrase: "FreeCell deals are the real Microsoft deals. Game 11982 remains unbeaten.", animation: GIF(5) },
+  { phrase: "Hearts: the queen of spades is thirteen points of regret.", animation: GIF(2) },
+  { phrase: "Reversi corners cannot be flipped. Take them and be insufferable about it.", animation: GIF(4) },
+  { phrase: "The Tetris scores are real people now. Beat them at your leisure.", animation: GIF(6) },
+  { phrase: "Maximise a card game. The cards grow with the window. Progress.", animation: GIF(1) },
+  { phrase: "TRACERT in the DOS prompt reaches joel95.net in four hops. Period accurate.", animation: GIF(5) },
+  { phrase: "FORMAT C: asks a question in DOS. The answer is filled in for you.", animation: GIF(7) },
+  { phrase: "MEM in the DOS prompt reports 640K conventional. It was enough for anybody.", animation: GIF(3) },
+  { phrase: "The 404 page is a real error dialog. Type a wrong address and meet it.", animation: GIF(6) },
+  { phrase: "Every window remembers where you left it until you close it. Like a cat.", animation: GIF(2) },
+  { phrase: "The taskbar buttons press in when active. That divot took years off my life.", animation: GIF(7) },
+  { phrase: "Minesweeper's smiley worries when you press. It has always worried.", animation: GIF(4) },
+  { phrase: "The recycle bin icon fills when it holds something. Watch it.", animation: GIF(5) },
+  { phrase: "Print the resume from Word. Your printer will produce an actual document.", animation: GIF(3) },
+  { phrase: "Save As in Word does .doc and PDF. Recruiters take either. Take both.", animation: GIF(1) },
+  { phrase: "The Welcome window's What's New button is a changelog people actually read.", animation: GIF(6) },
+  { phrase: "Solitaire's deck backs are choosable. The beach is correct.", animation: GIF(2) },
+  { phrase: "There is a BSOD in here. When you find it, thirty seconds to read it.", animation: GIF(7) },
+  { phrase: "Ctrl+Alt+R, then type sol. The muscle memory still works.", animation: GIF(4) },
+  { phrase: "The guestbook survives restarts. The database is realer than I am.", animation: GIF(1) },
+  { phrase: "Every dialog sound is four sine waves in a trench coat.", animation: GIF(5) },
+  { phrase: "The gallery has a slide show under View. Snacks not included.", animation: GIF(6) },
+  { phrase: "Drag a window anywhere. Nothing snaps. It is 1995 and windows go where thrown.", animation: GIF(2) },
+  { phrase: "The QuickRes monitor does 4K. Windows 95 never dreamed this big.", animation: GIF(7) },
+  { phrase: "Charmap, Media Player, HyperTerminal: the Accessories all open. Try one.", animation: GIF(3) },
+  { phrase: "Somewhere in Deleted Items is mail that deserved it.", animation: GIF(5) },
+  { phrase: "The visitor counter on joel95.net is six digits. Aim high.", animation: GIF(4) },
+  { phrase: "I have exactly one job and you are looking at it.", animation: GIF(1) },
+  { phrase: "The desktop right-click has New. The files it makes are real files.", animation: GIF(6) },
+  { phrase: "Your battle team is six software creatures. The vet bills are zero.", animation: GIF(2) },
+  { phrase: "PIXELPUP is a good boy. This is documented behaviour.", animation: GIF(3) },
+  { phrase: "Lose the battle and the music stops. Silence is also a soundtrack.", animation: GIF(7) },
+  { phrase: "The window buttons animate on hover. 1995 called it hot tracking.", animation: GIF(4) },
+  { phrase: "Nothing here phones home except the guestbook, and it only says hello.", animation: GIF(1) },
+  { phrase: "You can beat Chess on Easy by accident. Hard requires intent.", animation: GIF(5) },
+  { phrase: "Pong's paddle is beatable because the bot reads the ball late. Mostly.", animation: GIF(6) },
 ]
 
 const INTERRUPTION = { phrase: "Please, do not interrupt me!", animation: NO_GIF }
@@ -107,6 +147,7 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   gallery: [
     { phrase: "The arrow keys step through the photos.", animation: GIF(4) },
     { phrase: "View, then Slide Show. Then sit back. You have earned it.", animation: GIF(6) },
+    { phrase: "Each folder is a real event. The Summit one is waiting on photos.", animation: GIF(1) },
   ],
   paint: [
     { phrase: "It looks like you're making art. Save to Desktop keeps it, permanently.", animation: GIF(2) },
@@ -124,6 +165,7 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   calculator: [
     { phrase: "2 + 3 + 4 equals 9 here. That was not always true.", animation: GIF(3) },
     { phrase: "View, then Scientific. The window resizes itself, like it should.", animation: GIF(4) },
+    { phrase: "The real calc had a percent quirk for years. This one does not. Growth.", animation: GIF(2) },
   ],
   "about-me": [
     { phrase: "It looks like you're reading about Joel. The wall posts are the good part.", animation: GIF(1) },
@@ -136,6 +178,8 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   msdos: [
     { phrase: "Type dir. Everything you see is really there.", animation: GIF(4) },
     { phrase: "echo text > file.txt writes an actual file. With great power, and so on.", animation: GIF(2) },
+    { phrase: "Try tracert, mem, or format c:. One of those is a joke. Find out which.", animation: GIF(7) },
+    { phrase: "HELP lists everything this prompt answers to. It is more than you think.", animation: GIF(5) },
   ],
   explorer: [
     { phrase: "It looks like you're browsing the C: drive. The files are all real.", animation: GIF(6) },
@@ -155,6 +199,44 @@ const WINDOW_TIPS: Record<string, { phrase: string; animation: string }[]> = {
   ],
   "patch-notes": [
     { phrase: "The release notes are the site's own history, written as it happened.", animation: GIF(3) },
+    { phrase: "Version 0.1 Beta was a 24-hour hackathon. Everything since is stubbornness.", animation: GIF(7) },
+    { phrase: "Version 2.0 is called The big one because naming things is hard.", animation: GIF(2) },
+  ],
+  wordpad: [
+    { phrase: "It looks like you're in WordPad. The resume lives in big Word, on the desktop.", animation: GIF(3) },
+    { phrase: "WordPad shipped free with Windows. It was the gateway word processor.", animation: GIF(1) },
+  ],
+  charmap: [
+    { phrase: "Character Map: where 1995 went for the degree symbol.", animation: GIF(4) },
+    { phrase: "Somewhere in here is a character you have needed exactly once.", animation: GIF(6) },
+  ],
+  mediaplayer: [
+    { phrase: "Media Player crawled so Winamp could whip the llama.", animation: GIF(2) },
+    { phrase: "For actual music, Winamp is on the desktop with Joel's playlist.", animation: GIF(5) },
+  ],
+  soundrec: [
+    { phrase: "Sound Recorder drew the green wave while you talked. Peak feedback.", animation: GIF(1) },
+    { phrase: "Every sound this desk makes is synthesised. The recorder respects that.", animation: GIF(7) },
+  ],
+  cdplayer: [
+    { phrase: "CD Player. Insert disc. The tray is a metaphor now.", animation: GIF(6) },
+    { phrase: "Track 2 was always the good one.", animation: GIF(3) },
+  ],
+  phonedialer: [
+    { phrase: "Phone Dialer could really dial. Mind your long distance charges.", animation: GIF(4) },
+    { phrase: "The modem handshake was the sound of the future arriving at 28.8k.", animation: GIF(2) },
+  ],
+  hyperterm: [
+    { phrase: "HyperTerminal spoke to BBSes. The web's older, weirder sibling.", animation: GIF(5) },
+    { phrase: "Somewhere a sysop is still waiting for your carrier signal.", animation: GIF(7) },
+  ],
+  scandisk: [
+    { phrase: "ScanDisk after a bad shutdown was a moment of prayer.", animation: GIF(1) },
+    { phrase: "This drive is a JavaScript object. Its sectors are immaculate.", animation: GIF(4) },
+  ],
+  defrag: [
+    { phrase: "Defrag was the screensaver you told yourself was work.", animation: GIF(6) },
+    { phrase: "Watching the little blocks find their homes. Satisfying. Obsolete.", animation: GIF(3) },
   ],
 }
 
