@@ -1426,6 +1426,20 @@ h6 {
   animation: square-alert 180ms steps(1, end) 3;
 }
 
+/* Hearts: the moon a shooter earns, rising from the table's edge. */
+@keyframes moon-rise {
+  from {
+    transform: translate(-50%, 0);
+  }
+  to {
+    transform: translate(-50%, -340px);
+  }
+}
+
+.anim-moon-rise {
+  animation: moon-rise 1.6s ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .anim-card-flip,
   .anim-card-land,
@@ -1433,6 +1447,11 @@ h6 {
   .anim-mine-flash,
   .anim-square-alert {
     animation: none;
+  }
+
+  .anim-moon-rise {
+    animation: none;
+    transform: translate(-50%, -340px);
   }
 }
 

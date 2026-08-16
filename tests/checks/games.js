@@ -183,6 +183,54 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await p.locator("[data-stats]").getByRole("button", { name: "Close" }).click()
   await p.waitForTimeout(150)
 
+  // ---- Hearts: name entry, the arrow on the pass button, the score sheet ---
+  await menuClick("Game", "Exit")
+  await p.waitForTimeout(400)
+  await p.getByText("Hearts", { exact: true }).first().dblclick()
+  await p.waitForSelector("[data-hearts]", { timeout: 15000 })
+  await p.waitForTimeout(500)
+
+  ok("#81 a fresh visitor is asked for a name", (await p.locator("[data-name-entry]").count()) === 1)
+  await p.locator("[data-name-input]").fill("JOEL")
+  await p.locator("[data-name-ok]").click()
+  await p.waitForTimeout(300)
+  const scoreBar = await p.locator('[data-score="You"]').innerText()
+  ok("#81 the table calls you by name", /JOEL/.test(scoreBar), scoreBar)
+
+  const passBtn = await p.locator("[data-pass]").innerText()
+  ok("#82 the pass button wears the arrow", /←/.test(passBtn) && /left/i.test(passBtn), passBtn.trim())
+
+  const handCards = p.locator("[data-hand] [data-card]")
+  for (let i = 0; i < 3; i++) {
+    await handCards.nth(i).click()
+    await p.waitForTimeout(120)
+  }
+  await p.locator("[data-pass]").click()
+  await p.waitForTimeout(500)
+
+  // Play the hand out: whenever it is our turn, play any legal card.
+  let sheetSeen = false
+  for (let i = 0; i < 260 && !sheetSeen; i++) {
+    if (await p.locator("[data-score-sheet]").count()) {
+      sheetSeen = true
+      break
+    }
+    const turnText = await p.locator("[data-turn]").innerText().catch(() => "")
+    if (/Your turn/.test(turnText)) {
+      await p.evaluate(() => {
+        const cards = [...document.querySelectorAll("[data-hand] [data-card]")]
+        const legal = cards.find((c) => c.style.opacity !== "0.72") || cards[0]
+        if (legal) legal.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+      })
+    }
+    await p.waitForTimeout(350)
+  }
+  ok("#84 the score sheet arrives after the hand", sheetSeen)
+  if (sheetSeen) {
+    const sheet = (await p.locator("[data-score-sheet]").innerText()).replace(/\n/g, " ")
+    ok("#84 one row per hand plus the total", /Hand/.test(sheet) && /Total/.test(sheet) && /JOEL/.test(sheet), sheet.slice(0, 110))
+  }
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()

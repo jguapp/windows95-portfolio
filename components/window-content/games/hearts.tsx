@@ -149,8 +149,40 @@ export default function Hearts({ onReturn }: HeartsProps) {
   const [status, setStatus] = useState("")
   const [menu, setMenu] = useState<string | null>(null)
   const [lastTrick, setLastTrick] = useState<Play[]>([])
+  /** The original asked for your name before the first deal. So does this. */
+  const [names, setNames] = useState<string[]>([...SEATS])
+  const [askName, setAskName] = useState(false)
+  const [nameInput, setNameInput] = useState("")
+  /** Points gained per completed hand, one row per hand for the score sheet. */
+  const [history, setHistory] = useState<number[][]>([])
+  /** Who shot the moon last hand, for the celebration. Null when nobody. */
+  const [lastShooter, setLastShooter] = useState<number | null>(null)
+
+  // The name survives visits; only a visitor with none stored is asked.
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("win95:hearts-name")
+      if (stored) setNames((n) => [stored, ...n.slice(1)])
+      else setAskName(true)
+    } catch {
+      setAskName(true)
+    }
+  }, [])
+
+  const confirmName = () => {
+    const name = nameInput.trim().substring(0, 12) || "You"
+    setNames((n) => [name, ...n.slice(1)])
+    try {
+      window.localStorage.setItem("win95:hearts-name", name)
+    } catch {
+      // A name that does not stick is still a name for this game.
+    }
+    setAskName(false)
+  }
 
   const direction = PASS_DIRECTION[round % 4]
+  /** The arrow the original put on the pass button. */
+  const PASS_ARROW: Record<string, string> = { left: "←", right: "→", across: "↑", none: "" }
 
   const dealHand = useCallback((nextRound: number) => {
     const deck = shuffled(orderedDeck())
@@ -175,6 +207,8 @@ export default function Hearts({ onReturn }: HeartsProps) {
 
   const newGame = useCallback(() => {
     setScores([0, 0, 0, 0])
+    setHistory([])
+    setLastShooter(null)
     dealHand(0)
   }, [dealHand])
 
@@ -223,10 +257,12 @@ export default function Hearts({ onReturn }: HeartsProps) {
       setTrick([])
       setFirstTrick(false)
       setTurn(winner)
-      setStatus(`${SEATS[winner]} took the trick${taken > 0 ? ` and ${taken} point${taken === 1 ? "" : "s"}` : ""}.`)
+      setStatus(`${names[winner]} took the trick${taken > 0 ? ` and ${taken} point${taken === 1 ? "" : "s"}` : ""}.`)
       if (taken > 0) play("select")
     }, 900)
     return () => clearTimeout(timer)
+    // names is display-only; a rename must not re-settle the trick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trick])
 
   // Score the hand once the cards run out.
@@ -241,20 +277,24 @@ export default function Hearts({ onReturn }: HeartsProps) {
 
     const next = scores.map((s, i) => s + gained[i])
     setScores(next)
+    setHistory((h) => [...h, gained])
+    setLastShooter(shooter >= 0 ? shooter : null)
     setPhase("handOver")
     setStatus(
       shooter >= 0
-        ? `${SEATS[shooter]} shot the moon. Everyone else takes 26.`
-        : `Hand over. ${gained.map((g, i) => `${SEATS[i]} ${g}`).join(", ")}.`,
+        ? `${names[shooter]} shot the moon. Everyone else takes 26.`
+        : `Hand over. ${gained.map((g, i) => `${names[i]} ${g}`).join(", ")}.`,
     )
     play(shooter === 0 ? "win" : "levelUp")
 
     if (Math.max(...next) >= TARGET) {
       const lowest = Math.min(...next)
       setPhase("gameOver")
-      setStatus(`Game over. ${SEATS[next.indexOf(lowest)]} wins with ${lowest}.`)
+      setStatus(`Game over. ${names[next.indexOf(lowest)]} wins with ${lowest}.`)
       play(next.indexOf(lowest) === 0 ? "win" : "lose")
     }
+    // names is display-only here; re-running on a rename would double-score.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, trick.length, hands, handPoints, scores])
 
   const togglePass = (card: Card) => {
@@ -410,7 +450,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
                     : { right: 6, top: 48 }
               }
             >
-              <div className="mb-1 text-center font-bold">{SEATS[seat]}</div>
+              <div className="mb-1 text-center font-bold">{names[seat]}</div>
               <div className={vertical ? "flex flex-col items-center" : "flex justify-center"}>
                 {hands[seat].map((card, i) => (
                   <PlayingCard
@@ -431,7 +471,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
           {trick.map((p) => (
             <div key={p.card.id} className="absolute" style={seatStyle[p.seat]}>
               <PlayingCard card={p.card} width={CARD_W} />
-              <div className="mt-[2px] text-center text-white">{SEATS[p.seat]}</div>
+              <div className="mt-[2px] text-center text-white">{names[p.seat]}</div>
             </div>
           ))}
           {trick.length === 0 && lastTrick.length > 0 && (
@@ -465,8 +505,8 @@ export default function Hearts({ onReturn }: HeartsProps) {
           })}
         </div>
 
-        {/* Passing prompt */}
-        {phase === "passing" && (
+        {/* Passing prompt, arrow first, as the original's pass button wore it */}
+        {phase === "passing" && !askName && (
           <div className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] p-3 text-center">
             <div className="mb-2">
               Pass three cards {direction}. Chosen: {chosen.length}/3
@@ -476,31 +516,105 @@ export default function Hearts({ onReturn }: HeartsProps) {
               data-pass
               disabled={chosen.length !== 3}
               onClick={confirmPass}
-              className="min-w-[90px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] disabled:text-[#808080] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+              className="min-w-[110px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] disabled:text-[#808080] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
             >
-              Pass
+              <span className="mr-1 text-[15px] leading-none" aria-hidden>
+                {PASS_ARROW[direction]}
+              </span>
+              Pass {direction}
             </button>
           </div>
         )}
 
-        {/* Between hands */}
+        {/* Name entry, before anything else, as the original insisted */}
+        {askName && (
+          <div className="absolute left-1/2 top-1/2 z-50 w-[280px] -translate-x-1/2 -translate-y-1/2 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]" data-name-entry>
+            <div className="bg-[#000080] px-2 py-[2px] font-bold text-white">The Microserf Hearts Network</div>
+            <div className="p-3">
+              <label className="mb-2 block">What is your name?</label>
+              <input
+                autoFocus
+                maxLength={12}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && confirmName()}
+                className="mb-3 w-full border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white px-1 py-[2px]"
+                data-name-input
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  data-name-ok
+                  onClick={confirmName}
+                  className="min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-3 py-[3px] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* The moon, for whoever shot it. Yours rises with fanfare. */}
+        {(phase === "handOver" || phase === "gameOver") && lastShooter !== null && (
+          <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden" data-moon>
+            {/* Centring lives in the keyframes, which own transform. */}
+            <div className="anim-moon-rise absolute left-1/2" style={{ bottom: -80 }}>
+              <svg width="120" height="120" viewBox="0 0 120 120" aria-hidden>
+                <circle cx="60" cy="60" r="46" fill="#f5f1c9" stroke="#c9c17f" strokeWidth="3" />
+                <circle cx="44" cy="48" r="7" fill="#d9d3a0" />
+                <circle cx="72" cy="70" r="10" fill="#d9d3a0" />
+                <circle cx="66" cy="38" r="5" fill="#d9d3a0" />
+              </svg>
+              <div className="mt-1 text-center font-bold text-white" style={{ textShadow: "1px 1px 0 #000" }}>
+                {lastShooter === 0 ? "You shot the moon!" : `${names[lastShooter]} shot the moon.`}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Between hands: the running score sheet, one row per hand. */}
         {(phase === "handOver" || phase === "gameOver") && (
-          <div className="absolute left-1/2 top-1/2 z-40 w-[320px] -translate-x-1/2 -translate-y-1/2 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]">
+          <div className="absolute left-1/2 top-1/2 z-40 w-[340px] -translate-x-1/2 -translate-y-1/2 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0]" data-score-sheet>
             <div className="bg-[#000080] px-2 py-[2px] font-bold text-white">
               {phase === "gameOver" ? "Game Over" : "Hand Complete"}
             </div>
             <div className="p-3">
               <div className="mb-3">{status}</div>
-              <table className="mb-3 w-full">
-                <tbody>
-                  {SEATS.map((name, i) => (
-                    <tr key={name}>
-                      <td>{name}</td>
-                      <td className="text-right">{scores[i]}</td>
+              <div className="mb-3 max-h-[160px] overflow-auto border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-white">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#808080]">
+                      <th className="px-2 py-[2px] text-left font-bold">Hand</th>
+                      {names.map((name, i) => (
+                        <th key={SEATS[i]} className="px-2 py-[2px] text-right font-bold">
+                          {name}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {history.map((row, h) => (
+                      <tr key={h}>
+                        <td className="px-2 py-[1px]">{h + 1}</td>
+                        {row.map((g, i) => (
+                          <td key={SEATS[i]} className="px-2 py-[1px] text-right">
+                            {g}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    <tr className="border-t border-[#808080] font-bold">
+                      <td className="px-2 py-[1px]">Total</td>
+                      {scores.map((s, i) => (
+                        <td key={SEATS[i]} className="px-2 py-[1px] text-right">
+                          {s}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div className="flex justify-center gap-2">
                 <button
                   type="button"
@@ -532,8 +646,8 @@ export default function Hearts({ onReturn }: HeartsProps) {
         <span data-status className="flex-1">
           {status}
         </span>
-        {SEATS.map((name, i) => (
-          <span key={name} data-score={name}>
+        {names.map((name, i) => (
+          <span key={SEATS[i]} data-score={SEATS[i]}>
             {name}: {scores[i]}
             {handPoints[i] > 0 ? ` (+${handPoints[i]})` : ""}
           </span>
