@@ -37,7 +37,7 @@
 <p class="meta">
   Project: windows95-portfolio &nbsp;|&nbsp; Repository: github.com/jguapp/windows95-portfolio
   &nbsp;|&nbsp; Live: builtbyjoel.dev<br>
-  Document generated: August 15, 2026 &nbsp;|&nbsp;
+  Document generated: August 16, 2026 &nbsp;|&nbsp;
   Audience: any smart reader, no prior knowledge assumed.
 </p>
 
@@ -217,6 +217,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
 <tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin.</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
+<tr><td><code>tests/checks/</code></td><td>Playwright behaviour checks, one file per area, with <code>run-all.js</code> as the runner behind <code>pnpm checks</code>. They expect a server on port 3000 and print PASS/FAIL lines.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>
 </table>
 
@@ -413,12 +414,11 @@ and the guestbook uses its in-process fallback.</p>
       reset on reload.</li>
   <li>Internet Explorer carries built-in pages only, since external sites refuse
       framing.</li>
-  <li>The Playwright checks that verify behaviour (around 350 assertions at last full
-      run) live outside the repository in a scratch directory; moving them into
-      <code>tests/</code> with a config would make them part of the definition of
-      done.</li>
-  <li>Most valuable next: in-repo tests, and a Properties sheet for files inside
-      Explorer.</li>
+  <li>The Playwright checks that verify behaviour live in <code>tests/checks/</code>
+      and run with <code>pnpm checks</code> against a server on port 3000. They run
+      on demand only; there is no hosted CI, so nothing runs them automatically on
+      push.</li>
+  <li>Most valuable next: a Properties sheet for files inside Explorer.</li>
 </ul>
 
 <h2 id="trouble">Part XIII. Troubleshooting</h2>
