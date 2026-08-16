@@ -251,7 +251,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                   <button
                     type="button"
                     data-wallpaper-random
-                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
+                    className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-2 py-1 text-xs"
                     style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
                     onClick={() => {
                       // Surprise Me: any wallpaper but the one already on.
@@ -265,7 +265,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                   <button
                     type="button"
                     data-wallpaper-browse
-                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
+                    className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-2 py-1 text-xs"
                     style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
                     onClick={() => fileInputRef.current?.click()}
                   >
@@ -425,7 +425,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
 
             <div className="flex justify-center">
               <button
-                className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-3 py-1 text-xs"
+                className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-3 py-1 text-xs"
                 style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
               >
                 Advanced Properties...
@@ -437,21 +437,21 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
         {/* Button Bar */}
         <div className="px-4 py-3 flex justify-end gap-2">
           <button
-            className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-4 py-1"
+            className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-4 py-1"
             style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
             onClick={handleSave}
           >
             OK
           </button>
           <button
-            className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-4 py-1"
+            className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-4 py-1"
             style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-4 py-1"
+            className="bg-[#c0c0c0] border border-t-white border-l-white border-r-black border-b-black px-4 py-1"
             style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
             onClick={handleApply}
           >

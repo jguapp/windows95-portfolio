@@ -114,8 +114,14 @@ function BoxTitle({ children }: { children: React.ReactNode }) {
 function FacebookHeader() {
   return (
     <div className="w-full bg-[#3B5998]">
-      <div className="relative h-[130px]">
-        <div className="absolute inset-0">
+      {/*
+        The band is taller than the wordmark on purpose: the image keeps its
+        own 130px, and the extra height below it is the gap the nav row sits
+        in, so the two never touch. The nav stays absolutely positioned
+        because its horizontal offset is derived from the bitmap width.
+      */}
+      <div className="relative h-[160px]">
+        <div className="absolute inset-x-0 top-0 h-[130px]">
           <img
             src="/images/blob/thefacebook-header.png"
             alt="TheFacebook Header"
@@ -139,7 +145,7 @@ function FacebookHeader() {
           so the row cannot drift with centring slack when the box scales.
         */}
         <div
-          className="absolute bottom-0 flex items-center justify-between text-white text-sm"
+          className="absolute bottom-[6px] flex items-center justify-between text-white text-sm"
           style={{
             width: "calc(max(100%, 1300px) * 0.396)",
             right: "calc(max(100%, 1300px) * 0.092)",

@@ -80,6 +80,15 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await toggleSize()
   ok("the nav tracks the wordmark at both sizes", Math.abs(firstOffset - secondOffset) <= 6, `${firstOffset} vs ${secondOffset} per-mille`)
 
+  // The wordmark and the nav row must not touch.
+  const headerGap = await w.evaluate((el) => {
+    const img = el.querySelector('img[src*="thefacebook-header"]')
+    const nav = [...el.querySelectorAll("a")].find((a) => a.textContent.trim() === "logout")
+    if (!img || !nav) return -1
+    return Math.round(nav.getBoundingClientRect().top - img.getBoundingClientRect().bottom)
+  })
+  ok("the wordmark clears the nav row", headerGap >= 2, `${headerGap}px`)
+
   ok("no missing artwork", missing.length === 0, missing.join(",") || "none")
   await browser.close()
 })()

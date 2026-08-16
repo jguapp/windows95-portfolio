@@ -1125,10 +1125,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
-              {/* The panel's bracket: a full underline whose end rises past
-                  the bar, framing the panel without touching it. */}
+              {/* The enemy's bracket: the underline rises at its left end,
+                  the mirror of the player's, which rises at its right. */}
               <rect x={2} y={33} width={82} height={1} fill={P[3]} />
-              <rect x={82} y={26} width={2} height={8} fill={P[3]} />
+              <rect x={2} y={26} width={2} height={8} fill={P[3]} />
 
               {/* Player: back sprite lower left, thin status area lower right */}
               {playerOut && (
@@ -1147,7 +1147,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 {`${player.hp}/${player.maxHp}`}
               </Label>
               <rect x={74} y={100} width={84} height={1} fill={P[3]} />
-              <rect x={74} y={93} width={2} height={8} fill={P[3]} />
+              <rect x={156} y={93} width={2} height={8} fill={P[3]} />
             </>
           )}
 
