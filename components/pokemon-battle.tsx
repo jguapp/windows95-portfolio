@@ -155,6 +155,54 @@ function toFighter(key: string): Fighter {
   }
 }
 
+/**
+ * A custom trainer sprite, quantised at runtime.
+ *
+ * Drop PNGs at /images/battle/trainer-player.png and trainer-rival.png and
+ * they replace the drawn trainers, run through the same four-tone fit the
+ * monsters use: longest side to 56, bottom-anchored, contrast-stretched.
+ * Near-white counts as background so a sprite on white paper works as-is.
+ */
+function gridFromImage(img: HTMLImageElement): string[] {
+  const SIZE = 56
+  const canvas = document.createElement("canvas")
+  canvas.width = SIZE
+  canvas.height = SIZE
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return []
+  const scale = SIZE / Math.max(img.width, img.height)
+  const w = Math.max(1, Math.round(img.width * scale))
+  const h = Math.max(1, Math.round(img.height * scale))
+  ctx.drawImage(img, Math.floor((SIZE - w) / 2), SIZE - h, w, h)
+  const d = ctx.getImageData(0, 0, SIZE, SIZE).data
+  const lum = (i: number) => 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]
+  const bg = (i: number) => d[i + 3] < 128 || (d[i] > 245 && d[i + 1] > 245 && d[i + 2] > 245)
+  let lo = 255
+  let hi = 0
+  for (let i = 0; i < d.length; i += 4) {
+    if (bg(i)) continue
+    const v = lum(i)
+    if (v < lo) lo = v
+    if (v > hi) hi = v
+  }
+  const span = Math.max(1, hi - lo)
+  const rows: string[] = []
+  for (let y = 0; y < SIZE; y++) {
+    let row = ""
+    for (let x = 0; x < SIZE; x++) {
+      const i = (y * SIZE + x) * 4
+      if (bg(i)) {
+        row += "."
+      } else {
+        const t = (lum(i) - lo) / span
+        row += t > 0.78 ? "0" : t > 0.52 ? "1" : t > 0.26 ? "2" : "3"
+      }
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
 /** Gen I stage arithmetic: +2 doubles, -2 halves, by way of (2+s)/2. */
 const stageMult = (s: number) => (s >= 0 ? (2 + s) / 2 : 2 / (2 - s))
 
@@ -457,6 +505,35 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   ])
   /** The opening shows the two trainers before any monster appears. */
   const [trainersOnStage, setTrainersOnStage] = useState(true)
+  /** Drop-in trainer art, when the owner has put PNGs in /images/battle. */
+  const [customTrainers, setCustomTrainers] = useState<{ player?: string[]; rival?: string[] }>({})
+
+  useEffect(() => {
+    let live = true
+    const slots: [keyof typeof customTrainers, string][] = [
+      ["player", "/images/battle/trainer-player.png"],
+      ["rival", "/images/battle/trainer-rival.png"],
+    ]
+    for (const [key, src] of slots) {
+      fetch(src, { method: "HEAD" })
+        .then((res) => {
+          if (!res.ok) return
+          const img = new Image()
+          img.onload = () => {
+            if (!live) return
+            const grid = gridFromImage(img)
+            if (grid.length) setCustomTrainers((c) => ({ ...c, [key]: grid }))
+          }
+          img.src = src
+        })
+        .catch(() => {
+          // No custom art; the drawn trainers carry the intro.
+        })
+    }
+    return () => {
+      live = false
+    }
+  }, [])
   /** One-shot CSS animation classes for each side and the whole screen. */
   const [playerAnim, setPlayerAnim] = useState<{ cls: string; t: number }>({ cls: "", t: 0 })
   const [foeAnim, setFoeAnim] = useState<{ cls: string; t: number }>({ cls: "", t: 0 })
@@ -968,8 +1045,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 the player's back bottom left, each side's ball row on its
                 line with the end hook.
               */}
-              <Sprite grid={RIVAL_TRAINER} x={96} y={0} />
-              <Sprite grid={PLAYER_TRAINER} x={10} y={46} />
+              <Sprite grid={customTrainers.rival ?? RIVAL_TRAINER} x={96} y={0} />
+              <Sprite grid={customTrainers.player ?? PLAYER_TRAINER} x={10} y={46} />
               {foes.map((f, i) => (
                 <Ball key={`fb${i}`} x={8 + i * 8} y={38} alive={f.hp > 0} />
               ))}
