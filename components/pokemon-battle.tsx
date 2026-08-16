@@ -276,7 +276,7 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
   return (
     <>
       {/* The HP cap. */}
-      <text x={x - 14} y={y + 4} fill={P[3]} fontSize={6} className="font-pixel">
+      <text x={x - 14} y={y + 4} fill={P[3]} fontSize={5.5} className="font-pixel">
         HP:
       </text>
       {/* The channel: 1px frame, ends stepped to read as rounded. */}
@@ -505,6 +505,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   ])
   /** The opening shows the two trainers before any monster appears. */
   const [trainersOnStage, setTrainersOnStage] = useState(true)
+  /** Each side renders only after its send: the animation is the reveal. */
+  const [playerOut, setPlayerOut] = useState(false)
+  const [foeOut, setFoeOut] = useState(false)
+
   /** Drop-in trainer art, when the owner has put PNGs in /images/battle. */
   const [customTrainers, setCustomTrainers] = useState<{ player?: string[]; rival?: string[] }>({})
 
@@ -622,11 +626,13 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     const opening = setTimeout(() => {
       setTrainersOnStage(false)
       setMessage(`RIVAL sent out ${SPECIES[FOE_TEAM[0]].name}!`)
+      setFoeOut(true)
       setFoeAnim({ cls: "pkmn-sendin", t: Date.now() })
       sfx.sendOut()
       cry(SPECIES[FOE_TEAM[0]].cry)
       const second = setTimeout(() => {
         setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
+        setPlayerOut(true)
         setPlayerAnim({ cls: "pkmn-sendin", t: Date.now() })
         sfx.sendOut()
         cry(SPECIES[PLAYER_TEAM[0]].cry)
@@ -1064,13 +1070,15 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <Ground grid={playerBack} x={10} y={46} rx={34} ry={8} />
 
               {/* Opponent: front sprite upper right, thin status area upper left */}
-              <g key={`fa${foeAnim.t}`} className={foeAnim.cls}>
-                <Sprite grid={foe.species.sprite} x={96} y={0} />
-              </g>
-              <Label x={8} y={16} size={6}>
+              {foeOut && (
+                <g key={`fa${foeAnim.t}`} className={foeAnim.cls}>
+                  <Sprite grid={foe.species.sprite} x={96} y={0} />
+                </g>
+              )}
+              <Label x={8} y={16} size={5.5}>
                 {foe.name}
               </Label>
-              <Label x={14} y={23} size={5}>
+              <Label x={14} y={23} size={4.75}>
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
@@ -1079,17 +1087,19 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <rect x={4} y={29} width={2} height={4} fill={P[3]} />
 
               {/* Player: back sprite lower left, thin status area lower right */}
-              <g key={`pa${playerAnim.t}`} className={playerAnim.cls}>
-                <Sprite grid={playerBack} x={10} y={46} />
-              </g>
-              <Label x={84} y={72} size={6}>
+              {playerOut && (
+                <g key={`pa${playerAnim.t}`} className={playerAnim.cls}>
+                  <Sprite grid={playerBack} x={10} y={46} />
+                </g>
+              )}
+              <Label x={84} y={72} size={5.5}>
                 {player.name}
               </Label>
-              <Label x={90} y={79} size={5}>
+              <Label x={90} y={79} size={4.75}>
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-              <Label x={106} y={96} size={5}>
+              <Label x={106} y={96} size={4.75}>
                 {`${player.hp}/${player.maxHp}`}
               </Label>
               <rect x={78} y={99} width={78} height={1} fill={P[3]} />
@@ -1102,41 +1112,41 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
           {phase === "menu" ? (
             <>
-              <Label x={8} y={119} size={6}>
+              <Label x={8} y={119} size={5.5}>
                 What will
               </Label>
-              <Label x={8} y={132} size={6}>
+              <Label x={8} y={132} size={5.5}>
                 {`${player.name} do?`}
               </Label>
               <Box x={86} y={104} w={74} h={40} />
               {MENU.map((m) => {
-                const cx = 94 + m.col * 38
+                const cx = 97 + m.col * 34
                 const cy = 120 + m.row * 14
                 return (
                   <g key={m.label}>
                     {cursor === m.index && (
-                      <Label x={cx - 7} y={cy} size={6}>
+                      <Label x={cx - 6} y={cy} size={5.5}>
                         &#9654;
                       </Label>
                     )}
                     {m.label === "PKMN" ? (
                       /* PkMn, with the small raised k and n of the original. */
                       <>
-                        <Label x={cx} y={cy} size={6}>
+                        <Label x={cx} y={cy} size={5.5}>
                           P
                         </Label>
-                        <Label x={cx + 6} y={cy - 2} size={4}>
+                        <Label x={cx + 5.5} y={cy - 2} size={3.5}>
                           K
                         </Label>
-                        <Label x={cx + 10.5} y={cy} size={6}>
+                        <Label x={cx + 9.5} y={cy} size={5.5}>
                           M
                         </Label>
-                        <Label x={cx + 16.5} y={cy - 2} size={4}>
+                        <Label x={cx + 15} y={cy - 2} size={3.5}>
                           N
                         </Label>
                       </>
                     ) : (
-                      <Label x={cx} y={cy} size={6}>
+                      <Label x={cx} y={cy} size={5.5}>
                         {m.label}
                       </Label>
                     )}
@@ -1149,25 +1159,25 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {/* The reference fight layout: PP box and TYPE box on the
                   left, the move list in its own box reaching the edge. */}
               <Box x={0} y={60} w={86} h={18} />
-              <Label x={10} y={72} size={6}>
+              <Label x={10} y={72} size={5.5}>
                 {`PP ${player.moves[cursor].pp}/${player.moves[cursor].maxPp}`}
               </Label>
               <Box x={0} y={78} w={86} h={22} />
-              <Label x={8} y={87} size={5}>
+              <Label x={8} y={87} size={4.75}>
                 TYPE/
               </Label>
-              <Label x={14} y={96} size={6}>
+              <Label x={14} y={94} size={5.5}>
                 {player.moves[cursor].type}
               </Label>
               <Box x={40} y={100} w={120} h={44} />
               {player.moves.map((m, i) => (
                 <g key={m.name}>
                   {cursor === i && (
-                    <Label x={46} y={112 + i * 8} size={6}>
+                    <Label x={46} y={112 + i * 8} size={5.5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={54} y={112 + i * 8} size={6}>
+                  <Label x={54} y={112 + i * 8} size={5.5}>
                     {m.name}
                   </Label>
                 </g>
@@ -1176,7 +1186,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           ) : (
             <>
               {lines.slice(0, 2).map((line, i) => (
-                <Label key={i} x={8} y={118 + i * 12} size={6}>
+                <Label key={i} x={8} y={118 + i * 12} size={5.5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1200,19 +1210,19 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 return (
                   <g key={f.name}>
                     {cursor === i && (
-                      <Label x={1} y={y + 10} size={5}>
+                      <Label x={1} y={y + 10} size={4.75}>
                         &#9654;
                       </Label>
                     )}
                     <Sprite grid={f.species.sprite} x={7} y={y} scale={0.275} />
-                    <Label x={26} y={y + 8} size={5}>
+                    <Label x={26} y={y + 8} size={4.75}>
                       {`${f.name}${i === active ? " *" : ""}`}
                     </Label>
-                    <Label x={30} y={y + 15} size={4.5}>
+                    <Label x={30} y={y + 15} size={4.25}>
                       {f.hp === 0 ? "FNT" : `:L${f.level}`}
                     </Label>
                     <HpBar x={108} y={y + 4} ratio={f.hp / f.maxHp} />
-                    <Label x={108} y={y + 15} size={4.5}>
+                    <Label x={108} y={y + 15} size={4.25}>
                       {`${f.hp}/${f.maxHp}`}
                     </Label>
                   </g>
@@ -1220,7 +1230,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               })}
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")).map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={6}>
+                <Label key={i} x={8} y={127 + i * 10} size={5.5}>
                   {line.trim()}
                 </Label>
               ))}
@@ -1250,29 +1260,29 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               {items.map((it, i) => (
                 <g key={it.name}>
                   {cursor === i && (
-                    <Label x={7} y={16 + i * 14} size={6}>
+                    <Label x={7} y={16 + i * 14} size={5.5}>
                       &#9654;
                     </Label>
                   )}
-                  <Label x={16} y={16 + i * 14} size={6}>
+                  <Label x={16} y={16 + i * 14} size={5.5}>
                     {it.name}
                   </Label>
-                  <Label x={118} y={16 + i * 14} size={6}>
+                  <Label x={118} y={16 + i * 14} size={5.5}>
                     {`x${it.count}`}
                   </Label>
                 </g>
               ))}
               {cursor === items.length && (
-                <Label x={7} y={16 + items.length * 14} size={6}>
+                <Label x={7} y={16 + items.length * 14} size={5.5}>
                   &#9654;
                 </Label>
               )}
-              <Label x={16} y={16 + items.length * 14} size={6}>
+              <Label x={16} y={16 + items.length * 14} size={5.5}>
                 CANCEL
               </Label>
               <Box x={0} y={114} w={SCREEN_W} h={30} />
               {noteLines(note ?? "Choose an ITEM.").map((line, i) => (
-                <Label key={i} x={8} y={127 + i * 10} size={6}>
+                <Label key={i} x={8} y={127 + i * 10} size={5.5}>
                   {line.trim()}
                 </Label>
               ))}
