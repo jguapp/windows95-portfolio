@@ -781,6 +781,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   const playerBack = useMemo(() => backView(player.species.sprite), [player.species])
 
+  /** The party and item prompt line, wrapped the way the message box wraps. */
+  const noteLines = (text: string) => (text.match(/.{1,24}(\s|$)/g) ?? [text]).slice(0, 2)
+
   // Size-6 glyphs advance 6 units, so 24 characters end at x=152 of 160.
   const lines = message.match(/.{1,24}(\s|$)/g) ?? [message]
 
@@ -951,9 +954,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 )
               })}
               <Box x={0} y={114} w={SCREEN_W} h={30} />
-              <Label x={8} y={131} size={6}>
-                {note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")}
-              </Label>
+              {noteLines(note ?? (mustSwitch ? "Choose your next POKeMON." : "Choose a POKeMON.")).map((line, i) => (
+                <Label key={i} x={8} y={127 + i * 10} size={6}>
+                  {line.trim()}
+                </Label>
+              ))}
             </g>
           )}
 
@@ -986,9 +991,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                 CANCEL
               </Label>
               <Box x={0} y={114} w={SCREEN_W} h={30} />
-              <Label x={8} y={131} size={6}>
-                {note ?? "Choose an ITEM."}
-              </Label>
+              {noteLines(note ?? "Choose an ITEM.").map((line, i) => (
+                <Label key={i} x={8} y={127 + i * 10} size={6}>
+                  {line.trim()}
+                </Label>
+              ))}
             </g>
           )}
         </svg>

@@ -174,12 +174,12 @@ const SITES: Record<string, Site> = {
 }
 
 /**
- * The home page: the built-in joel95.net, which renders instantly. Opening on
- * an archived page meant the window's first paint waited on the Wayback
- * Machine's multi-second fetch; the archive is still one address away, and
- * yahoo.com is the first suggestion on the page.
+ * The home page: archived Yahoo, the page most people actually started at,
+ * by the owner's preference. The preconnect below starts the archive's TLS
+ * handshake the moment the window opens, which softens the wait, and
+ * joel95.net stays one typed address away.
  */
-const HOME = "http://www.joel95.net/"
+const HOME = "http://www.yahoo.com/"
 
 /** Normalises whatever was typed into something the site table might hold. */
 function normalise(input: string): string {
