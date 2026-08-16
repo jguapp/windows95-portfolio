@@ -72,8 +72,40 @@ import { getVolume, isMuted } from "@/lib/sound"
  * keeps its synthesised jingles: music is an upgrade, never a requirement.
  */
 const MUSIC = {
-  battle: "/audio/10. Battle! (Trainer Battle).mp3",
-  victory: "/audio/12. Victory! (Trainer Battle).mp3",
+  /*
+    loopStart is where the theme rejoins after each pass: the opening bars
+    play once, then the track cycles from this point. Tune it by ear if the
+    join sounds off; it is seconds into the file. The end of the loop is
+    found automatically by trimming the recording's fade-out.
+  */
+  battle: { src: "/audio/10. Battle! (Trainer Battle).mp3", loop: true, loopStart: 4.0 },
+  victory: { src: "/audio/12. Victory! (Trainer Battle).mp3", loop: false, loopStart: 0 },
+}
+
+/**
+ * Where the recording starts fading out.
+ *
+ * OST rips end on a long fade, and looping across it means the music dips to
+ * silence and jolts back. Scanning RMS in quarter-second windows from the
+ * end, the loop point is the last window still at half the track's median
+ * level; the fade past it is never played.
+ */
+function findLoopEnd(buffer: AudioBuffer): number {
+  const data = buffer.getChannelData(0)
+  const win = Math.floor(buffer.sampleRate * 0.25)
+  const rms: number[] = []
+  for (let i = 0; i + win <= data.length; i += win) {
+    let sum = 0
+    for (let j = i; j < i + win; j += 16) sum += data[j] * data[j]
+    rms.push(Math.sqrt(sum / (win / 16)))
+  }
+  if (rms.length === 0) return buffer.duration
+  const sorted = [...rms].sort((a, b) => a - b)
+  const median = sorted[Math.floor(sorted.length / 2)]
+  let end = rms.length - 1
+  while (end > 0 && rms[end] < median * 0.5) end--
+  const t = ((end + 1) * win) / buffer.sampleRate
+  return t > buffer.duration * 0.5 ? t : buffer.duration
 }
 
 /** A creature in play: its species, plus the health, PP and stages it has. */
@@ -426,8 +458,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     the red console 404 an element would log.
   */
   const playMusic = useCallback(
-    (src: string, loop: boolean) => {
-      fetch(encodeURI(src))
+    (track: { src: string; loop: boolean; loopStart: number }) => {
+      fetch(encodeURI(track.src))
         .then(async (res) => {
           if (!res.ok) return
           const ctx = (audioCtxRef.current ??= new AudioContext())
@@ -435,7 +467,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           stopMusic()
           const node = ctx.createBufferSource()
           node.buffer = buffer
-          node.loop = loop
+          if (track.loop) {
+            node.loop = true
+            node.loopStart = Math.min(track.loopStart, buffer.duration / 2)
+            node.loopEnd = findLoopEnd(buffer)
+          }
           const gain = ctx.createGain()
           gain.gain.value = isMuted() ? 0 : getVolume() * 0.6
           node.connect(gain)
@@ -471,7 +507,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   useEffect(() => {
     sfx.battleStart()
-    playMusic(MUSIC.battle, true)
+    playMusic(MUSIC.battle)
     setMessage("RIVAL wants to fight!")
     const opening = setTimeout(() => {
       setTrainersOnStage(false)
@@ -550,6 +586,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       const hp = Math.max(0, player.hp - dealt)
       setPlayer((f) => ({ ...f, hp }))
       setPlayerAnim({ cls: "pkmn-blink", t: Date.now() })
+      setHitFx({ side: "player", t: Date.now() })
       if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
       const proceed = () => {
         if (hp !== 0) {
@@ -621,6 +658,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         const hp = Math.max(0, foe.hp - dealt)
         setFoe((f) => ({ ...f, hp }))
         setFoeAnim({ cls: "pkmn-blink", t: Date.now() })
+        setHitFx({ side: "foe", t: Date.now() })
         if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
         const proceed = () => {
           if (hp !== 0) {
@@ -634,7 +672,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           if (next === -1) {
             after(900, () => {
               setMessage("You won the battle!")
-              playMusic(MUSIC.victory, false)
+              playMusic(MUSIC.victory)
               setPhase("over")
             })
             return
@@ -820,6 +858,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   const playerBack = useMemo(() => backView(player.species.sprite), [player.species])
 
+  /** A hit's visual: which side took it, and a key to restart the burst. */
+  const [hitFx, setHitFx] = useState<{ side: "player" | "foe"; t: number } | null>(null)
+
   /** The party and item prompt line, wrapped the way the message box wraps. */
   const noteLines = (text: string) => (text.match(/.{1,24}(\s|$)/g) ?? [text]).slice(0, 2)
 
@@ -832,6 +873,24 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div style={{ position: "relative" }}>
+        <style>{`
+          .pkmn-lunge-player { animation: pkmn-lunge-p 0.45s ease-out; }
+          @keyframes pkmn-lunge-p { 30% { transform: translate(10px, -5px); } }
+          .pkmn-lunge-foe { animation: pkmn-lunge-f 0.45s ease-out; }
+          @keyframes pkmn-lunge-f { 30% { transform: translate(-10px, 5px); } }
+          .pkmn-blink { animation: pkmn-blink 0.5s steps(1); }
+          @keyframes pkmn-blink { 0%, 40%, 80% { opacity: 0; } 20%, 60%, 100% { opacity: 1; } }
+          .pkmn-wobble { animation: pkmn-wobble 0.5s ease-in-out; }
+          @keyframes pkmn-wobble { 25% { transform: translateX(4px); } 50% { transform: translateX(-4px); } 75% { transform: translateX(3px); } }
+          .pkmn-faint { animation: pkmn-faint 0.7s ease-in forwards; }
+          @keyframes pkmn-faint { to { transform: translateY(46px); opacity: 0; } }
+          .pkmn-shake { animation: pkmn-shake 0.45s linear; }
+          @keyframes pkmn-shake { 20% { transform: translate(3px, 1px); } 40% { transform: translate(-3px, -1px); } 60% { transform: translate(2px, -1px); } 80% { transform: translate(-2px, 1px); } }
+          .pkmn-burst-inner { animation: pkmn-burst 0.45s ease-out forwards; }
+          @keyframes pkmn-burst { from { transform: scale(0.2); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+          .pkmn-flash { animation: pkmn-flash 0.4s steps(1) forwards; }
+          @keyframes pkmn-flash { 0% { opacity: 0.9; } 25% { opacity: 0; } 50% { opacity: 0.9; } 75%, 100% { opacity: 0; } }
+        `}</style>
         <svg
           data-gameboy
           width={SCREEN_W * SCALE}
@@ -1032,6 +1091,19 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             </g>
           )}
 
+          {/* The hit burst and the screen flash of a landing blow. */}
+          {hitFx && (
+            <g key={`fx${hitFx.t}`}>
+              <g transform={hitFx.side === "foe" ? "translate(124 28)" : "translate(38 74)"}>
+                <g className="pkmn-burst-inner">
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+                    <rect key={a} x={-1} y={-16} width={2} height={9} fill={P[3]} transform={`rotate(${a})`} />
+                  ))}
+                </g>
+              </g>
+              <rect className="pkmn-flash" width={SCREEN_W} height={SCREEN_H} fill={P[0]} opacity={0} />
+            </g>
+          )}
           </g>
 
           {/* The item menu, with the bag the trainer packed. */}
