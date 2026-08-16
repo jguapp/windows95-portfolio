@@ -73,3 +73,15 @@ are not Microsoft's bitmap files and were not derived from them.
 24x24 with every pixel hardened to full black or transparent so it stays
 crisp at the menu's display size. GitHub's mark remains a GitHub trademark,
 used here to link to GitHub.
+
+## Battle sprites
+
+The twelve creature sprites in the hidden battle are derived from front
+battlers in the Tuxemon project (https://github.com/Tuxemon/Tuxemon),
+CC BY-SA 4.0: nuenflu, eskipup, pythwire, pigabyte, corvix, tadcool,
+trojerror, fluttaflap, waysprite, gupphish, chillimp and xeon, credited
+per monster in the project's ATTRIBUTIONS.md and wiki, including
+josepharaoh99 (Pigabyte), Catch Challenger (Corvix), Spalding004
+(Fluttaflap), Chickenshowman (Chillimp) and Redshrike (Xeon). Each was
+trimmed, fitted to a 28x28 grid and quantised to four Game Boy tones;
+the derived grids in components/pokemon-roster.ts remain CC BY-SA 4.0.
