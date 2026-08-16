@@ -102,10 +102,29 @@ function findLoopEnd(buffer: AudioBuffer): number {
   if (rms.length === 0) return buffer.duration
   const sorted = [...rms].sort((a, b) => a - b)
   const median = sorted[Math.floor(sorted.length / 2)]
+  /*
+    The fade is over once a window falls below three quarters of the track's
+    median level; backing off another 0.4s keeps the loop clear of the fade's
+    very first shoulder, which is where the audible dip lived.
+  */
   let end = rms.length - 1
-  while (end > 0 && rms[end] < median * 0.5) end--
-  const t = ((end + 1) * win) / buffer.sampleRate
+  while (end > 0 && rms[end] < median * 0.75) end--
+  const t = ((end + 1) * win) / buffer.sampleRate - 0.4
   return t > buffer.duration * 0.5 ? t : buffer.duration
+}
+
+/** The nearest sample where the wave crosses zero, so a loop join cannot click. */
+function snapToZeroCrossing(buffer: AudioBuffer, seconds: number): number {
+  const data = buffer.getChannelData(0)
+  const centre = Math.min(data.length - 2, Math.max(1, Math.floor(seconds * buffer.sampleRate)))
+  for (let d = 0; d < buffer.sampleRate / 20; d++) {
+    for (const i of [centre - d, centre + d]) {
+      if (i > 0 && i < data.length && data[i - 1] <= 0 && data[i] >= 0) {
+        return i / buffer.sampleRate
+      }
+    }
+  }
+  return seconds
 }
 
 /** A creature in play: its species, plus the health, PP and stages it has. */
@@ -483,8 +502,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           node.buffer = buffer
           if (track.loop) {
             node.loop = true
-            node.loopStart = Math.min(track.loopStart, buffer.duration / 2)
-            node.loopEnd = findLoopEnd(buffer)
+            node.loopStart = snapToZeroCrossing(buffer, Math.min(track.loopStart, buffer.duration / 2))
+            node.loopEnd = snapToZeroCrossing(buffer, findLoopEnd(buffer))
           }
           const gain = ctx.createGain()
           gain.gain.value = isMuted() ? 0 : getVolume() * 0.6
@@ -526,9 +545,13 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     const opening = setTimeout(() => {
       setTrainersOnStage(false)
       setMessage(`RIVAL sent out ${SPECIES[FOE_TEAM[0]].name}!`)
+      setFoeAnim({ cls: "pkmn-sendin", t: Date.now() })
+      sfx.sendOut()
       cry(SPECIES[FOE_TEAM[0]].cry)
       const second = setTimeout(() => {
         setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
+        setPlayerAnim({ cls: "pkmn-sendin", t: Date.now() })
+        sfx.sendOut()
         cry(SPECIES[PLAYER_TEAM[0]].cry)
         const ready = setTimeout(() => setPhase("menu"), 1100)
         timers.current.push(ready)
@@ -587,11 +610,15 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     after(900, () => {
       if (Math.random() * 100 >= move.accuracy) {
         setMessage(`Enemy ${foe.name}'s attack missed!`)
+        sfx.miss()
         after(1000, backToMenu)
         return
       }
       if (move.effect) {
-        setMessage(runEffect(false, move))
+        const line = runEffect(false, move)
+        setMessage(line)
+        if (line.includes("rose")) sfx.statUp()
+        else if (line.includes("fell")) sfx.statDown()
         setPlayerAnim({ cls: "pkmn-wobble", t: Date.now() })
         after(1100, backToMenu)
         return
@@ -599,6 +626,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       const { dealt, eff } = damage(foe, player, move)
       const hp = Math.max(0, player.hp - dealt)
       setPlayer((f) => ({ ...f, hp }))
+      if (eff > 1) sfx.hitSuper()
+      else if (eff < 1) sfx.hitWeak()
+      else sfx.hit()
       setPlayerAnim({ cls: "pkmn-blink", t: Date.now() })
       setHitFx({ side: "player", t: Date.now() })
       if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
@@ -659,11 +689,15 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       after(900, () => {
         if (Math.random() * 100 >= move.accuracy) {
           setMessage(`${player.name}'s attack missed!`)
+          sfx.miss()
           after(1000, foeTurn)
           return
         }
         if (move.effect) {
-          setMessage(runEffect(true, move))
+          const line = runEffect(true, move)
+          setMessage(line)
+          if (line.includes("rose")) sfx.statUp()
+          else if (line.includes("fell")) sfx.statDown()
           setFoeAnim({ cls: "pkmn-wobble", t: Date.now() })
           after(1100, foeTurn)
           return
@@ -671,6 +705,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         const { dealt, eff } = damage(player, foe, move)
         const hp = Math.max(0, foe.hp - dealt)
         setFoe((f) => ({ ...f, hp }))
+        if (eff > 1) sfx.hitSuper()
+        else if (eff < 1) sfx.hitWeak()
+        else sfx.hit()
         setFoeAnim({ cls: "pkmn-blink", t: Date.now() })
         setHitFx({ side: "foe", t: Date.now() })
         if (eff > 1) setScreenAnim({ cls: "pkmn-shake", t: Date.now() })
@@ -695,6 +732,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
             setFoes((t) => t.map((f, i) => (i === next ? { ...f, atkStage: 0, defStage: 0 } : f)))
             setFoeActive(next)
             setMessage(`Enemy sent out ${foesRef.current[next].name}!`)
+            setFoeAnim({ cls: "pkmn-sendin", t: Date.now() })
+            sfx.sendOut()
             cry(foesRef.current[next].species.cry)
             after(900, () => {
               setCursor(0)
@@ -742,6 +781,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setTeam((t) => t.map((f, i) => (i === index ? { ...f, atkStage: 0, defStage: 0 } : f)))
       setActive(index)
       setMessage(`Go! ${team[index].name}!`)
+      setPlayerAnim({ cls: "pkmn-sendin", t: Date.now() })
+      sfx.sendOut()
       cry(team[index].species.cry)
       after(1000, foeTurn)
     },
@@ -761,6 +802,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
       setTeam((t) => t.map((f, i) => (i === index ? { ...f, atkStage: 0, defStage: 0 } : f)))
       setActive(index)
       setMessage(`Go! ${team[index].name}!`)
+      setPlayerAnim({ cls: "pkmn-sendin", t: Date.now() })
+      sfx.sendOut()
       cry(team[index].species.cry)
       after(1000, () => {
         setCursor(0)
@@ -903,6 +946,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           .pkmn-burst-inner { animation: pkmn-burst 0.45s ease-out forwards; }
           @keyframes pkmn-burst { from { transform: scale(0.2); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
           .pkmn-flash { animation: pkmn-flash 0.4s steps(1) forwards; }
+          .pkmn-sendin { animation: pkmn-sendin 0.4s ease-out; }
+          @keyframes pkmn-sendin { from { transform: translateY(8px) scale(0.1); opacity: 0.4; } }
           @keyframes pkmn-flash { 0% { opacity: 0.9; } 25% { opacity: 0; } 50% { opacity: 0.9; } 75%, 100% { opacity: 0; } }
         `}</style>
         <svg
@@ -988,7 +1033,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               </Label>
               <Box x={86} y={104} w={74} h={40} />
               {MENU.map((m) => {
-                const cx = 94 + m.col * 34
+                const cx = 94 + m.col * 38
                 const cy = 120 + m.row * 14
                 return (
                   <g key={m.label}>
