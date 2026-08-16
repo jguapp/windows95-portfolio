@@ -99,12 +99,8 @@ type Cell = 0 | string
 /** A piece in play: its grid, its colour, and where its top-left corner sits. */
 type Tetromino = ReturnType<typeof randomTetromino>
 
-/** What an unplayed machine shows before anybody has filed a score. */
-const SEEDED_SCORES: ScoreEntry[] = [
-  { name: "WIN95", value: 5000 },
-  { name: "PLAYER", value: 3500 },
-  { name: "TETRIS", value: 2000 },
-]
+/** Nothing is seeded: the table holds only what visitors really scored. */
+const SEEDED_SCORES: ScoreEntry[] = []
 
 const createEmptyBoard = (): Cell[][] => Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0))
 

@@ -281,7 +281,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
               <div
                 key={i}
                 data-square={i}
-                data-disc={square === 0 ? undefined : square === 1 ? "black" : "white"}
+                data-disc={square === 0 ? undefined : square === 1 ? "blue" : "red"}
                 onClick={() => click(i)}
                 className="relative flex items-center justify-center"
                 style={{
@@ -300,8 +300,8 @@ export default function Reversi({ onReturn }: ReversiProps) {
                       borderRadius: "50%",
                       background:
                         square === 1
-                          ? "radial-gradient(circle at 35% 30%, #555 0%, #000 70%)"
-                          : "radial-gradient(circle at 35% 30%, #fff 0%, #c8c8c8 70%)",
+                          ? "radial-gradient(circle at 35% 30%, #6c8cff 0%, #0000c8 70%)"
+                          : "radial-gradient(circle at 35% 30%, #ff8c7a 0%, #c80000 70%)",
                       border: "1px solid #00000060",
                     }}
                   />

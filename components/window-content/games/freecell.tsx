@@ -3,6 +3,7 @@
 import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { play } from "@/lib/sound"
+import FitBoard from "./fit-board"
 import { CARD_H, CardSlot, PlayingCard, SUITS, SUIT_SYMBOL, type Card, type Suit, cardId, isRed } from "./cards"
 
 /**
@@ -419,7 +420,9 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
       </div>
 
       {/* Table */}
-      <div className="relative flex-1 overflow-auto bg-[#008000] p-3" onClick={() => setMenu(null)}>
+      <div className="relative flex-1 overflow-hidden bg-[#008000]" onClick={() => setMenu(null)}>
+        <FitBoard w={660} h={540}>
+        <div className="relative h-full w-full p-3">
         {/* Free cells and foundations */}
         <div className="mb-4 flex items-start justify-between" style={{ maxWidth: COLUMNS * (CARD_W + 10) }}>
           <div className="flex gap-[6px]">
@@ -537,6 +540,8 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
             </div>
           </div>
         )}
+        </div>
+        </FitBoard>
       </div>
 
       {/* Status bar */}

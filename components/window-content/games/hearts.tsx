@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { play } from "@/lib/sound"
+import FitBoard from "./fit-board"
 import { PlayingCard, orderedDeck, shuffled, type Card, type Suit } from "./cards"
 
 /**
@@ -386,40 +387,47 @@ export default function Hearts({ onReturn }: HeartsProps) {
       </div>
 
       {/* Table */}
-      <div className="relative flex-1 overflow-hidden bg-[#008000] p-2" onClick={() => setMenu(null)}>
-        {/* Opponents */}
-        {([1, 2, 3] as Seat[]).map((seat) => (
-          <div
-            key={seat}
-            data-seat={seat}
-            className="absolute text-white"
-            style={
-              seat === 1
-                ? { left: 8, top: 8 }
-                : seat === 2
-                  ? { left: "50%", top: 8, transform: "translateX(-50%)" }
-                  : { right: 8, top: 8 }
-            }
-          >
-            <div className="mb-1 text-center font-bold">
-              {SEATS[seat]} &mdash; {hands[seat].length} cards
+      <div className="relative flex-1 overflow-hidden bg-[#008000]" onClick={() => setMenu(null)}>
+        <FitBoard w={660} h={480}>
+        <div className="relative h-full w-full p-2">
+        {/*
+          The table as the original set it: West stacked down the left edge,
+          North across the top, East down the right, full-size cards
+          overlapped to slivers.
+        */}
+        {([1, 2, 3] as Seat[]).map((seat) => {
+          const vertical = seat !== 2
+          return (
+            <div
+              key={seat}
+              data-seat={seat}
+              className="absolute text-white"
+              style={
+                seat === 1
+                  ? { left: 6, top: 48 }
+                  : seat === 2
+                    ? { left: "50%", top: 4, transform: "translateX(-50%)" }
+                    : { right: 6, top: 48 }
+              }
+            >
+              <div className="mb-1 text-center font-bold">{SEATS[seat]}</div>
+              <div className={vertical ? "flex flex-col items-center" : "flex justify-center"}>
+                {hands[seat].map((card, i) => (
+                  <PlayingCard
+                    key={card.id}
+                    card={card}
+                    faceUp={false}
+                    width={52}
+                    style={vertical ? { marginTop: i === 0 ? 0 : -52 } : { marginLeft: i === 0 ? 0 : -38 }}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex justify-center" style={{ height: 26 }}>
-              {hands[seat].slice(0, 8).map((card, i) => (
-                <PlayingCard
-                  key={card.id}
-                  card={card}
-                  faceUp={false}
-                  width={30}
-                  style={{ marginLeft: i === 0 ? 0 : -20 }}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+          )
+        })}
 
         {/* The trick in the middle */}
-        <div className="absolute" style={{ inset: "90px 120px 150px 120px" }} data-trick>
+        <div className="absolute" style={{ inset: "110px 150px 130px 150px" }} data-trick>
           {trick.map((p) => (
             <div key={p.card.id} className="absolute" style={seatStyle[p.seat]}>
               <PlayingCard card={p.card} width={CARD_W} />
@@ -506,6 +514,8 @@ export default function Hearts({ onReturn }: HeartsProps) {
             </div>
           </div>
         )}
+        </div>
+        </FitBoard>
       </div>
 
       {/* Status bar */}

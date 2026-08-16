@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { createSound, type SynthAudio } from "@/lib/sound"
+import FitBoard from "./fit-board"
 import CardCascade from "./card-cascade"
 
 interface SolitaireProps {
@@ -789,7 +790,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
 
       {/* Game area */}
       <div
-        className="flex-1 p-4 relative bg-green-700 overflow-auto"
+        className="flex-1 relative bg-green-700 overflow-hidden"
         onMouseMove={handleMouseMove}
         ref={gameAreaRef}
         data-table
@@ -800,6 +801,8 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
           sendAllHome()
         }}
       >
+        <FitBoard w={700} h={560}>
+        <div className="relative h-full w-full p-4">
         {/* Top row: Stock, Waste, and Foundations, spread as the original
             spread them. The spacer sits where the seventh station would be. */}
         <div className="mb-6 flex w-full max-w-[980px] justify-between gap-2 mx-auto">
@@ -953,6 +956,8 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             ))}
           </div>
         )}
+        </div>
+        </FitBoard>
       </div>
 
       {/* Game status and controls */}
