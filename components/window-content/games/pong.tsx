@@ -99,6 +99,10 @@ export default function Pong({ onReturn }: PongProps) {
   const pausedRef = useRef(paused)
   const gameOverRef = useRef(gameOver)
   const difficultyRef = useRef(difficulty)
+  /** Two-player: the right paddle belongs to W and S instead of the bot. */
+  const [twoPlayer, setTwoPlayer] = useState(false)
+  const twoPlayerRef = useRef(false)
+  const keysRef = useRef({ up: false, down: false })
 
   // Initialize sounds
   useEffect(() => {
@@ -384,7 +388,9 @@ export default function Pong({ onReturn }: PongProps) {
             setGameOver(true)
             gameOverRef.current = true
             setWinner("player")
-            setShowNameInput(true)
+            // The high-score table is a record against the machine; a win
+            // over the person beside you goes unrecorded, as at the arcade.
+            if (!twoPlayerRef.current) setShowNameInput(true)
           }
 
           return newScore
@@ -402,6 +408,15 @@ export default function Pong({ onReturn }: PongProps) {
         trailRef.current = []
       }
 
+      if (twoPlayerRef.current) {
+        // Player 2 drives the right paddle on held W and S.
+        const speed = 300
+        if (keysRef.current.up) computerPosRef.current -= speed * dt
+        if (keysRef.current.down) computerPosRef.current += speed * dt
+        if (computerPosRef.current < 0) computerPosRef.current = 0
+        else if (computerPosRef.current > canvas.height - PADDLE_HEIGHT)
+          computerPosRef.current = canvas.height - PADDLE_HEIGHT
+      } else {
       // The computer re-reads the ball on a delay rather than tracking it
       // continuously, so it can be wrong-footed. Difficulty sets both how
       // often it looks and how fast it can move.
@@ -466,6 +481,7 @@ export default function Pong({ onReturn }: PongProps) {
       } else if (computerPosRef.current > canvas.height - PADDLE_HEIGHT) {
         computerPosRef.current = canvas.height - PADDLE_HEIGHT
       }
+      }
     }
 
     // Draw center line
@@ -527,7 +543,13 @@ export default function Pong({ onReturn }: PongProps) {
       ctx.font = "24px 'Press Start 2P'"
       ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 30)
       ctx.fillText(
-        winner === "player" ? "YOU WIN!" : "COMPUTER WINS!",
+        twoPlayerRef.current
+          ? winner === "player"
+            ? "PLAYER 1 WINS!"
+            : "PLAYER 2 WINS!"
+          : winner === "player"
+            ? "YOU WIN!"
+            : "COMPUTER WINS!",
         canvas.width / 2,
         canvas.height / 2,
       )
@@ -601,18 +623,26 @@ export default function Pong({ onReturn }: PongProps) {
     }
   }, [])
 
-  // Handle keyboard controls
+  // Handle keyboard controls. W and S are held keys, so both edges matter.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "p" || e.key === "P") {
         togglePause()
       }
+      if (e.key === "w" || e.key === "W") keysRef.current.up = true
+      if (e.key === "s" || e.key === "S") keysRef.current.down = true
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "w" || e.key === "W") keysRef.current.up = false
+      if (e.key === "s" || e.key === "S") keysRef.current.down = false
     }
 
     window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
     }
   }, [])
 
@@ -644,19 +674,28 @@ export default function Pong({ onReturn }: PongProps) {
       action: toggleSound,
     },
     {
+      label: `TWO PLAYER: ${twoPlayer ? "ON" : "OFF"}`,
+      action: () => {
+        const next = !twoPlayer
+        setTwoPlayer(next)
+        twoPlayerRef.current = next
+        initGame()
+      },
+    },
+    {
       label: "EASY",
       action: () => setGameDifficulty("easy"),
-      disabled: difficulty === "easy" && gameStarted && !gameOver,
+      disabled: twoPlayer || (difficulty === "easy" && gameStarted && !gameOver),
     },
     {
       label: "MEDIUM",
       action: () => setGameDifficulty("medium"),
-      disabled: difficulty === "medium" && gameStarted && !gameOver,
+      disabled: twoPlayer || (difficulty === "medium" && gameStarted && !gameOver),
     },
     {
       label: "HARD",
       action: () => setGameDifficulty("hard"),
-      disabled: difficulty === "hard" && gameStarted && !gameOver,
+      disabled: twoPlayer || (difficulty === "hard" && gameStarted && !gameOver),
     },
   ]
 
@@ -740,7 +779,11 @@ export default function Pong({ onReturn }: PongProps) {
                 onClick={initGame}
                 className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-6 py-1 active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
               >
-                {gameOver ? (winner === "player" ? "You Win!  Play again" : "Computer Wins!  Play again") : "New Game"}
+                {gameOver
+                  ? winner === "player"
+                    ? `${twoPlayer ? "Player 1 Wins!" : "You Win!"}  Play again`
+                    : `${twoPlayer ? "Player 2 Wins!" : "Computer Wins!"}  Play again`
+                  : "New Game"}
               </button>
             ) : (
               <div className="bg-[#c0c0c0] px-4 py-1 border border-[#5a5a5a] border-r-white border-b-white">
@@ -757,7 +800,8 @@ export default function Pong({ onReturn }: PongProps) {
           <h3 className="text-sm font-bold mb-2">How to Play:</h3>
           <ul className="text-xs space-y-1 list-disc pl-5">
             <li>Move your mouse up and down to control your paddle (left side)</li>
-            <li>Try to hit the ball past the computer's paddle</li>
+            <li>Try to hit the ball past the {twoPlayer ? "other player's" : "computer's"} paddle</li>
+            <li>Two Player in the Options menu hands the right paddle to W and S</li>
             <li>First to {WINNING_SCORE} points wins!</li>
             <li>Press P to pause the game</li>
           </ul>
@@ -787,6 +831,7 @@ export default function Pong({ onReturn }: PongProps) {
                   <li>First player to reach {WINNING_SCORE} points wins the game.</li>
                   <li>You can pause the game at any time by pressing the P key or clicking the Pause button.</li>
                   <li>Adjust difficulty in the Options menu to change the computer's paddle speed.</li>
+                  <li>Turn on Two Player in the Options menu and a second player drives the right paddle with W and S.</li>
                 </ol>
               </div>
               <div className="flex justify-center">

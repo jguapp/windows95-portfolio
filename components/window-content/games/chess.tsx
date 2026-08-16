@@ -115,6 +115,17 @@ export default function Chess({ onReturn }: ChessProps) {
    * what the reply would cost it, so it stops hanging pieces.
    */
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
+  /** The game's own sound switch. A ref backs it so stale closures still obey. */
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
+  const snd: typeof play = (...args) => {
+    if (soundOnRef.current) play(...args)
+  }
+  const toggleSound = () =>
+    setSoundOn((v) => {
+      soundOnRef.current = !v
+      return !v
+    })
 
   // Board themes
   const themes: BoardTheme[] = [
@@ -205,17 +216,17 @@ export default function Chess({ onReturn }: ChessProps) {
     gameOver?: boolean
     opponent?: boolean
   }) => {
-    if (o.gameOver) return play("chessGameEnd")
-    if (o.check) return play("chessCheck")
-    if (o.promoted) return play("chessPromote")
-    if (o.castled) return play("chessCastle")
-    if (o.captured) return play("chessCapture")
-    play(o.opponent ? "chessMoveOpponent" : "chessMove")
+    if (o.gameOver) return snd("chessGameEnd")
+    if (o.check) return snd("chessCheck")
+    if (o.promoted) return snd("chessPromote")
+    if (o.castled) return snd("chessCastle")
+    if (o.captured) return snd("chessCapture")
+    snd(o.opponent ? "chessMoveOpponent" : "chessMove")
   }
 
   // Start a new game with selected options
   const startGame = (mode: GameMode, color: PieceColor) => {
-    play("chessGameStart")
+    snd("chessGameStart")
     setGameMode(mode)
     setPlayerColor(color)
     setBoardFlipped(color === "black")
@@ -1343,6 +1354,7 @@ export default function Chess({ onReturn }: ChessProps) {
               "Options",
               [
                 { label: "Theme...", action: () => setShowThemeSelector(true) },
+                { label: `${soundOn ? "✓ " : "   "}Sound`, action: toggleSound },
                 ...(["easy", "medium", "hard"] as const).map((level) => ({
                   label: `${difficulty === level ? "\u2713 " : "\u00a0\u00a0 "}${
                     level === "easy" ? "Easy" : level === "medium" ? "Medium" : "Hard"

@@ -94,7 +94,6 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
   }, [])
   const [playerName, setPlayerName] = useState("")
   const [showNameInput, setShowNameInput] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   /** Open menu, and whether the mouse is held down over the board. */
   const [menu, setMenu] = useState<string | null>(null)
   const [pressing, setPressing] = useState(false)
@@ -200,7 +199,6 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
     setShowHelp(false)
     setShowHighScores(false)
     setShowNameInput(false)
-    setShowSettings(false)
     setShowCustom(false)
     setHovered(null)
   }, [gridSize])
@@ -592,6 +590,7 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
       },
       { label: "Marks (?)", action: () => setMarks((m) => !m), checked: marks, sep: true },
       { label: "Flowers", action: () => setFlowers((f) => !f), checked: flowers },
+      { label: "Sound", action: toggleSound, checked: soundEnabled },
       { label: "Best Times...", action: () => setShowHighScores(true) },
       { label: "Exit", action: onReturn, sep: true },
     ],
@@ -1017,56 +1016,6 @@ export default function Minesweeper({ onReturn }: MinesweeperProps) {
         </div>
       )}
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-200 p-4 border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 max-w-md">
-            <div className="flex justify-between items-center mb-4 border-b-2 border-gray-400 pb-2">
-              <h2 className="text-xl font-bold">Settings</h2>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-6 h-6 flex items-center justify-center border-2 border-t-white border-l-white border-r-gray-600 border-b-gray-600 bg-gray-200 hover:bg-gray-300 active:border-inset"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <div className="text-black text-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <span>Sound Effects:</span>
-                <button onClick={toggleSound} className="win95-button">
-                  {soundEnabled ? "On" : "Off"}
-                </button>
-              </div>
-              <div className="border-t border-gray-400 pt-4">
-                <p className="font-bold mb-2">Difficulty:</p>
-                <div className="flex flex-col space-y-2">
-                  <button
-                    onClick={() => setGameDifficulty("easy")}
-                    className={`win95-button text-left ${difficulty === "easy" ? "border-inset bg-gray-300" : ""}`}
-                  >
-                    Easy (9x9, 10 mines)
-                  </button>
-                  <button
-                    onClick={() => setGameDifficulty("medium")}
-                    className={`win95-button text-left ${difficulty === "medium" ? "border-inset bg-gray-300" : ""}`}
-                  >
-                    Medium (16x16, 40 mines)
-                  </button>
-                  <button
-                    onClick={() => setGameDifficulty("hard")}
-                    className={`win95-button text-left ${difficulty === "hard" ? "border-inset bg-gray-300" : ""}`}
-                  >
-                    Hard (16x30, 99 mines)
-                  </button>
-                </div>
-              </div>
-            </div>
-            <button className="mt-4 win95-button" onClick={() => setShowSettings(false)}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Confirmation Modal */}
     </div>

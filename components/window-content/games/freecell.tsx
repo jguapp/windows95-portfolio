@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { play } from "@/lib/sound"
 import FitBoard from "./fit-board"
 import { CARD_H, CardSlot, PlayingCard, SUITS, SUIT_SYMBOL, type Card, type Suit, cardId, isRed } from "./cards"
@@ -203,6 +203,12 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
   const [won, setWon] = useState(false)
   const [stats, setStats] = useState<Stats>(EMPTY_STATS)
   const [showStats, setShowStats] = useState(false)
+  /** The game's own sound switch. A ref backs it so stale closures obey. */
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
+  const snd: typeof play = (...args) => {
+    if (soundOnRef.current) play(...args)
+  }
 
   // Stats come off the client after mount; reading during render would not
   // match the server HTML.
@@ -220,7 +226,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     setWon(false)
     setHistory([])
     setStatus(`Game #${clamped}`)
-    play("cardDeal")
+    snd("cardDeal")
   }
 
   // Deal a game on first mount.
@@ -235,7 +241,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
       setWon(true)
       setStatus(`You won game #${gameNumber} in ${moves} moves.`)
       setStats(recordResult(true))
-      play("win")
+      snd("win")
     }
   }, [won52, won, gameNumber, moves])
 
@@ -251,7 +257,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     setBoard(next)
     setMoves((m) => m + 1)
     setSelected(null)
-    play(sound === "foundation" ? "cardFlip" : "cardDeal")
+    snd(sound === "foundation" ? "cardFlip" : "cardDeal")
   }
 
   const clone = (b: Board): Board => ({
@@ -338,7 +344,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     const capacity = maxMove(board, target.length === 0)
     if (take > capacity) {
       setStatus(`Not enough free cells to move ${take} cards. You can move ${capacity}.`)
-      play("lose")
+      snd("lose")
       return false
     }
 
@@ -358,7 +364,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
       if (!card) return
       if (spot.zone === "foundation") return
       setSelected(spot)
-      play("select")
+      snd("select")
       return
     }
 
@@ -428,7 +434,7 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
     setBoard(working)
     setMoves((m) => m + placed)
     setSelected(null)
-    play("cardFlip")
+    snd("cardFlip")
   }
 
   const menus: Record<string, { label: string; action: () => void }[]> = {
@@ -437,6 +443,14 @@ export default function FreeCell({ onReturn }: FreeCellProps) {
       { label: "Restart Game", action: () => deal(gameNumber) },
       { label: "Select Game...", action: () => { setNumberInput(String(gameNumber)); setAskNumber(true) } },
       { label: "Statistics...", action: () => setShowStats(true) },
+      {
+        label: `Sound: ${soundOn ? "On" : "Off"}`,
+        action: () =>
+          setSoundOn((v) => {
+            soundOnRef.current = !v
+            return !v
+          }),
+      },
       { label: "Undo", action: undo },
       { label: "Move All Home", action: autoplay },
       { label: "Exit", action: onReturn },

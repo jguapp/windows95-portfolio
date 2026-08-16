@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { play } from "@/lib/sound"
 
 /**
@@ -132,6 +132,12 @@ export default function Reversi({ onReturn }: ReversiProps) {
   const [showHints, setShowHints] = useState(true)
   const [flipping, setFlipping] = useState<Set<number>>(new Set())
   const [lastPlaced, setLastPlaced] = useState<number | null>(null)
+  /** The game's own sound switch. A ref backs it so memoised closures obey. */
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
+  const snd: typeof play = (...args) => {
+    if (soundOnRef.current) play(...args)
+  }
 
   const moves = useMemo(() => legalMoves(board, turn), [board, turn])
   const [black, white] = count(board)
@@ -143,7 +149,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
     setLastPlaced(null)
     setFlipping(new Set())
     setStatus("Black to move.")
-    play("select")
+    snd("select")
   }, [])
 
   const place = useCallback(
@@ -159,7 +165,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
       setLastPlaced(square)
       setFlipping(new Set(flips))
       setTurn(other(player))
-      play("cardFlip")
+      snd("cardFlip")
       window.setTimeout(() => setFlipping(new Set()), 260)
       return true
     },
@@ -178,7 +184,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
       const [b, w] = count(board)
       setOver(true)
       setStatus(b === w ? `A draw at ${b} each.` : b > w ? `Black wins, ${b} to ${w}.` : `White wins, ${w} to ${b}.`)
-      play(b > w ? "win" : "lose")
+      snd(b > w ? "win" : "lose")
       return
     }
 
@@ -201,7 +207,7 @@ export default function Reversi({ onReturn }: ReversiProps) {
     if (over || turn !== 1) return
     if (!moves.has(square)) {
       setStatus("That square would not turn anything over.")
-      play("lose")
+      snd("lose")
       return
     }
     place(square, 1)
@@ -212,7 +218,18 @@ export default function Reversi({ onReturn }: ReversiProps) {
       { label: "New Game", action: newGame },
       { label: "Exit", action: onReturn },
     ],
-    Options: [{ label: "Show Legal Moves", action: () => setShowHints((v) => !v), checked: showHints }],
+    Options: [
+      { label: "Show Legal Moves", action: () => setShowHints((v) => !v), checked: showHints },
+      {
+        label: "Sound",
+        action: () =>
+          setSoundOn((v) => {
+            soundOnRef.current = !v
+            return !v
+          }),
+        checked: soundOn,
+      },
+    ],
     Help: [
       {
         label: "About Reversi",

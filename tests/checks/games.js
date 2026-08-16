@@ -231,6 +231,32 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     ok("#84 one row per hand plus the total", /Hand/.test(sheet) && /Total/.test(sheet) && /JOEL/.test(sheet), sheet.slice(0, 110))
   }
 
+  // ---- Pong: the two-player switch -----------------------------------------
+  await menuClick("Game", "Exit")
+  await p.waitForTimeout(400)
+  await p.getByText("Pong", { exact: true }).first().dblclick()
+  await p.waitForSelector("[data-pong-start]", { timeout: 15000 })
+  await p.getByRole("button", { name: "Options", exact: true }).click()
+  await p.waitForTimeout(150)
+  ok("#89 the Options menu offers Two Player", (await p.getByRole("button", { name: "TWO PLAYER: OFF" }).count()) === 1)
+  await p.getByRole("button", { name: "TWO PLAYER: OFF" }).click()
+  await p.waitForTimeout(300)
+  await p.getByRole("button", { name: "Options", exact: true }).click()
+  await p.waitForTimeout(150)
+  const twoOn = (await p.getByRole("button", { name: "TWO PLAYER: ON" }).count()) === 1
+  const diffDead = await p.getByRole("button", { name: "EASY" }).isDisabled().catch(() => false)
+  ok("#89 toggling arms it and parks the difficulties", twoOn && diffDead)
+  await p.keyboard.press("Escape")
+  await p.locator("[data-pong-start]").click()
+  await p.waitForTimeout(400)
+  await p.keyboard.down("w")
+  await p.waitForTimeout(400)
+  await p.keyboard.up("w")
+  await p.keyboard.down("s")
+  await p.waitForTimeout(200)
+  await p.keyboard.up("s")
+  ok("#89 W and S drive without incident", errors.length === 0)
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()

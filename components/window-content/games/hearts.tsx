@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { play } from "@/lib/sound"
 import FitBoard from "./fit-board"
 import { PlayingCard, orderedDeck, shuffled, type Card, type Suit } from "./cards"
@@ -157,6 +157,12 @@ export default function Hearts({ onReturn }: HeartsProps) {
   const [history, setHistory] = useState<number[][]>([])
   /** Who shot the moon last hand, for the celebration. Null when nobody. */
   const [lastShooter, setLastShooter] = useState<number | null>(null)
+  /** The game's own sound switch. A ref backs it so memoised closures obey. */
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
+  const snd: typeof play = (...args) => {
+    if (soundOnRef.current) play(...args)
+  }
 
   // The name survives visits; only a visitor with none stored is asked.
   useEffect(() => {
@@ -202,7 +208,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
         ? "No passing this hand."
         : `Choose three cards to pass ${PASS_DIRECTION[nextRound % 4]}.`,
     )
-    play("cardDeal")
+    snd("cardDeal")
   }, [])
 
   const newGame = useCallback(() => {
@@ -229,7 +235,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
       setHands((prev) => prev.map((h, i) => (i === seat ? h.filter((c) => c.id !== card.id) : h)))
       setTrick((prev) => [...prev, { seat, card }])
       if (isHeart(card)) setHeartsBroken(true)
-      play("cardFlip")
+      snd("cardFlip")
     },
     [],
   )
@@ -258,7 +264,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
       setFirstTrick(false)
       setTurn(winner)
       setStatus(`${names[winner]} took the trick${taken > 0 ? ` and ${taken} point${taken === 1 ? "" : "s"}` : ""}.`)
-      if (taken > 0) play("select")
+      if (taken > 0) snd("select")
     }, 900)
     return () => clearTimeout(timer)
     // names is display-only; a rename must not re-settle the trick.
@@ -285,13 +291,13 @@ export default function Hearts({ onReturn }: HeartsProps) {
         ? `${names[shooter]} shot the moon. Everyone else takes 26.`
         : `Hand over. ${gained.map((g, i) => `${names[i]} ${g}`).join(", ")}.`,
     )
-    play(shooter === 0 ? "win" : "levelUp")
+    snd(shooter === 0 ? "win" : "levelUp")
 
     if (Math.max(...next) >= TARGET) {
       const lowest = Math.min(...next)
       setPhase("gameOver")
       setStatus(`Game over. ${names[next.indexOf(lowest)]} wins with ${lowest}.`)
-      play(next.indexOf(lowest) === 0 ? "win" : "lose")
+      snd(next.indexOf(lowest) === 0 ? "win" : "lose")
     }
     // names is display-only here; re-running on a rename would double-score.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -302,7 +308,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
     setChosen((prev) =>
       prev.includes(card.id) ? prev.filter((id) => id !== card.id) : prev.length >= 3 ? prev : [...prev, card.id],
     )
-    play("click")
+    snd("click")
   }
 
   const confirmPass = () => {
@@ -329,7 +335,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
     setChosen([])
     setPhase("playing")
     setStatus("Cards passed. The two of clubs leads.")
-    play("cardDeal")
+    snd("cardDeal")
   }
 
   const clickCard = (card: Card) => {
@@ -348,7 +354,7 @@ export default function Hearts({ onReturn }: HeartsProps) {
             ? `You must follow ${trick[0].card.suit}.`
             : "Hearts have not been broken yet.",
       )
-      play("lose")
+      snd("lose")
       return
     }
 
@@ -365,6 +371,14 @@ export default function Hearts({ onReturn }: HeartsProps) {
   const menus: Record<string, { label: string; action: () => void }[]> = {
     Game: [
       { label: "New Game", action: newGame },
+      {
+        label: `Sound: ${soundOn ? "On" : "Off"}`,
+        action: () =>
+          setSoundOn((v) => {
+            soundOnRef.current = !v
+            return !v
+          }),
+      },
       { label: "Exit", action: onReturn },
     ],
     Help: [

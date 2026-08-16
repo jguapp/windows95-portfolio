@@ -227,6 +227,17 @@ default and minimum size table in <code>window.tsx</code>; Calculator resizes it
 window when switching Standard and Scientific by dispatching
 <code>windowAction {action:"resize"}</code>, and is in the <code>NEVER_MAXIMIZE</code>
 set because the real one had no maximise button.</p>
+<h3>The games' options</h3>
+<p>Every game now carries its own sound switch in its menus. Solitaire scores
+Standard (with the original's 700000 divided by seconds time bonus) or Vegas ($52
+buy-in, $5 a card, shown in dollars), draws one or three, offers twelve card backs,
+and wins instantly on Alt+Shift+2. Minesweeper has the Custom Field dialog with the
+original's clamps, the Fastest Mine Sweepers table with Reset Scores, the xyzzy
+corner pixel, and a Flowers skin. FreeCell tracks wins, losses and streaks in a
+Statistics dialog, and answers Select Game with -1 or -2 by dealing the deck
+unshuffled, aces buried, in the spirit of the original's prank deals. Hearts asks
+your name once, points an arrow on the pass button, keeps a per-hand score sheet,
+and raises a moon for whoever shoots it. Pong seats a second player on W and S.</p>
 <h3>The FreeCell deal</h3>
 <p>Deals are numbered like the original because they use Microsoft's actual generator,
 a linear congruential generator: <code>seed = seed * 214013 + 2531011</code>, take
