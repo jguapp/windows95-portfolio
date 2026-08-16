@@ -132,6 +132,43 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await p.waitForTimeout(400)
   ok("#63 the disabled-session file was forgotten", (await p.locator("[data-find-hit]").count()) === 0)
 
+  // ---- #93 remainder: hourglass, F1 Help, the mixer, Documents -------------
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "calculator" } })))
+  const busyNow = await p.evaluate(() => document.body.classList.contains("win95-busy"))
+  await p.waitForTimeout(900)
+  const busyAfter = await p.evaluate(() => document.body.classList.contains("win95-busy"))
+  ok("#11 launches show the hourglass and clear it", busyNow && !busyAfter)
+
+  await p.keyboard.press("F1")
+  await p.waitForTimeout(300)
+  ok("#13 F1 opens Windows Help", (await p.locator("[data-help-window]").count()) === 1)
+  await p.locator("[data-help-window]").getByRole("button", { name: "Close", exact: true }).click()
+  await p.waitForTimeout(200)
+
+  await p.locator("#sound-button").dblclick()
+  await p.waitForTimeout(300)
+  ok("#27 double-click opens the four-channel mixer", (await p.locator("[data-mixer-channel]").count()) === 4)
+  // The open windows cover the desktop, so dismiss through the panel's own
+  // close button rather than hunting for bare desktop.
+  await p.locator("[data-mixer-panel]").getByLabel("Close Volume Control").click()
+  await p.waitForTimeout(200)
+  ok("#27 closing puts it away", (await p.locator("[data-mixer-panel]").count()) === 0)
+
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "explorer" } })))
+  await p.waitForTimeout(700)
+  await p.locator("#window-explorer").getByText("My Documents", { exact: true }).last().dblclick()
+  await p.waitForTimeout(500)
+  await p.locator("#window-explorer").getByText("Readme.txt", { exact: true }).last().dblclick()
+  await p.waitForTimeout(600)
+  await p.locator("#start-button").click()
+  await p.waitForTimeout(400)
+  await p.locator("#start-menu li", { hasText: "ocuments" }).first().hover()
+  await p.waitForTimeout(800)
+  const docsMenu = await p.locator("[data-documents-menu]").innerText().catch(() => "")
+  ok("#33 opened documents reach the Documents menu", docsMenu.includes("Readme.txt"), docsMenu.replace(/\n/g, ", ").slice(0, 80))
+  ok("#33 programs stay out of it", !docsMenu.includes(".exe"))
+  await p.keyboard.press("Escape")
+
   ok("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200))
   await b.close()
 })().catch((e) => {

@@ -12,6 +12,7 @@ import KonamiCodeDetector from "@/components/konami-code-detector"
 import PokemonBattle from "@/components/pokemon-battle"
 import RunDialog from "@/components/run-dialog"
 import Clippy from "@/components/clippy"
+import HelpWindow from "@/components/help-window"
 import dynamic from "next/dynamic"
 
 /*
@@ -34,6 +35,8 @@ export default function Home() {
   const [isBooting, setIsBooting] = useState(true)
   const [showPokemonBattle, setShowPokemonBattle] = useState(false)
   const [showRun, setShowRun] = useState(false)
+  /** Windows Help, opened by F1; the topic reads activeWindow at render. */
+  const [helpFor, setHelpFor] = useState<{ open: boolean } | null>(null)
   const [showWinamp, setShowWinamp] = useState(false)
   const [showShutdown, setShowShutdown] = useState(false)
   /** Ids of windows currently maximised, reported by the windows themselves. */
@@ -84,6 +87,10 @@ export default function Home() {
       }
       if (!openWindows.includes(id)) {
         setOpenWindows((prev) => [...prev, id])
+        // The hourglass a real launch earned. Brief, because the app "loads";
+        // restoring an already-open window never showed one.
+        document.body.classList.add("win95-busy")
+        window.setTimeout(() => document.body.classList.remove("win95-busy"), 700)
       }
       if (minimizedWindows.includes(id)) {
         setMinimizedWindows((prev) => prev.filter((winId) => winId !== id))
@@ -157,6 +164,12 @@ export default function Home() {
       if (e.key.toLowerCase() === "r" && e.ctrlKey && e.altKey && !e.metaKey) {
         e.preventDefault()
         setShowRun(true)
+      }
+      // F1 opens Windows Help on whatever is focused, stealing it from the
+      // browser's own help the way every 95 shortcut here must.
+      if (e.key === "F1") {
+        e.preventDefault()
+        setHelpFor({ open: true })
       }
     }
     const onRequest = () => setShowRun(true)
@@ -333,6 +346,9 @@ export default function Home() {
 
       {/* Pokemon Battle */}
       {showPokemonBattle && <PokemonBattle onClose={() => setShowPokemonBattle(false)} />}
+
+      {/* Windows Help, on F1, tuned to whatever was focused. */}
+      {helpFor?.open && <HelpWindow forWindow={activeWindow} onClose={() => setHelpFor(null)} />}
 
       {/* The Office Assistant: beside your windows, behind none of them. */}
       <Clippy activeWindow={activeWindow} hidden={maximizedWindows.size > 0} />

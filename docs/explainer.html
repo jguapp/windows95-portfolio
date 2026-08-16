@@ -203,17 +203,18 @@ follows what Windows would have done.</p>
 <tr><td><code>actions/visitors.ts</code>, <code>lib/visitors.ts</code></td><td>The two hit counters: unique visitors for Clippy's greeting, page views for the home page. Rate limited per IP; the IP is stored nowhere.</td></tr>
 <tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore, arrow-key navigation, persistence of created items.</td></tr>
 <tr><td><code>components/window.tsx</code></td><td>The window frame: drag, eight resize grips, minimise, maximise rules, per-app sizes, the id-to-content switch.</td></tr>
-<tr><td><code>components/taskbar.tsx</code></td><td>Start button, window buttons, quick launch, volume slider, single-click clock.</td></tr>
+<tr><td><code>components/taskbar.tsx</code></td><td>Start button, window buttons, quick launch, volume slider and the four-channel mixer on a double click, its own right-click menu, single-click clock.</td></tr>
 <tr><td><code>components/start-menu.tsx</code></td><td>The menu and its cascades, including Accessories.</td></tr>
 <tr><td><code>components/win95-dialog.tsx</code></td><td>Message boxes: queue, drawn glyphs, per-icon sounds, the bubbling-keydown guard.</td></tr>
 <tr><td><code>components/display-properties.tsx</code></td><td>Background, Appearance and Settings tabs, all of which apply.</td></tr>
+<tr><td><code>components/help-window.tsx</code></td><td>Windows Help on F1, with a topic per program.</td></tr>
 <tr><td><code>components/clippy.tsx</code></td><td>The assistant: contextual tips, dismissal for good.</td></tr>
 <tr><td><code>components/winamp.tsx</code></td><td>Webamp host plus the synthesised opening track.</td></tr>
 <tr><td><code>components/shutdown.tsx</code>, <code>run-dialog.tsx</code>, <code>date-time-properties.tsx</code>, <code>item-properties.tsx</code></td><td>The shell dialogs.</td></tr>
 <tr><td><code>components/window-switcher.tsx</code></td><td>The Alt+Q strip; page.tsx owns the key handling, this draws it.</td></tr>
 <tr><td><code>components/pokemon-battle.tsx</code>, <code>pokemon-roster.ts</code></td><td>The secret: a 6v6 Game Boy battle with CC0 sprites, synthesised cries, full-screen party and item menus, and computed back sprites.</td></tr>
 <tr><td><code>components/window-content/</code></td><td>One file per program: resume, about-me, retro-youtube, contact, gallery, guestbook, paint, notepad, ms-dos, calculator, explorer, recycle-bin, internet-explorer, patch-notes, find-files, sound-properties, stub-app, and <code>games/</code> with the eight games.</td></tr>
-<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin, adventure (the DOS text adventure's pure engine).</td></tr>
+<tr><td><code>lib/</code></td><td>filesystem (the fake C: drive), sound (the synthesiser), guestbook (Postgres), visitors (the counters), persistence (the remember-my-work switch), wallpapers and color-schemes (the shared Display Properties tables), rate-limit, resolution, use-narrow-screen, window-titles, high-scores, recycle-bin, adventure (the DOS text adventure's pure engine), recent-docs (what the Documents menu lists).</td></tr>
 <tr><td><code>public/images/</code></td><td>win95 icon tiles, wallpapers, gallery photographs, paint tool bitmaps.</td></tr>
 <tr><td><code>tests/checks/</code></td><td>Playwright behaviour checks, one file per area, with <code>run-all.js</code> as the runner behind <code>pnpm checks</code>. They expect a server on port 3000 and print PASS/FAIL lines.</td></tr>
 <tr><td><code>docs/explainer.html</code></td><td>This document.</td></tr>

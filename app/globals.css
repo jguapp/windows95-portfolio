@@ -1426,6 +1426,12 @@ h6 {
   animation: square-alert 180ms steps(1, end) 3;
 }
 
+/* The launch hourglass: everything waits while an app pretends to load. */
+body.win95-busy,
+body.win95-busy * {
+  cursor: wait !important;
+}
+
 /* Hearts: the moon a shooter earns, rising from the table's edge. */
 @keyframes moon-rise {
   from {

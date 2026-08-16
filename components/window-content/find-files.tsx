@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getRoot, subscribe, type FsDir } from "@/lib/filesystem"
+import { recordRecentDoc } from "@/lib/recent-docs"
 
 /**
  * Find: Files or Folders, searching the drive that actually exists.
@@ -171,6 +172,8 @@ export default function FindFiles() {
                   className="cursor-default hover:bg-[#000080] hover:text-white"
                   onDoubleClick={() => {
                     if (hit.opens) {
+                      // Opening a found document files it under Start > Documents.
+                      recordRecentDoc(hit.name, hit.opens)
                       window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: hit.opens } }))
                     } else {
                       window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "explorer" } }))

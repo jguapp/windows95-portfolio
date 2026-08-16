@@ -3,6 +3,7 @@
 import { useMemo, useState, useSyncExternalStore } from "react"
 import { type FsDir, type FsNode, displayPath, getRoot, iconFor, listDir, subscribe } from "@/lib/filesystem"
 import { messageBox } from "@/components/win95-dialog"
+import { recordRecentDoc } from "@/lib/recent-docs"
 
 /**
  * Windows Explorer over the virtual C:\ drive.
@@ -139,6 +140,8 @@ export default function Explorer() {
       return
     }
     if (node.opens) {
+      // Opening a document files it under Start > Documents.
+      recordRecentDoc(name, node.opens)
       window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: node.opens } }))
     }
   }

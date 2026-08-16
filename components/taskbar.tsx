@@ -30,6 +30,11 @@ export default function Taskbar({
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
   const [showVolume, setShowVolume] = useState(false)
+  /** The full Volume Control, on a tray double click. */
+  const [showMixer, setShowMixer] = useState(false)
+  /** The decorative channels: faders that move and mean it locally. */
+  const [mix, setMix] = useState({ wave: 80, midi: 70, cd: 65 })
+  const [mixMute, setMixMute] = useState({ wave: false, midi: false, cd: false })
   /** The QuickRes popup: a list of resolutions above the tray. */
   const [showRes, setShowRes] = useState(false)
   const [resolution, setResolutionState] = useState("native")
@@ -79,6 +84,17 @@ export default function Taskbar({
     window.addEventListener("mousedown", onDown)
     return () => window.removeEventListener("mousedown", onDown)
   }, [showVolume])
+
+  useEffect(() => {
+    if (!showMixer) return
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest("[data-mixer-panel]") || target.closest("#sound-button")) return
+      setShowMixer(false)
+    }
+    window.addEventListener("mousedown", onDown)
+    return () => window.removeEventListener("mousedown", onDown)
+  }, [showMixer])
 
   useEffect(() => {
     if (!showRes) return
@@ -303,6 +319,11 @@ export default function Taskbar({
           id="sound-button"
           aria-label="Volume"
           onClick={() => setShowVolume((v) => !v)}
+          onDoubleClick={() => {
+            // A double click opened the full Volume Control, as it did.
+            setShowVolume(false)
+            setShowMixer(true)
+          }}
           className="flex items-center justify-center w-[20px] h-full bg-[#c0c0c0]"
         >
           <img
@@ -346,6 +367,86 @@ export default function Taskbar({
               />
               Mute
             </label>
+          </div>
+        )}
+
+        {/*
+          The full Volume Control, on a double click. Only the first column
+          governs anything: the desktop has one output, but the mixer had
+          four faders and so does this one.
+        */}
+        {showMixer && (
+          <div
+            data-mixer-panel
+            className="win95-type absolute bottom-[36px] right-1 z-[1100] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] shadow-[2px_2px_6px_rgba(0,0,0,0.5)]"
+            style={{ fontFamily: '"MS Sans Serif", sans-serif' }}
+          >
+            <div className="flex items-center justify-between bg-[#000080] px-2 py-[2px]">
+              <span className="text-xs font-bold text-white">Volume Control</span>
+              <button
+                type="button"
+                aria-label="Close Volume Control"
+                onClick={() => setShowMixer(false)}
+                className="flex h-4 w-4 items-center justify-center bg-[#c0c0c0] text-black shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#000000]"
+              >
+                <span className="text-[10px] leading-none">×</span>
+              </button>
+            </div>
+            <div className="flex gap-1 p-2">
+              {(
+                [
+                  ["Volume Control", "master"],
+                  ["Wave", "wave"],
+                  ["MIDI", "midi"],
+                  ["CD Audio", "cd"],
+                ] as const
+              ).map(([label, ch]) => {
+                const isMaster = ch === "master"
+                const value = isMaster ? Math.round(volume * 100) : mix[ch]
+                const chMuted = isMaster ? muted : mixMute[ch]
+                return (
+                  <div
+                    key={ch}
+                    data-mixer-channel={ch}
+                    className="flex w-[74px] flex-col items-center border border-[#808080] p-1"
+                  >
+                    <div className="mb-1 h-[24px] text-center text-[11px] leading-tight">{label}</div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={value}
+                      aria-label={`${label} volume`}
+                      onChange={(e) => {
+                        const v = Number(e.target.value)
+                        if (isMaster) {
+                          setVolume(v / 100)
+                          if (muted) setMuted(false)
+                        } else {
+                          setMix((m) => ({ ...m, [ch]: v }))
+                        }
+                      }}
+                      style={{ writingMode: "vertical-lr", direction: "rtl", width: 24, height: 80 }}
+                    />
+                    <label className="mt-1 flex items-center gap-1 text-[11px]">
+                      <input
+                        type="checkbox"
+                        checked={chMuted}
+                        onChange={(e) => {
+                          if (isMaster) {
+                            setMuted(e.target.checked)
+                            if (!e.target.checked) play("click")
+                          } else {
+                            setMixMute((m) => ({ ...m, [ch]: e.target.checked }))
+                          }
+                        }}
+                      />
+                      Mute
+                    </label>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
         <button

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { messageBox } from "@/components/win95-dialog"
 import { STUB_PROGRAMS } from "@/components/window-content/stub-app"
+import { readRecentDocs, type RecentDoc } from "@/lib/recent-docs"
 
 interface StartMenuProps {
   onOpenWindow: (id: string) => void
@@ -18,6 +19,20 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
   /** The Accessories cascade inside Programs, tracked separately so leaving
    *  it does not close Programs itself. */
   const [accessoriesOpen, setAccessoriesOpen] = useState(false)
+  /** Documents you have really opened, read fresh each time the cascade shows. */
+  const [recentDocs, setRecentDocs] = useState<RecentDoc[]>([])
+
+  useEffect(() => {
+    if (activeSubmenu === "documents") setRecentDocs(readRecentDocs())
+  }, [activeSubmenu])
+
+  /** The icon a recent document wears, judged by its extension. */
+  const docIcon = (name: string) => {
+    const lower = name.toLowerCase()
+    if (lower.endsWith(".bmp")) return "/images/win95/paint-32.png"
+    if (lower.endsWith(".doc")) return "/images/win95/wordpad-32.png"
+    return "/images/win95/notepad-32.png"
+  }
 
   // The shutdown flow lives in its own component; the menu only asks for it.
   const handleShutDown = () => {
@@ -209,7 +224,23 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                 className="absolute left-full top-[36px] w-[200px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]"
                 onMouseLeave={handleMouseLeave}
               >
-                <ul className="list-none m-0 p-0">
+                <ul className="list-none m-0 p-0" data-documents-menu>
+                  {/* Documents actually opened, most recent first. */}
+                  {recentDocs.map((doc) => (
+                    <li
+                      key={doc.name}
+                      className="hover:bg-[#000080] hover:text-white"
+                      onClick={() => onOpenWindow(doc.opens)}
+                    >
+                      <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
+                        <img src={docIcon(doc.name)} alt="" className="mr-2 w-7 h-7" style={{ imageRendering: "pixelated" }} />
+                        <span className="text-sm truncate">{doc.name}</span>
+                      </div>
+                    </li>
+                  ))}
+                  {recentDocs.length > 0 && (
+                    <li aria-hidden className="mx-1 my-1 border-t border-t-[#808080] border-b border-b-white" />
+                  )}
                   <li className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow("notepad")}>
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img src="/images/win95/notepad-32.png" alt="Readme" className="mr-2 w-7 h-7" style={{ imageRendering: "pixelated" }} />
