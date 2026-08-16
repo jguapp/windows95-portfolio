@@ -66,6 +66,17 @@ const MOVE_STEP = 8
  * the palette; a dot is transparent.
  */
 import { FOE_TEAM, PLAYER_TEAM, SPECIES, SPRITE_SIZE, effectiveness, type Move, type Species } from "./pokemon-roster"
+import { getVolume, isMuted } from "@/lib/sound"
+
+/**
+ * Optional soundtrack, dropped into public/audio by name. When a file is
+ * absent the play() promise rejects, the handler swallows it, and the battle
+ * keeps its synthesised jingles: music is an upgrade, never a requirement.
+ */
+const MUSIC = {
+  battle: "/audio/10. Battle! (Trainer Battle).mp3",
+  victory: "/audio/12. Victory! (Trainer Battle).mp3",
+}
 
 /** A creature in play: its species, plus the health, PP and stages it has. */
 interface Fighter {
@@ -388,6 +399,31 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [cursor, setCursor] = useState(0)
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const musicRef = useRef<HTMLAudioElement | null>(null)
+
+  const playMusic = useCallback((src: string, loop: boolean) => {
+    musicRef.current?.pause()
+    /*
+      Probe before playing: an <audio> element pointed at a missing file logs
+      a red 404 in the console that no catch can silence, while a fetch that
+      answers 404 logs nothing. The folder ships empty, so the quiet path is
+      the common one.
+    */
+    fetch(encodeURI(src), { method: "HEAD" })
+      .then((res) => {
+        if (!res.ok) return
+        const audio = new Audio(encodeURI(src))
+        audio.loop = loop
+        audio.volume = isMuted() ? 0 : getVolume() * 0.6
+        musicRef.current = audio
+        audio.play().catch(() => {
+          // Autoplay refusals leave the synthesised jingles to carry it.
+        })
+      })
+      .catch(() => {
+        // Offline is the same story as absent.
+      })
+  }, [])
 
   /*
     The turn logic runs inside timer chains, where captured state goes stale
@@ -410,6 +446,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
   useEffect(() => {
     sfx.battleStart()
+    playMusic(MUSIC.battle, true)
     cry(SPECIES[FOE_TEAM[0]].cry)
     const opening = setTimeout(() => {
       setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
@@ -422,7 +459,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     }, 1300)
     timers.current.push(opening)
     const list = timers.current
-    return () => list.forEach(clearTimeout)
+    return () => {
+      list.forEach(clearTimeout)
+      musicRef.current?.pause()
+    }
+    // playMusic is stable; listing it would re-run the opening.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /** Damage under the type chart and both fighters' stages. */
@@ -485,7 +527,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         sfx.lose()
         const survivors = teamRef.current.some((f, i) => i !== activeRef.current && f.hp > 0)
         if (!survivors) {
-          after(900, () => setPhase("over"))
+          after(900, () => {
+            musicRef.current?.pause()
+            setPhase("over")
+          })
           return
         }
         // The player chooses the replacement; coming in after a faint is free.
@@ -550,6 +595,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
           if (next === -1) {
             after(900, () => {
               setMessage("You won the battle!")
+              playMusic(MUSIC.victory, false)
               setPhase("over")
             })
             return
@@ -663,6 +709,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const run = useCallback(() => {
     setPhase("message")
     setMessage("Got away safely!")
+    musicRef.current?.pause()
     sfx.menu()
     after(1100, onClose)
   }, [after, onClose])
