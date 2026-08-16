@@ -169,6 +169,90 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   ok("#33 programs stay out of it", !docsMenu.includes(".exe"))
   await p.keyboard.press("Escape")
 
+  // ---- #94: the clipboard, Copy of naming, Properties, wallpaper, appwiz ---
+  // Earlier steps leave the Start menu open and several windows stacked on
+  // the desk, and whichever is on top eats the clicks below. Clear the desk
+  // by id, then bring up a single Explorer.
+  const clearDesk = () =>
+    p.evaluate(() => {
+      for (const el of document.querySelectorAll("[id^='window-']")) {
+        const id = el.id.replace(/^window-/, "")
+        window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id } }))
+      }
+    })
+  await p.locator("#start-button").click()
+  await p.waitForTimeout(300)
+  await clearDesk()
+  await p.waitForTimeout(400)
+  await p.evaluate(() => {
+    window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "explorer" } }))
+  })
+  await p.waitForSelector("#window-explorer", { timeout: 15000 })
+  await p.waitForTimeout(400)
+  const ex = p.locator("#window-explorer")
+  await ex.locator("[data-status]").click()
+  await p.waitForTimeout(200)
+  // Land in My Documents, wherever the earlier steps left the view.
+  if (!(await ex.getByText("Readme.txt", { exact: true }).count())) {
+    await ex.getByText("My Documents", { exact: true }).last().dblclick()
+    await p.waitForTimeout(400)
+  }
+  const exMenu = async (bar, item) => {
+    await ex.getByRole("button", { name: bar, exact: true }).click()
+    await p.waitForTimeout(150)
+    await ex.locator(`[data-menu-item="${item}"]`).click()
+    await p.waitForTimeout(300)
+  }
+  await ex.getByText("Readme.txt", { exact: true }).last().click()
+  await exMenu("File", "Properties")
+  const sheet = (await p.locator("[data-file-properties]").innerText().catch(() => "")).replace(/\n/g, " ")
+  ok("#158 the Properties sheet reports the file", /Readme.txt Properties/.test(sheet) && /bytes/.test(sheet), sheet.slice(0, 70))
+  await p.locator("[data-file-properties]").getByRole("button", { name: "OK" }).click()
+  await p.waitForTimeout(200)
+
+  await ex.getByText("Readme.txt", { exact: true }).last().click()
+  await exMenu("Edit", "Copy")
+  await exMenu("Edit", "Paste")
+  ok("#43 a colliding paste becomes Copy of", /Copy of Readme.txt/.test(await ex.innerText()))
+  await exMenu("Edit", "Paste")
+  ok("#43 and then Copy (2) of", /Copy \(2\) of Readme.txt/.test(await ex.innerText()))
+
+  // Display Properties sits below the window layer, so clear the windows off
+  // the desk before driving it.
+  await clearDesk()
+  await p.waitForTimeout(300)
+  await p.evaluate(() =>
+    window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "background" } })),
+  )
+  await p.waitForTimeout(600)
+  const wpBefore = await p.locator("[data-wallpaper-select]").inputValue()
+  await p.locator("[data-wallpaper-random]").click()
+  await p.waitForTimeout(300)
+  ok("#23 Surprise Me changes the wallpaper", (await p.locator("[data-wallpaper-select]").inputValue()) !== wpBefore)
+  const tinyPng =
+    "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAHUlEQVQoU2NkYGD4z0AEYBxVSFNFjIyM/4nxNQBHbgMBQZFMbwAAAABJRU5ErkJggg=="
+  await p.locator("[data-wallpaper-file]").setInputFiles({
+    name: "mine.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(tinyPng, "base64"),
+  })
+  await p.waitForTimeout(600)
+  const bg = await p.evaluate(() => document.getElementById("desktop").style.backgroundImage)
+  ok("#24 an uploaded bitmap becomes the wallpaper", bg.includes("data:image/"))
+  await p.keyboard.press("Escape")
+  await p.getByRole("button", { name: "OK", exact: true }).last().click().catch(() => {})
+  await p.waitForTimeout(300)
+
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "add-remove" } })))
+  await p.waitForSelector("[data-add-remove]", { timeout: 15000 })
+  ok("#170 Add/Remove lists the installed software", (await p.locator("[data-program]").count()) === 12)
+  await p.locator('[data-program="Microsoft Paint"]').click()
+  await p.locator("[data-add-remove-btn]").click()
+  await p.waitForTimeout(400)
+  const refusal = await p.locator("[data-messagebox]").innerText().catch(() => "")
+  ok("#170 removal is politely refused", /cannot remove/i.test(refusal), refusal.replace(/\n/g, " ").slice(0, 60))
+  await p.locator("[data-ok]").click()
+
   ok("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200))
   await b.close()
 })().catch((e) => {

@@ -100,12 +100,20 @@ export default function Home() {
     [openWindows, minimizedWindows],
   )
 
-  // Handle closing a window
+  /*
+    Closing a window.
+
+    Functional updates throughout: the windowAction listener is registered
+    once and its closure would otherwise hold the first render's empty
+    window list, so closing one program closed every program.
+  */
   const handleCloseWindow = (id: string) => {
-    setOpenWindows(openWindows.filter((winId) => winId !== id))
-    if (activeWindow === id) {
-      setActiveWindow(openWindows.length > 1 ? openWindows[openWindows.length - 2] : null)
-    }
+    setOpenWindows((prev) => {
+      const next = prev.filter((winId) => winId !== id)
+      setActiveWindow((current) => (current === id ? next[next.length - 1] ?? null : current))
+      return next
+    })
+    setMinimizedWindows((prev) => prev.filter((winId) => winId !== id))
   }
 
   // Handle minimizing a window
@@ -127,15 +135,6 @@ export default function Home() {
     window.addEventListener("minimizeAllWindows", minimizeAll)
     return () => window.removeEventListener("minimizeAllWindows", minimizeAll)
   }, [openWindows])
-
-  // Handle maximizing a window
-  const handleMaximizeWindow = (id: string) => {
-    // Set the window as active when maximized
-    setActiveWindow(id)
-
-    // Dispatch a direct event to maximize the window
-    window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "maximize", id } }))
-  }
 
   // Toggle start menu
   const toggleStartMenu = () => {
@@ -267,18 +266,24 @@ export default function Home() {
   }, [showStartMenu])
 
 
-  // Add an event listener to handle window actions from the Resume component
+  /*
+    Window actions any program can ask for.
+
+    This used to answer only to id === "resume", which is why Explorer's
+    File > Close did nothing: it dispatched the same event under its own id
+    and nobody was listening. Any open window may ask now.
+
+    Maximize is deliberately absent: the Window component handles it on this
+    same event, and handling it here too would re-dispatch it forever.
+  */
   useEffect(() => {
     const handleWindowAction = (event: CustomEvent) => {
       const { action, id } = event.detail
-      if (id === "resume") {
-        if (action === "minimize") {
-          handleMinimizeWindow(id)
-        } else if (action === "maximize") {
-          handleMaximizeWindow(id)
-        } else if (action === "close") {
-          handleCloseWindow(id)
-        }
+      if (typeof id !== "string") return
+      if (action === "minimize") {
+        handleMinimizeWindow(id)
+      } else if (action === "close") {
+        handleCloseWindow(id)
       }
     }
 

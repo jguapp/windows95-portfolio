@@ -230,6 +230,61 @@ export function writeFile(path: string[], body: string): boolean {
   return true
 }
 
+/**
+ * The name a pasted item takes when its name is already used.
+ *
+ * Windows 95's rule: "Copy of Thing.txt", then "Copy (2) of Thing.txt", and
+ * so on, with the extension left alone. Comparison is case-insensitive
+ * because the drive is.
+ */
+export function copyName(dir: FsDir, name: string): string {
+  const taken = (candidate: string) =>
+    Object.keys(dir.children).some((k) => k.toLowerCase() === candidate.toLowerCase())
+  if (!taken(name)) return name
+  let candidate = `Copy of ${name}`
+  let n = 2
+  while (taken(candidate)) {
+    candidate = `Copy (${n}) of ${name}`
+    n += 1
+  }
+  return candidate
+}
+
+/** Removes an item, returning it so a cut can put it back down elsewhere. */
+export function removeItem(path: string[]): FsNode | null {
+  if (!path.length) return null
+  const parent = resolve(path.slice(0, -1))
+  if (!parent || parent.kind !== "dir") return null
+  const key = Object.keys(parent.children).find((k) => k.toLowerCase() === path[path.length - 1].toLowerCase())
+  if (!key) return null
+  const node = parent.children[key]
+  delete parent.children[key]
+  notify()
+  return node
+}
+
+/**
+ * Drops a node into a folder, renaming around a collision.
+ *
+ * Returns the name it landed under, or null when the destination is not a
+ * folder. The node is deep-copied so a paste twice cannot alias one object
+ * into two places, which is the bug every naive clipboard has.
+ */
+export function putItem(dirPath: string[], name: string, node: FsNode): string | null {
+  const dir = resolve(dirPath)
+  if (!dir || dir.kind !== "dir") return null
+  const key = copyName(dir, name)
+  dir.children[key] = structuredClone(node)
+  notify()
+  return key
+}
+
+/** True when `inner` sits inside `outer`, so a folder cannot be pasted into itself. */
+export function isInside(outer: string[], inner: string[]): boolean {
+  if (outer.length > inner.length) return false
+  return outer.every((seg, i) => seg.toLowerCase() === inner[i].toLowerCase())
+}
+
 /** Every text file on the drive, for Notepad's Open dialog. */
 export function textFiles(): { path: string[]; name: string }[] {
   const out: { path: string[]; name: string }[] = []

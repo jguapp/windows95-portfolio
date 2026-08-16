@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { WALLPAPERS } from "@/lib/wallpapers"
+import { CUSTOM_WALLPAPER_ID, CUSTOM_WALLPAPER_KEY, WALLPAPERS, readCustomWallpaper, wallpaperUrl } from "@/lib/wallpapers"
 import { COLOR_SCHEMES, applyScheme } from "@/lib/color-schemes"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import { CloseIcon } from "@/components/win95-controls"
@@ -36,14 +36,21 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
   const [isDragging, setIsDragging] = useState(false)
   const [dialogPosition, setDialogPosition] = useState({ x: 50, y: 50 })
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  /** A bitmap the visitor supplied, if there is one stored. */
+  const [customWallpaper, setCustomWallpaper] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Read after mount: localStorage during render would not match the server.
+  useEffect(() => setCustomWallpaper(readCustomWallpaper()), [])
 
   // Apply background image to desktop when it changes
   useEffect(() => {
     const desktop = document.getElementById("desktop")
     if (desktop && selectedBackground) {
-      const bgImage = backgroundImages.find((bg) => bg.id === selectedBackground)
-      if (bgImage) {
-        desktop.style.backgroundImage = `url(${bgImage.url})`
+      // wallpaperUrl resolves the shipped set and the visitor's own upload.
+      const url = wallpaperUrl(selectedBackground)
+      if (url) {
+        desktop.style.backgroundImage = `url(${url})`
         // Wallpaper tiles; Center and Stretch did not exist in 1995.
         desktop.style.backgroundSize = "auto"
         desktop.style.backgroundRepeat = "repeat"
@@ -128,9 +135,9 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
     // Apply background image
     const desktop = document.getElementById("desktop")
     if (desktop && selectedBackground) {
-      const bgImage = backgroundImages.find((bg) => bg.id === selectedBackground)
-      if (bgImage) {
-        desktop.style.backgroundImage = `url(${bgImage.url})`
+      const url = wallpaperUrl(selectedBackground)
+      if (url) {
+        desktop.style.backgroundImage = `url(${url})`
         // Wallpaper tiles; Center and Stretch did not exist in 1995.
         desktop.style.backgroundSize = "auto"
         desktop.style.backgroundRepeat = "repeat"
@@ -226,6 +233,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                 <div className="mb-3">
                   <label className="block text-xs mb-1">Wallpaper:</label>
                   <select
+                    data-wallpaper-select
                     className="w-full border border-[#808080] shadow-[inset_1px_1px_#000000] bg-white p-1 text-xs"
                     value={selectedBackground}
                     onChange={(e) => setSelectedBackground(e.target.value)}
@@ -235,7 +243,63 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                         {bg.name}
                       </option>
                     ))}
+                    {customWallpaper && <option value={CUSTOM_WALLPAPER_ID}>(My Bitmap)</option>}
                   </select>
+                </div>
+
+                <div className="mb-3 flex gap-2">
+                  <button
+                    type="button"
+                    data-wallpaper-random
+                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
+                    style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
+                    onClick={() => {
+                      // Surprise Me: any wallpaper but the one already on.
+                      const others = backgroundImages.filter((bg) => bg.id !== selectedBackground)
+                      const pick = others[Math.floor(Math.random() * others.length)]
+                      if (pick) setSelectedBackground(pick.id)
+                    }}
+                  >
+                    Surprise Me
+                  </button>
+                  <button
+                    type="button"
+                    data-wallpaper-browse
+                    className="bg-[#c0c0c0] border-t border-l border-[#ffffff] border-r border-b border-[#000000] px-2 py-1 text-xs"
+                    style={{ boxShadow: "inset 1px 1px #dfdfdf, inset -1px -1px #808080" }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Browse...
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    data-wallpaper-file
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      // Read as a data URL: the bitmap has to survive a reload,
+                      // and there is no server to upload it to.
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        const url = String(reader.result ?? "")
+                        if (!url.startsWith("data:image/")) return
+                        try {
+                          localStorage.setItem(CUSTOM_WALLPAPER_KEY, url)
+                          setCustomWallpaper(url)
+                          setSelectedBackground(CUSTOM_WALLPAPER_ID)
+                        } catch {
+                          // A bitmap too big for storage is not applied, rather
+                          // than applied and silently lost on reload.
+                          window.alert("That image is too large to store as wallpaper.")
+                        }
+                      }
+                      reader.readAsDataURL(file)
+                      e.target.value = ""
+                    }}
+                  />
                 </div>
               </div>
 
@@ -244,7 +308,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                 <div
                   className="absolute inset-2 border border-[#000000]"
                   style={{
-                    backgroundImage: `url(${backgroundImages.find((bg) => bg.id === selectedBackground)?.url})`,
+                    backgroundImage: `url(${wallpaperUrl(selectedBackground) ?? ""})`,
                     backgroundSize: "auto",
                     backgroundRepeat: "repeat",
                     backgroundPosition: "top left",

@@ -46,6 +46,8 @@ const COMMANDS: Record<string, string> = {
   find: "find-files",
   sounds: "sound-properties",
   mmsys: "sound-properties",
+  appwiz: "add-remove",
+  "appwiz.cpl": "add-remove",
   ie: "internet-explorer",
   outlook: "contact",
   contact: "contact",

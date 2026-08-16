@@ -208,6 +208,7 @@ follows what Windows would have done.</p>
 <tr><td><code>components/win95-dialog.tsx</code></td><td>Message boxes: queue, drawn glyphs, per-icon sounds, the bubbling-keydown guard.</td></tr>
 <tr><td><code>components/display-properties.tsx</code></td><td>Background, Appearance and Settings tabs, all of which apply.</td></tr>
 <tr><td><code>components/help-window.tsx</code></td><td>Windows Help on F1, with a topic per program.</td></tr>
+<tr><td><code>components/window-content/add-remove.tsx</code></td><td>Add/Remove Programs, listing this desktop's own features as installed software and refusing to remove any of them.</td></tr>
 <tr><td><code>components/clippy.tsx</code></td><td>The assistant: contextual tips, dismissal for good.</td></tr>
 <tr><td><code>components/winamp.tsx</code></td><td>Webamp host plus the synthesised opening track.</td></tr>
 <tr><td><code>components/shutdown.tsx</code>, <code>run-dialog.tsx</code>, <code>date-time-properties.tsx</code>, <code>item-properties.tsx</code></td><td>The shell dialogs.</td></tr>
@@ -272,6 +273,12 @@ server room keypad wants 0x1995, read off the glowing register in the QA lab. Fe
 the source disk to the build machine yields the gold master; feeding that to the
 duplicator in shipping wins. Purity is what lets
 <code>tests/checks/adventure.js</code> play the whole game through the terminal.</p>
+<h3>The Explorer clipboard</h3>
+<p>Copy and Cut only remember a path; the work happens at Paste, which deep-copies the
+node so pasting twice cannot alias one object into two folders. A name already in use
+takes the original's naming: "Copy of Thing.txt", then "Copy (2) of Thing.txt", extension
+untouched, compared case-insensitively because the drive is. A folder cannot be pasted
+into itself or its own descendant, which <code>isInside</code> decides.</p>
 <h3>Persistence</h3>
 <p>The virtual drive in <code>lib/filesystem.ts</code> hydrates from localStorage on
 first read and writes itself back on every mutation, under a version-salted key

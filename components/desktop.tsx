@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
-import { WALLPAPERS } from "@/lib/wallpapers"
+import { wallpaperUrl } from "@/lib/wallpapers"
 import { persistenceEnabled } from "@/lib/persistence"
 import { applyScheme } from "@/lib/color-schemes"
 import ContextMenu from "./context-menu"
@@ -355,9 +355,10 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       // Apply saved background if it exists. A stored id the set no longer
       // carries simply falls through to the default paint.
       if (savedBackground && desktopRef.current) {
-        const backgroundImageObj = WALLPAPERS.find((bg) => bg.id === savedBackground)
-        if (backgroundImageObj) {
-          desktopRef.current.style.backgroundImage = `url(${backgroundImageObj.url})`
+        // wallpaperUrl covers the shipped set and a bitmap the visitor uploaded.
+        const url = wallpaperUrl(savedBackground)
+        if (url) {
+          desktopRef.current.style.backgroundImage = `url(${url})`
           // Wallpaper tiles; Center and Stretch did not exist in 1995.
           desktopRef.current.style.backgroundSize = "auto"
           desktopRef.current.style.backgroundRepeat = "repeat"

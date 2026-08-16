@@ -1,7 +1,19 @@
 "use client"
 
 import { useMemo, useState, useSyncExternalStore } from "react"
-import { type FsDir, type FsNode, displayPath, getRoot, iconFor, listDir, subscribe } from "@/lib/filesystem"
+import {
+  type FsDir,
+  type FsNode,
+  displayPath,
+  getRoot,
+  iconFor,
+  isInside,
+  listDir,
+  putItem,
+  removeItem,
+  resolve,
+  subscribe,
+} from "@/lib/filesystem"
 import { messageBox } from "@/components/win95-dialog"
 import { recordRecentDoc } from "@/lib/recent-docs"
 
@@ -101,6 +113,10 @@ export default function Explorer() {
   const [view, setView] = useState<ViewMode>("large")
   const [expanded, setExpanded] = useState<Set<string>>(new Set([""]))
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  /** The clipboard: what was copied or cut, and from where. */
+  const [clip, setClip] = useState<{ name: string; path: string[]; cut: boolean } | null>(null)
+  /** The item whose Properties sheet is open. */
+  const [propsFor, setPropsFor] = useState<{ name: string; node: FsNode } | null>(null)
 
   // Re-reads when the drive changes, so a file saved in Notepad appears here
   // without needing the window reopened.
@@ -157,8 +173,58 @@ export default function Explorer() {
   const folders = entries.filter(([, n]) => n.kind === "dir").length
   const files = entries.length - folders
 
-  const menus: Record<string, { label: string; action: () => void; checked?: boolean }[]> = {
-    File: [{ label: "Close", action: () => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "explorer" } })) }],
+  /** Copy and Cut only remember; the work happens at Paste. */
+  const copySelected = (cut: boolean) => {
+    if (!selected) return
+    setClip({ name: selected, path: [...cwd, selected], cut })
+  }
+
+  const paste = () => {
+    if (!clip) return
+    const node = resolve(clip.path)
+    if (!node) {
+      setClip(null)
+      return
+    }
+    // A folder cannot be pasted into itself or into its own descendant.
+    if (node.kind === "dir" && isInside(clip.path, cwd)) {
+      messageBox({
+        title: "Error Copying File or Folder",
+        text: "The destination folder is inside the source folder.",
+        icon: "error",
+      })
+      return
+    }
+    const landed = putItem(cwd, clip.name, node)
+    if (!landed) return
+    if (clip.cut) removeItem(clip.path)
+    setClip(clip.cut ? null : clip)
+    setSelected(landed)
+  }
+
+  const deleteSelected = () => {
+    if (!selected) return
+    removeItem([...cwd, selected])
+    setSelected(null)
+  }
+
+  const selectedNode = selected ? entries.find(([n]) => n === selected)?.[1] ?? null : null
+
+  const menus: Record<string, { label: string; action: () => void; checked?: boolean; disabled?: boolean }[]> = {
+    File: [
+      {
+        label: "Properties",
+        action: () => selected && selectedNode && setPropsFor({ name: selected, node: selectedNode }),
+        disabled: !selected,
+      },
+      { label: "Delete", action: deleteSelected, disabled: !selected },
+      { label: "Close", action: () => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "explorer" } })) },
+    ],
+    Edit: [
+      { label: "Cut", action: () => copySelected(true), disabled: !selected },
+      { label: "Copy", action: () => copySelected(false), disabled: !selected },
+      { label: "Paste", action: paste, disabled: !clip },
+    ],
     View: [
       { label: "Large Icons", action: () => setView("large"), checked: view === "large" },
       { label: "Small Icons", action: () => setView("small"), checked: view === "small" },
@@ -169,7 +235,7 @@ export default function Explorer() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-[#c0c0c0]" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
+    <div className="relative flex h-full w-full flex-col bg-[#c0c0c0]" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
       {/* Menu bar */}
       <div className="flex border-b border-[#808080] px-1" onMouseLeave={() => setOpenMenu(null)}>
         {Object.keys(menus).map((name) => (
@@ -189,7 +255,9 @@ export default function Explorer() {
                   <button
                     key={item.label}
                     type="button"
-                    className="flex w-full items-center px-3 py-[2px] text-left text-xs hover:bg-[#000080] hover:text-white"
+                    data-menu-item={item.label}
+                    disabled={item.disabled}
+                    className="flex w-full items-center px-3 py-[2px] text-left text-xs hover:bg-[#000080] hover:text-white disabled:text-[#808080] disabled:hover:bg-transparent disabled:hover:text-[#808080]"
                     onClick={() => {
                       item.action()
                       setOpenMenu(null)
@@ -338,7 +406,71 @@ export default function Explorer() {
         <span>
           {folders} folder(s), {files} file(s)
         </span>
+        {clip && <span data-clip>{clip.cut ? "Cut" : "Copied"}: {clip.name}</span>}
       </div>
+
+      {/* The Properties sheet, as Explorer showed it: type, location, size,
+          the timestamp, and the read-only attributes nothing here honours. */}
+      {propsFor && (
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/30" onClick={() => setPropsFor(null)}>
+          <div
+            data-file-properties
+            className="w-[300px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] text-xs shadow-[3px_3px_10px_rgba(0,0,0,0.5)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between bg-[#000080] px-2 py-[3px]">
+              <span className="font-bold text-white">{propsFor.name} Properties</span>
+            </div>
+            <div className="p-3">
+              <div className="mb-3 flex items-center gap-2 border-b border-[#808080] pb-3">
+                <img src={iconFor(propsFor.name, propsFor.node)} alt="" className="h-8 w-8" style={{ imageRendering: "pixelated" }} />
+                <span className="font-bold">{propsFor.name}</span>
+              </div>
+              <dl className="mb-3 space-y-[3px]">
+                {(
+                  [
+                    ["Type", propsFor.node.kind === "dir" ? "File Folder" : "File"],
+                    ["Location", displayPath(cwd)],
+                    [
+                      "Size",
+                      propsFor.node.kind === "dir"
+                        ? `${Object.keys(propsFor.node.children).length} object(s)`
+                        : `${(propsFor.node.size ?? propsFor.node.body?.length ?? 0).toLocaleString()} bytes`,
+                    ],
+                    ["Modified", propsFor.node.kind === "file" ? propsFor.node.modified ?? "Unknown" : "Unknown"],
+                    ["Opens with", propsFor.node.kind === "file" ? propsFor.node.opens ?? "None" : "-"],
+                  ] as const
+                ).map(([label, value]) => (
+                  <div key={label} className="flex">
+                    <dt className="w-[84px] shrink-0">{label}:</dt>
+                    <dd className="truncate">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mb-3 border-t border-[#808080] pt-2">
+                <span className="mr-3">Attributes:</span>
+                <label className="mr-3">
+                  <input type="checkbox" disabled className="mr-1" />
+                  Read-only
+                </label>
+                <label>
+                  <input type="checkbox" disabled className="mr-1" />
+                  Hidden
+                </label>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setPropsFor(null)}
+                  className="h-[23px] min-w-[70px] border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

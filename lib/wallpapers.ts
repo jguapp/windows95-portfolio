@@ -13,6 +13,30 @@ export interface Wallpaper {
   url: string
 }
 
+/**
+ * A wallpaper the visitor supplied, kept as a data URL in localStorage
+ * under this id. Display Properties writes it; the desktop's boot restore
+ * reads it back, because a custom bitmap is not in the shipped table.
+ */
+export const CUSTOM_WALLPAPER_ID = "custom-upload"
+export const CUSTOM_WALLPAPER_KEY = "win95-wallpaper-custom"
+
+export function readCustomWallpaper(): string | null {
+  if (typeof window === "undefined") return null
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_WALLPAPER_KEY)
+    return raw && raw.startsWith("data:image/") ? raw : null
+  } catch {
+    return null
+  }
+}
+
+/** Resolves any wallpaper id to a URL, custom uploads included. */
+export function wallpaperUrl(id: string): string | null {
+  if (id === CUSTOM_WALLPAPER_ID) return readCustomWallpaper()
+  return WALLPAPERS.find((w) => w.id === id)?.url ?? null
+}
+
 export const WALLPAPERS: Wallpaper[] = [
   { id: "windows-default", name: "Windows Default", url: "/images/wallpapers/teal.png" },
   { id: "black-thatch", name: "Black Thatch", url: "/images/wallpapers/black-thatch.png" },
