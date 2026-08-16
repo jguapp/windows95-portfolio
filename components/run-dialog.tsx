@@ -58,11 +58,37 @@ const COMMANDS: Record<string, string> = {
   "about-me": "about-me",
 }
 
-/** Names offered in the drop-down, in the order Windows would have kept them. */
-const HISTORY = ["calc", "notepad", "mspaint", "winmine", "sol", "explorer", "command"]
+/** The defaults behind the real history, in Windows' order. */
+const DEFAULT_HISTORY = ["calc", "notepad", "mspaint", "winmine", "sol", "explorer", "command"]
+
+const HISTORY_KEY = "win95:run-history"
+
+/** What was actually run leads; the defaults fill in behind it. */
+function readHistory(): string[] {
+  try {
+    const own: string[] = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]")
+    return [...own, ...DEFAULT_HISTORY.filter((d) => !own.includes(d))].slice(0, 10)
+  } catch {
+    return DEFAULT_HISTORY
+  }
+}
+
+function recordRun(name: string) {
+  try {
+    const own: string[] = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]")
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([name, ...own.filter((o) => o !== name)].slice(0, 10)))
+  } catch {
+    // A prompt without a memory is still a prompt.
+  }
+}
 
 export default function RunDialog({ onClose }: RunDialogProps) {
   const [value, setValue] = useState("")
+  const [history, setHistory] = useState<string[]>(DEFAULT_HISTORY)
+
+  useEffect(() => {
+    setHistory(readHistory())
+  }, [])
   const [open, setOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
@@ -95,6 +121,7 @@ export default function RunDialog({ onClose }: RunDialogProps) {
       return
     }
 
+    recordRun(key)
     window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: target } }))
     onClose()
   }
@@ -157,7 +184,7 @@ export default function RunDialog({ onClose }: RunDialogProps) {
                 </div>
                 {open && (
                   <ul className="absolute left-0 right-0 top-full z-10 border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-white">
-                    {HISTORY.map((h) => (
+                    {history.map((h) => (
                       <li key={h}>
                         <button
                           type="button"

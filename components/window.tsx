@@ -432,6 +432,7 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         <div
           className="window-header bg-[#000080] p-[5px] flex justify-between items-center border-b-2 border-b-black text-white font-bold"
           onMouseDown={startDrag}
+          onDoubleClick={toggleMaximize}
         >
           {/* Windows 95 put the application's 16px icon at the left of every
               title bar, which is also what you double-click to close. */}

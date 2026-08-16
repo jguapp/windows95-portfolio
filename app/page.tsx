@@ -116,6 +116,16 @@ export default function Home() {
     }
   }
 
+  // Show Desktop and the taskbar menu ask for this by event.
+  useEffect(() => {
+    const minimizeAll = () => {
+      setMinimizedWindows((prev) => [...new Set([...prev, ...openWindows])])
+      setActiveWindow(null)
+    }
+    window.addEventListener("minimizeAllWindows", minimizeAll)
+    return () => window.removeEventListener("minimizeAllWindows", minimizeAll)
+  }, [openWindows])
+
   // Handle maximizing a window
   const handleMaximizeWindow = (id: string) => {
     // Set the window as active when maximized

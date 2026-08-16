@@ -40,6 +40,18 @@ export default function Taskbar({
   /** The clock opens Date/Time Properties. Windows wanted a double click;
    *  a single one is friendlier and costs nothing here. */
   const [showDateTime, setShowDateTime] = useState(false)
+  /** The bar's own right-click menu: minimise all, and the tray dialogs. */
+  const [barMenu, setBarMenu] = useState<{ x: number } | null>(null)
+
+  useEffect(() => {
+    if (!barMenu) return
+    const onDown = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest("[data-taskbar-menu]")) return
+      setBarMenu(null)
+    }
+    window.addEventListener("mousedown", onDown)
+    return () => window.removeEventListener("mousedown", onDown)
+  }, [barMenu])
   /**
    * Mirrors the sound library so the panel reflects changes made anywhere.
    * The values live outside React because the audio code is not a component.
@@ -101,7 +113,50 @@ export default function Taskbar({
     <div
       id="taskbar"
       className="fixed bottom-0 left-0 w-full h-[34px] bg-[#c0c0c0] border-t-2 border-t-[#808080] border-b border-b-white flex items-center z-[1000] justify-between"
+      onContextMenu={(e) => {
+        // Only the bar itself: buttons and the tray keep their own behaviour.
+        if ((e.target as HTMLElement).closest("button, .taskbar-item, #right-section")) return
+        e.preventDefault()
+        setBarMenu({ x: Math.min(e.clientX, window.innerWidth - 190) })
+      }}
     >
+      {barMenu && (
+        <div
+          data-taskbar-menu
+          className="absolute bottom-[36px] z-[1100] min-w-[170px] select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
+          style={{
+            left: barMenu.x,
+            border: "2px solid #eeeded",
+            borderRightColor: "#000000",
+            borderRightWidth: 1,
+            borderBottomColor: "#000000",
+            borderBottomWidth: 1,
+            fontSize: 12,
+          }}
+        >
+          <button
+            type="button"
+            className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("minimizeAllWindows"))
+              setBarMenu(null)
+            }}
+          >
+            Minimize All Windows
+          </button>
+          <div className="mx-0 my-1" style={{ borderBottom: "2.5px groove #eae8e8" }} />
+          <button
+            type="button"
+            className="block w-full whitespace-nowrap py-[2px] pl-6 pr-6 text-left text-[12px] hover:bg-[#040d91] hover:text-white"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("openDisplayProperties", { detail: { tab: "background" } }))
+              setBarMenu(null)
+            }}
+          >
+            Properties
+          </button>
+        </div>
+      )}
       <div id="start-button" className="flex items-center cursor-pointer" onClick={onToggleStartMenu}>
         <img
           src="/images/blob/start.png"
@@ -127,6 +182,20 @@ export default function Taskbar({
             <img src={q.icon} alt="" className="h-4 w-4" style={{ imageRendering: "pixelated" }} />
           </button>
         ))}
+        <button
+          type="button"
+          aria-label="Show Desktop"
+          title="Show Desktop"
+          onClick={() => window.dispatchEvent(new CustomEvent("minimizeAllWindows"))}
+          className="flex h-[22px] w-[22px] items-center justify-center border-2 border-transparent hover:border-t-white hover:border-l-white hover:border-r-[#404040] hover:border-b-[#404040] active:border-t-[#404040] active:border-l-[#404040] active:border-r-white active:border-b-white"
+        >
+          {/* The desk blotter glyph the Desktop Update used. */}
+          <svg width="14" height="14" viewBox="0 0 14 14" shapeRendering="crispEdges" aria-hidden>
+            <rect x="1" y="2" width="12" height="9" fill="#008080" stroke="#000" strokeWidth="1" />
+            <rect x="3" y="4" width="3" height="3" fill="#fff" />
+            <rect x="5" y="11" width="4" height="2" fill="#808080" />
+          </svg>
+        </button>
         <div className="ml-1 h-[22px] w-[3px] border-l border-l-[#808080] border-r border-r-white" />
       </div>
 
@@ -165,6 +234,30 @@ export default function Taskbar({
           resolutions right there, which is what this does. Display Properties
           stays one entry away at the bottom of the list.
         */}
+        <span
+          title="Dial-Up Networking: connected at 28,800 bps"
+          className="flex h-full w-[20px] items-center justify-center"
+          aria-hidden
+        >
+          <svg width="16" height="14" viewBox="0 0 16 14" shapeRendering="crispEdges">
+            <rect x="1" y="4" width="6" height="5" fill="#c0c0c0" stroke="#000" />
+            <rect x="9" y="4" width="6" height="5" fill="#c0c0c0" stroke="#000" />
+            <rect x="2" y="5" width="4" height="2" fill="#00a000" />
+            <rect x="10" y="5" width="4" height="2" fill="#00a000" />
+            <rect x="7" y="6" width="2" height="1" fill="#000" />
+          </svg>
+        </span>
+        <span
+          title="Power: AC, battery at 100%"
+          className="flex h-full w-[18px] items-center justify-center"
+          aria-hidden
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" shapeRendering="crispEdges">
+            <rect x="2" y="4" width="9" height="6" fill="#c0c0c0" stroke="#000" />
+            <rect x="11" y="6" width="2" height="2" fill="#000" />
+            <rect x="3" y="5" width="7" height="4" fill="#00a000" />
+          </svg>
+        </span>
         <button
           type="button"
           id="resolution-button"
