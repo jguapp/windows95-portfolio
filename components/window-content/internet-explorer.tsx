@@ -192,6 +192,8 @@ function normalise(input: string): string {
 
 export default function InternetExplorer() {
   const [history, setHistory] = useState<string[]>([HOME])
+  /** True from asking the archive for a page until its iframe finishes. */
+  const [loading, setLoading] = useState(true)
 
   // Typed addresses go to the Wayback Machine; starting the TLS handshake
   // the moment the window opens shaves the slowest part off the first fetch.
@@ -228,21 +230,24 @@ export default function InternetExplorer() {
       setHistory((h) => [...h.slice(0, at + 1), target])
       setAt((i) => i + 1)
       setTyped(target)
+      const builtIn = SITES[target] ?? SITES[target.replace("http://", "http://www.")]
+      setLoading(!builtIn)
     },
     [at],
   )
 
+  const navTo = (index: number) => {
+    setAt(index)
+    setTyped(history[index])
+    const url = history[index]
+    setLoading(!(SITES[url] ?? SITES[url.replace("http://", "http://www.")]))
+  }
+
   const back = () => {
-    if (at > 0) {
-      setAt(at - 1)
-      setTyped(history[at - 1])
-    }
+    if (at > 0) navTo(at - 1)
   }
   const forward = () => {
-    if (at < history.length - 1) {
-      setAt(at + 1)
-      setTyped(history[at + 1])
-    }
+    if (at < history.length - 1) navTo(at + 1)
   }
 
   const toolButton =
@@ -304,17 +309,34 @@ export default function InternetExplorer() {
       </form>
 
       {/* Page */}
-      <div className="flex-1 overflow-auto bg-white" data-ie-page>
+      <div className="relative flex-1 overflow-auto bg-white" data-ie-page>
         {site ? (
           site.render(go)
         ) : webby ? (
-          <iframe
+          <>
+            {loading && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                <div className="border-2 border-t-white border-l-white border-r-[#404040] border-b-[#404040] bg-[#c0c0c0] px-6 py-4 text-center shadow-[2px_2px_6px_rgba(0,0,0,0.4)]">
+                  <div className="mb-2 text-xs">Opening page from 1996...</div>
+                  <div className="relative mx-auto h-[14px] w-[160px] overflow-hidden border border-[#808080] bg-white shadow-[inset_1px_1px_#404040]">
+                    <div className="ie-progress-chunk absolute top-[2px] h-[10px] w-[40px] bg-[#000080]" />
+                  </div>
+                  <style>{`
+                    .ie-progress-chunk { animation: ie-progress 1.2s linear infinite; }
+                    @keyframes ie-progress { from { left: -40px } to { left: 160px } }
+                  `}</style>
+                </div>
+              </div>
+            )}
+            <iframe
+              onLoad={() => setLoading(false)}
             key={current}
             data-ie-frame
             src={waybackSrc}
             title="The World Wide Web, 1996"
             className="h-full w-full border-0"
           />
+          </>
         ) : (
           <div className="p-8" style={{ fontFamily: '"MS Sans Serif", sans-serif' }}>
             <h1 className="mb-3 text-xl font-bold">The page cannot be displayed</h1>
