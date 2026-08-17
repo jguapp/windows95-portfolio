@@ -4,6 +4,8 @@ import type React from "react"
 
 import { useEffect, useRef, useState } from "react"
 
+import { markRightDismiss } from "@/lib/context-dismiss"
+
 interface MenuItem {
   label: string
   labelWithUnderline?: React.ReactNode
@@ -48,6 +50,9 @@ export default function ContextMenu({ x, y, menuItems, onClose }: ContextMenuPro
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        // A right-click dismissal must not be reopened by the contextmenu
+        // event that follows this same mousedown.
+        if (e.button === 2) markRightDismiss()
         onClose()
       }
     }

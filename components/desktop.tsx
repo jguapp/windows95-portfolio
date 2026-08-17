@@ -7,6 +7,7 @@ import { wallpaperUrl } from "@/lib/wallpapers"
 import { persistenceEnabled } from "@/lib/persistence"
 import { applyScheme } from "@/lib/color-schemes"
 import ContextMenu from "./context-menu"
+import { wasRightDismiss } from "@/lib/context-dismiss"
 import DisplayProperties from "./display-properties"
 import ItemProperties from "./item-properties"
 import BlueScreenOfDeath from "./blue-screen-of-death"
@@ -397,6 +398,11 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
   }
 
   const handleDesktopRightClick = (e: React.MouseEvent) => {
+    // The right-click that just dismissed a menu is not also an opening.
+    if (wasRightDismiss()) {
+      e.preventDefault()
+      return
+    }
     e.preventDefault()
     setContextMenu({
       show: true,

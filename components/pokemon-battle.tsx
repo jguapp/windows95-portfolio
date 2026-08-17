@@ -445,9 +445,24 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
    * standing.
    */
   const [team, setTeam] = useState<Fighter[]>(() => PLAYER_TEAM.map(toFighter))
-  const [foes, setFoes] = useState<Fighter[]>(() => FOE_TEAM.map(toFighter))
+  /*
+    The rival's order is dealt fresh each battle. A fixed roster order made
+    every fight open with the same creature and continue through the same
+    sequence, which reads as a script by the second battle. Fisher-Yates on
+    the keys at mount, so each battle meets a different lineup.
+  */
+  const [foes, setFoes] = useState<Fighter[]>(() => {
+    const keys = [...FOE_TEAM]
+    for (let i = keys.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[keys[i], keys[j]] = [keys[j], keys[i]]
+    }
+    return keys.map(toFighter)
+  })
   const [active, setActive] = useState(0)
   const [foeActive, setFoeActive] = useState(0)
+  /** The FIGHT menu reopens on the move used last. */
+  const lastMoveRef = useRef(0)
 
   const player = team[active]
   const foe = foes[foeActive]
@@ -513,7 +528,7 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const [mustSwitch, setMustSwitch] = useState(false)
 
   const [phase, setPhase] = useState<Phase>("message")
-  const [message, setMessage] = useState(`Enemy ${SPECIES[FOE_TEAM[0]].name} sent out!`)
+  const [message, setMessage] = useState(`Enemy ${foes[0].name} sent out!`)
   const [cursor, setCursor] = useState(0)
   const [busy, setBusy] = useState(false)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -657,11 +672,11 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
     setMessage("RIVAL wants to fight!")
     const opening = setTimeout(() => {
       setTrainersOnStage(false)
-      setMessage(`RIVAL sent out ${SPECIES[FOE_TEAM[0]].name}!`)
+      setMessage(`RIVAL sent out ${foesRef.current[0].name}!`)
       setFoeOut(true)
       setFoeAnim({ cls: "pkmn-sendin", t: Date.now() })
       sfx.sendOut()
-      cry(SPECIES[FOE_TEAM[0]].cry)
+      cry(foesRef.current[0].species.cry)
       const second = setTimeout(() => {
         setMessage(`Go! ${SPECIES[PLAYER_TEAM[0]].name}!`)
         setPlayerOut(true)
@@ -790,6 +805,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
   const performMove = useCallback(
     (index: number) => {
       if (busy) return
+      // Remembered so FIGHT reopens on this slot, as the original did.
+      lastMoveRef.current = index
       const player = teamRef.current[activeRef.current]
       const foe = foesRef.current[foeActiveRef.current]
       const move = player.moves[index]
@@ -1013,7 +1030,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
         if (phase === "menu") {
           if (cursor === 0) {
             setPhase("fight")
-            setCursor(0)
+            // Open on the move used last, clamped in case the fighter
+            // switched to one with fewer moves.
+            setCursor(Math.min(lastMoveRef.current, player.moves.length - 1))
           } else if (cursor === 1) {
             setNote(null)
             setPhase("party")
@@ -1264,8 +1283,9 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   {line.trim()}
                 </Label>
               ))}
-              {/* The waiting arrow, blinking as it always did. */}
-              <path d="M150 138 l6 0 l-3 4 z" fill={P[3]}>
+              {/* The waiting arrow, blinking as it always did. Its tip
+                  ends at y=139, clear of the frame line at 141. */}
+              <path d="M150 135 l6 0 l-3 4 z" fill={P[3]}>
                 <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
               </path>
             </>

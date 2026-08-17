@@ -105,21 +105,6 @@ Let me know how it goes. And come back and talk to my 3120 section in the spring
 Prof. Vasquez`,
   },
   {
-    id: 5,
-    fromName: "Liberty Mutual Recruiting",
-    from: "university@libertymutual.com",
-    subject: "Return offer - Software Engineer",
-    date: "7/22/2026 9:15 AM",
-    read: true,
-    body: `Hi Joel,
-
-Formally extending a return offer for Software Engineer on the Cloud Platform team, starting July 2027 after you graduate.
-
-Details are attached. The offer stands until October 15th, so take your time.
-
-Congratulations, and thank you for the disaster recovery work. 877 VMs is not a small thing.`,
-  },
-  {
     id: 6,
     fromName: "Devon Ellis",
     from: "devon@calligraphyqueue.dev",
@@ -623,7 +608,7 @@ Click here before this page is TAKEN DOWN.`,
     read: true,
     body: `Your Fall 2025 statement is available on CUNYfirst.
 
-Balance due: $0.00 after financial aid and the Vanguard scholarship. No payment is required.`,
+Balance due: $0.00 after financial aid and your merit scholarship. No payment is required.`,
   },
   {
     id: 42,
@@ -732,17 +717,6 @@ An employer contacted us for a reference. Please confirm you are happy for us to
 We would lead with the census pipeline unless you say otherwise.`,
   },
   {
-    id: 50,
-    fromName: "Baruch Financial Aid",
-    from: "finaid@baruch.cuny.edu",
-    subject: "Vanguard Scholarship renewed",
-    date: "3/12/2025 9:00 AM",
-    read: true,
-    body: `Your Vanguard scholarship has been renewed for the 2025-2026 academic year based on your cumulative GPA.
-
-No further action is required.`,
-  },
-  {
     id: 51,
     fromName: "Devon Ellis",
     from: "devon@calligraphyqueue.dev",
@@ -794,19 +768,6 @@ Whoever had the camera on the second row got a great one of the whole delegation
     body: `Your answer to "Why does my requestAnimationFrame loop read stale state?" was accepted and has 41 upvotes.
 
 You earned the Guru badge.`,
-  },
-  {
-    id: 55,
-    fromName: "Robert Wood Johnson Foundation",
-    from: "hr@rwjf.org",
-    subject: "Welcome to RWJF",
-    date: "12/16/2024 10:00 AM",
-    read: true,
-    body: `Joel,
-
-Welcome aboard. You are on the data and technology team starting January 6.
-
-First week is orientation and access requests. Bring two forms of ID.`,
   },
   {
     id: 56,

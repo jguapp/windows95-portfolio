@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { getVolume, isMuted, play } from "@/lib/sound"
+import { markRightDismiss, wasRightDismiss } from "@/lib/context-dismiss"
 
 interface ChessProps {
   onReturn: () => void
@@ -306,10 +307,17 @@ export default function Chess({ onReturn }: ChessProps) {
     setPlayerColor(color)
     setBoardFlipped(color === "black")
     setShowStartScreen(false)
+    /*
+      Deal explicitly. The effect below re-deals when the mode or colour
+      changes, so starting a new game as the same colour changed neither
+      and the previous board carried straight on. New Game means a new
+      game whatever was picked.
+    */
+    initializeBoard(color)
   }
 
   // Initialize the chess board
-  const initializeBoard = () => {
+  const initializeBoard = (forColor: PieceColor = playerColor) => {
     const newBoard: Board = Array(8)
       .fill(null)
       .map(() => Array(8).fill(null))
@@ -348,7 +356,7 @@ export default function Chess({ onReturn }: ChessProps) {
 
     setBoard(newBoard)
     setCurrentPlayer("white")
-    setGameStatus(`${playerColor === "white" ? "Your" : "Black's"} turn`)
+    setGameStatus(`${forColor === "white" ? "Your" : "Black's"} turn`)
     setMoveHistory([])
     setCapturedPieces({ white: [], black: [] })
     setIsCheck(false)
@@ -1151,7 +1159,12 @@ export default function Chess({ onReturn }: ChessProps) {
   // Handle right-click for context menu
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
-
+    // Right-click while the menu shows dismisses it, and the right-click
+    // that just dismissed it from the document listener stays a dismissal.
+    if (showMenu || wasRightDismiss()) {
+      setShowMenu(false)
+      return
+    }
     if (boardRef.current) {
       const rect = boardRef.current.getBoundingClientRect()
       setMenuPosition({
@@ -1161,6 +1174,22 @@ export default function Chess({ onReturn }: ChessProps) {
       setShowMenu(true)
     }
   }
+
+  /*
+    The menu had no outside dismissal: only choosing an item closed it.
+    Any mousedown outside it closes it now, and a right-button one leaves
+    the mark that stops the contextmenu that follows from reopening it.
+  */
+  useEffect(() => {
+    if (!showMenu) return
+    const onDown = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest("[data-chess-menu]")) return
+      if (e.button === 2) markRightDismiss()
+      setShowMenu(false)
+    }
+    window.addEventListener("mousedown", onDown)
+    return () => window.removeEventListener("mousedown", onDown)
+  }, [showMenu])
 
   // Handle menu item click
   const handleMenuItemClick = (action: string) => {
@@ -1668,6 +1697,7 @@ export default function Chess({ onReturn }: ChessProps) {
             {/* Context menu */}
             {showMenu && (
               <div
+                data-chess-menu
                 className="absolute bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#5a5a5a] border-b-[#5a5a5a] shadow-md z-10"
                 style={{ top: menuPosition.y, left: menuPosition.x }}
               >

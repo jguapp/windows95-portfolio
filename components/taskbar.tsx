@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { markRightDismiss, wasRightDismiss } from "@/lib/context-dismiss"
 import { taskbarTitle, windowIcon } from "@/lib/window-titles"
 import { getVolume, isMuted, play, setMuted, setVolume, subscribeVolume } from "@/lib/sound"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
@@ -52,6 +53,7 @@ export default function Taskbar({
     if (!barMenu) return
     const onDown = (e: MouseEvent) => {
       if ((e.target as HTMLElement).closest("[data-taskbar-menu]")) return
+      if (e.button === 2) markRightDismiss()
       setBarMenu(null)
     }
     window.addEventListener("mousedown", onDown)
@@ -133,6 +135,8 @@ export default function Taskbar({
         // Only the bar itself: buttons and the tray keep their own behaviour.
         if ((e.target as HTMLElement).closest("button, .taskbar-item, #right-section")) return
         e.preventDefault()
+        // The right-click that just dismissed this menu does not reopen it.
+        if (wasRightDismiss()) return
         setBarMenu({ x: Math.min(e.clientX, window.innerWidth - 190) })
       }}
     >

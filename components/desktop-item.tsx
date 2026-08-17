@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { wasRightDismiss } from "@/lib/context-dismiss"
 
 import { useState, useRef, useEffect } from "react"
 
@@ -323,6 +324,8 @@ export default function DesktopItem({
       onContextMenu={(e) => {
         e.preventDefault()
         e.stopPropagation()
+        // A right-click that just dismissed a menu stays a dismissal.
+        if (wasRightDismiss()) return
         if (!isRenaming) {
           onRightClick(e)
         }

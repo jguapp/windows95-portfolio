@@ -264,7 +264,12 @@ function SearchSidebar() {
 
 function ProfileColumn() {
   return (
-    <div className="w-[300px] space-y-4">
+    /*
+      A flex column rather than spaced blocks, so the friends box below can
+      take flex-1 and carry the column to the same bottom edge as the
+      Information panel beside it. gap-4 keeps the spacing space-y-4 gave.
+    */
+    <div className="w-[300px] flex flex-col gap-4">
       <div className="bg-white border border-[#B7B7B7]">
         <BoxTitle>Picture</BoxTitle>
         <div className="p-3 flex justify-center">
@@ -299,7 +304,12 @@ function ProfileColumn() {
         </div>
       </div>
 
-      <div className="bg-white border border-[#B7B7B7]">
+      {/*
+        The last box grows to the column's full height, so its bottom edge
+        meets the Information panel's: the two columns end together however
+        much longer the information runs.
+      */}
+      <div className="bg-white border border-[#B7B7B7] flex-1">
         <BoxTitle>Friends at Baruch College</BoxTitle>
         <div className="p-3">
           <div className="grid grid-cols-3 gap-2">
@@ -339,8 +349,15 @@ function InfoTable({ title, rows }: { title?: string; rows: InfoRow[] }) {
 
 function InformationPanel() {
   return (
-    <div className="flex-1">
-      <div className="bg-white border border-[#B7B7B7] w-full h-[719px] overflow-auto">
+    /*
+      A flex child stretches to the row's height, and the row is as tall as
+      its tallest column, so the panel bottom-aligns with the friends grid
+      when the profile column is taller and simply grows when its own text
+      is. The old fixed 719px did neither: it scrolled the About text inside
+      itself and stopped short of the friends box.
+    */
+    <div className="flex-1 flex">
+      <div className="bg-white border border-[#B7B7B7] w-full">
         <BoxTitle>Information</BoxTitle>
         <div className="p-4">
           <div className="space-y-2">

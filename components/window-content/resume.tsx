@@ -1869,7 +1869,21 @@ export default function Resume() {
         data-marks={showMarks ? "" : undefined}
         className="document mx-auto bg-white shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
         onKeyUp={updateCaret}
-        onClick={updateCaret}
+        /*
+          Links inside contentEditable do not navigate: the browser treats a
+          click as placing the caret, so the hrefs were real but inert. A
+          click on an anchor follows it here instead, in a new tab with the
+          opener severed; anywhere else it just moves the caret as before.
+        */
+        onClick={(e) => {
+          const anchor = (e.target as HTMLElement).closest("a[href]") as HTMLAnchorElement | null
+          if (anchor) {
+            e.preventDefault()
+            window.open(anchor.href, "_blank", "noopener,noreferrer")
+            return
+          }
+          updateCaret()
+        }}
         style={{
           width: PAGE_WIDTH,
           padding: PAGE_PADDING,
