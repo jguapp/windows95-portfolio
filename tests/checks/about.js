@@ -59,12 +59,13 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     keeps its own proportions, so whatever is dropped in arrives whole
     instead of being cover-cropped to a shape it was never drawn for.
   */
-  const ad = shots.find((s) => /skyscraper|magazine-ad/.test(s.src))
-  ok("an advert is shown", !!ad, ad ? `${ad.src} ${ad.natural} shown at ${ad.drawn}` : "not found")
+  const ads = shots.filter((s) => /skyscraper|magazine-ad|gameboy-ad/.test(s.src))
+  const ad = ads[0]
+  ok("both adverts are shown", ads.length === 2, ads.map((a) => `${a.src} ${a.natural}@${a.drawn}`).join(" | ") || "none")
   if (ad) {
     const [dw, dh] = ad.drawn.split("x").map(Number)
     const [nw, nh] = ad.natural.split("x").map(Number)
-    const panel = await w.locator("[data-advert]").evaluate((i) => {
+    const panel = await w.locator("[data-advert]").first().evaluate((i) => {
       const p = i.parentElement.getBoundingClientRect()
       return { w: Math.round(p.width), h: Math.round(p.height) }
     })

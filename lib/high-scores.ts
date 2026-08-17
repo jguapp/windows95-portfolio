@@ -61,7 +61,7 @@ export function saveScore(game: string, entry: ScoreEntry, lower = true): ScoreE
   const all = read(game) ?? []
   const next = [...all, { ...entry, at: entry.at ?? new Date().toISOString() }]
     .sort((a, b) => (lower ? a.value - b.value : b.value - a.value))
-    .filter((e, i, list) => list.filter((x) => x.category === e.category).indexOf(e) < 10)
+    .filter((e, _i, list) => list.filter((x) => x.category === e.category).indexOf(e) < 10)
   write(game, next)
   return next
 }

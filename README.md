@@ -48,7 +48,7 @@ Solitaire, Minesweeper, FreeCell, Hearts and Reversi, the ones Windows actually 
 <img src=".github/assets/games.png" alt="The Games folder, eight program icons in an Explorer window" width="90%" />
 </div>
 
-FreeCell knows its 32,000 deals by number, and they are the real ones: game 617 here is the 617 everyone remembers. Hearts plays four hands with passing and Shooting the Moon. Minesweeper has the seven-segment counters, the smiley that reacts, and best times that survive a refresh.
+FreeCell knows its 32,000 deals by number, and they are the real ones: game 617 here is the 617 everyone remembers, including the -1 and -2 prank hands it hid. Solitaire pays Vegas at a dollar a card and still answers to the cheat it shipped with. Hearts asks your name, points the passing arrow and raises a moon when somebody shoots one. Minesweeper has the seven-segment counters, the smiley that reacts, a Custom Field dialog, best times that survive a refresh, and both of its 1995 cheats.
 
 <div align="center">
 <img src=".github/assets/minesweeper.png" alt="Minesweeper with its LED counters and smiley button" width="90%" />
@@ -62,7 +62,7 @@ FreeCell knows its 32,000 deals by number, and they are the real ones: game 617 
 
 </div>
 
-Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. It draws, it undoes, and Save to Desktop turns a drawing into a desktop icon that can outlive the visit.
+Pencil, brush, eraser, fill, shapes, the colour palette along the bottom. Edit cuts, copies and pastes over a selection or the whole bitmap; Image flips, rotates, stretches and skews it; the text tool picks a face and size, and the airbrush has its three nozzles. Save to Desktop turns a drawing into a desktop icon that can outlive the visit, and Set As Wallpaper puts it behind everything.
 
 <div align="center">
 <img src=".github/assets/paint.png" alt="The MS Paint clone with its toolbar and colour palette" width="90%" />
@@ -117,6 +117,20 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 
 <div align="center">
 
+## And one thing that is not on the desktop at all
+
+</div>
+
+Type the Konami code anywhere: ↑ ↑ ↓ ↓ ← → ← → B A. Six creatures a side, a type chart, status moves, accuracy rolls that miss, a party screen and a real item bag, drawn in four shades on a 160x144 grid.
+
+<div align="center">
+<img src=".github/assets/battle.png" alt="The hidden Game Boy battle, drawn in four shades" width="70%" />
+</div>
+
+###
+
+<div align="center">
+
 ## Things worth finding
 
 </div>
@@ -129,11 +143,11 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 | **Internet Explorer** | carries its own little internet, hit counter included |
 | **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle with party menus, a real item bag, and back sprites |
 | **Ctrl+Alt+R** | Run takes the real names: `calc`, `winmine`, `sol`, `mspaint`, `iexplore` |
-| **Display Properties** | the wallpapers Windows 95 shipped, Appearance schemes that recolour the whole shell, five real screen savers, and resolutions from 640x480 up to 4K |
+| **Display Properties** | the wallpapers Windows 95 shipped, an upload of your own, Appearance schemes that recolour the whole shell, and resolutions from 640x480 up to 4K |
 | **Clippy** | bottom right, contextual, dismissible for good |
 | **Shut Down** | ends on the amber it's-now-safe screen; Restart reboots the machine |
-| **Accessories** | WordPad to Disk Defragmenter, present and accounted for |
-| **MS-DOS Prompt** | fourteen commands over a virtual `C:\` drive |
+| **Accessories** | nine programs, and CD Player, Phone Dialer, ScanDisk and Defrag are real ones |
+| **MS-DOS Prompt** | twenty-five commands over a virtual `C:\` drive, `ADVENTURE.EXE` among them |
 | **Notepad** | opens and saves to that same drive, and DOS can read what you wrote |
 | **Blue Screen of Death** | it's in there, and it's faithful |
 | **Drag to the Recycle Bin** | and File > Restore puts it back where it was |
@@ -144,6 +158,12 @@ The photos sit in `C:\My Pictures` as an Explorer folder in Thumbnail view, one 
 | **Alt+Q** | the window switcher; Tab, arrows and Enter drive the desktop |
 | **Find** | Start > Find genuinely searches the virtual drive, file contents included |
 | **QuickRes** | the little monitor in the tray pops a resolution menu, as the PowerToy did |
+| **ADVENTURE.EXE** | type it at the DOS prompt: fourteen rooms, a two-word parser, and a night shift that ends with Windows 95 shipping |
+| **F1** | opens help for whichever program is focused, WinHelp green text and all |
+| **The tray speaker** | double-click it for the four-fader Volume Control |
+| **Start > Documents** | lists the documents you have actually opened, and one you should not |
+| **Chess** | drop MP3s into `public/sounds/chess/` and it plays your own move sounds |
+| **Add/Remove Programs** | in Control Panel, listing this desktop as installed software, and refusing to uninstall any of it |
 
 </div>
 

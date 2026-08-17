@@ -81,8 +81,11 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   // Hover unrevealed cells until the corner pixel reports a mine.
   let mineCell = null
   let sawWhite = false
-  for (let r = 0; r < 9 && !mineCell; r++) {
-    for (let c = 0; c < 9 && !mineCell; c++) {
+  // Both are wanted, so the sweep runs until it has seen a safe square and a
+  // mine. Stopping at the first mine meant a mine on the first cell hovered
+  // ended the scan before any white pixel had been seen.
+  for (let r = 0; r < 9 && !(mineCell && sawWhite); r++) {
+    for (let c = 0; c < 9 && !(mineCell && sawWhite); c++) {
       await ms.locator(`[data-cell="${r}-${c}"]`).hover()
       const px = p.locator("[data-xyzzy]")
       if ((await px.count()) === 0) continue

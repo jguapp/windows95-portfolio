@@ -37,7 +37,7 @@
 <p class="meta">
   Project: windows95-portfolio &nbsp;|&nbsp; Repository: github.com/jguapp/windows95-portfolio
   &nbsp;|&nbsp; Live: builtbyjoel.dev<br>
-  Document generated: August 16, 2026 &nbsp;|&nbsp;
+  Document generated: August 17, 2026 &nbsp;|&nbsp;
   Audience: any smart reader, no prior knowledge assumed.
 </p>
 
@@ -84,12 +84,13 @@ resize, minimise and maximise. Inside those windows: a resume in a recreated Mic
 Word, an About page styled as a 2005 profile site, a projects page styled as 2005
 YouTube, mail in a recreated Outlook Express with 59 messages, a photo gallery, a
 guestbook backed by Postgres, MS Paint, Notepad, an MS-DOS prompt, a calculator, a file
-explorer, a recycle bin, Internet Explorer with its own built-in pages, a real Winamp,
-and eight playable games. Around them: wallpaper and resolution
+explorer, a recycle bin, Internet Explorer serving the 1996 web through the Internet
+Archive, a real Winamp, CD Player, Phone Dialer, ScanDisk, Disk Defragmenter, and eight
+playable games. Around them: wallpaper and resolution
 switching that actually apply, a sound scheme, Clippy, a shutdown sequence, and one
 secret behind a famous ten-key code.</p>
-<p><strong>What it does not do:</strong> it does not persist visitor changes between
-reloads except the guestbook, wallpaper and resolution choices. It does not
+<p><strong>What it does not do:</strong> it persists only what you opt into on the
+welcome dialog, plus the guestbook, wallpaper and resolution choices. It does not
 run real DOS software. Its Internet Explorer cannot load external websites. It is not a
 Windows emulator; every program is a purpose-built recreation.</p>
 
@@ -119,8 +120,12 @@ Windows emulator; every program is a purpose-built recreation.</p>
   <dd>A drawing surface the page paints pixel by pixel from JavaScript. Pong, Paint
   and the Solitaire win animation draw on canvases.</dd>
   <dt>Web Audio API</dt>
-  <dd>The browser's sound synthesiser. Every sound on this desktop is generated from
-  oscillators at play time; the repository ships no audio files.</dd>
+  <dd>The browser's sound synthesiser. Nearly every sound here is generated from
+  oscillators at play time rather than loaded: the system scheme, the game effects and
+  the creature cries are all synthesised. The exceptions are files the owner supplies,
+  which the repository carries as named slots: the battle and victory themes, the chess
+  move recordings, and fifteen silent placeholders Winamp lists by name until real
+  recordings replace them.</dd>
   <dt>localStorage</dt>
   <dd>A small key-value store the browser keeps per site. Wallpaper and
   resolution choices live there.</dd>
@@ -292,6 +297,14 @@ wins by coming later at equal specificity. The resume marks its own declarations
 because inline-important is the one thing that outranks stylesheet-important, and reasserts
 them after every formatting command since <code>execCommand</code> keeps producing fresh
 elements. The taskbar menu takes its own rule for the same reason.</p>
+<h3>Who owns the title bar</h3>
+<p>Most windows take the header <code>window.tsx</code> draws, and that header carries
+the drag handler. The resume does not: it is Microsoft Word, and Word's title bar is part
+of Word, so <code>window.tsx</code> deliberately skips its own. That left the resume with
+no drag handler at all, and the window could not be moved. Content that draws its own bar
+now marks it <code>data-window-drag</code>; the window listens for a mousedown inside any
+such element and starts the same drag, excluding buttons so minimise and close still just
+press. Double-click on the same element maximises, as it does on the standard header.</p>
 <h3>Guestbook moderation</h3>
 <p>The guestbook shows writing from strangers, so the owner can take an entry down.
 There are no accounts and exactly one moderator, so the control is a shared secret:
@@ -474,7 +487,8 @@ and the guestbook uses its in-process fallback.</p>
       and run with <code>pnpm checks</code> against a server on port 3000. They run
       on demand only; there is no hosted CI, so nothing runs them automatically on
       push.</li>
-  <li>Most valuable next: a Properties sheet for files inside Explorer.</li>
+  <li>Most valuable next: a Briefcase that really syncs two folders, Notepad's Find and
+      Replace, and splitting Minesweeper's best times by board size.</li>
 </ul>
 
 <h2 id="trouble">Part XIII. Troubleshooting</h2>

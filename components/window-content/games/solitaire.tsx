@@ -384,7 +384,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
   }
 
   // End dragging and attempt to drop cards
-  const endDrag = (e: React.MouseEvent, targetType: PileType, targetIndex: number) => {
+  const endDrag = (targetType: PileType, targetIndex: number) => {
     if (!isDragging || !dragState) return
 
     // Try to move cards from source to target
@@ -877,7 +877,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
               key={`foundation-${i}`}
               data-foundation={i}
               className="w-16 h-24 rounded border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] bg-green-800 relative"
-              onMouseUp={(e) => endDrag(e, "foundation", i)}
+              onMouseUp={() => endDrag("foundation", i)}
             >
               {pile.length > 0 && (
                 <div
@@ -901,7 +901,7 @@ export default function Solitaire({ onReturn }: SolitaireProps) {
             <div
               key={`tableau-${i}`}
               className="w-16 min-h-24 rounded border border-white border-r-[#5a5a5a] border-b-[#5a5a5a] bg-green-800 relative"
-              onMouseUp={(e) => endDrag(e, "tableau", i)}
+              onMouseUp={() => endDrag("tableau", i)}
             >
               {pile.map((card, j) => (
                 <div

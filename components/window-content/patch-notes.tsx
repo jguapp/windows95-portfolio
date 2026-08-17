@@ -18,6 +18,25 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "2.1",
+    date: "August 2026",
+    title: "Everything that was only pretending",
+    notes: [
+      "Four programs stopped being stubs. CD Player runs the same fifteen tracks Winamp carries with a transport that counts real seconds; Phone Dialer sounds true DTMF pairs and books a call; ScanDisk and Disk Defragmenter read the actual storage they claim to be fixing, so Defrag draws one block per stored byte and compacts them toward the front.",
+      "Paint got its Edit menu working: cut, copy, paste over a selection or the whole bitmap, Flip and Rotate, Stretch and Skew in percent and degrees, a text font picker, three airbrush nozzles, and Set As Wallpaper.",
+      "Explorer got a clipboard that deep-copies, names collisions Copy of Thing.txt, refuses to paste a folder into itself, and a Properties sheet for every file. Add/Remove Programs joined the Control Panel and politely refuses to remove anything.",
+      "Word's toolbar stopped bluffing. The font and size pickers change the document, and eleven buttons that used to open a box explaining what they would have done now do it: columns, a ruled line, borders, the style box, a format painter, paragraph marks, print preview, undo and redo.",
+      "ADVENTURE.EXE grew from three rooms into fourteen: a two-word parser, four locks in a chain, and a night shift that ends with Windows 95 shipping by dawn.",
+      "The games pass. Solitaire pays Vegas and keeps the Alt+Shift+2 cheat; FreeCell deals the -1 and -2 pranks and keeps statistics; Hearts learns your name, points the passing arrow and raises a moon; Minesweeper gained Custom Field, Fastest Mine Sweepers, xyzzy and Flowers; Pong seats a second player on W and S; and every game has its own sound switch.",
+      "Chess plays real recordings when you drop them in, and proves it: the check drives a game and asserts the file was reached for.",
+      "The guestbook can be moderated. A key only the owner has, checked on the server in constant time and never sent to the browser, reveals a Delete on every entry.",
+      "Start > Documents lists what you have actually opened, F1 opens help for whatever is focused, the tray speaker opens a four-fader mixer, and launching a program shows a drawn hourglass rather than the platform's own spinner.",
+      "Screensavers retired, Close Program retired with the shortcut the operating system swallows anyway, and the dial-up and battery tray glyphs went with them.",
+      "Winamp lists real song lengths, the pixel fonts are self-hosted so they no longer block first paint, and a sitemap and robots file joined the build.",
+      "The battle HUD was rebuilt around its brackets: capsule HP gauges, names centred on their own cards, a larger count under the player's gauge, and left and right driving the menus alongside up and down.",
+    ],
+  },
+  {
     version: "2.0",
     date: "August 2026",
     title: "The big one",

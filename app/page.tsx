@@ -24,7 +24,6 @@ const Winamp = dynamic(() => import("@/components/winamp"), { ssr: false })
 import Shutdown from "@/components/shutdown"
 import { applyResolution, readResolution } from "@/lib/resolution"
 import { playWhenAllowed } from "@/lib/sound"
-import FontChecker from "@/components/font-checker"
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<string[]>([])
@@ -370,7 +369,6 @@ export default function Home() {
       {showRun && <RunDialog onClose={() => setShowRun(false)} />}
 
       {/* Font Checker */}
-      <FontChecker />
     </main>
   )
 }

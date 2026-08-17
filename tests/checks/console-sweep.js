@@ -47,7 +47,7 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     "about-me", "resume", "projects", "contact", "gallery", "games", "paint", "calculator",
     "guestbook", "notepad", "msdos", "explorer", "recycle-bin", "find-files", "sound-properties",
     "patch-notes", "internet-explorer", "wordpad", "charmap", "mediaplayer", "soundrec",
-    "cdplayer", "phonedialer", "hyperterm", "scandisk", "defrag",
+    "cdplayer", "phonedialer", "hyperterm", "scandisk", "defrag", "add-remove",
   ]
   for (const id of windows) {
     area.current = id
@@ -136,6 +136,26 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   }
   await p.waitForSelector("[data-gameboy]", { timeout: 15000 }).catch(() => {})
   await p.waitForTimeout(2800)
+  await p.keyboard.press("Escape")
+  await p.waitForTimeout(300)
+
+  // The dialogs that only open from a key or a double click.
+  area.current = "f1-help"
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "notepad" } })))
+  await p.waitForTimeout(600)
+  await p.keyboard.press("F1")
+  await p.waitForTimeout(700)
+  // The help window is a modal overlay; its own button is what dismisses it.
+  await p.getByLabel("Close Help").click().catch(() => {})
+  await p.waitForTimeout(300)
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "notepad" } })))
+  await p.waitForTimeout(300)
+
+  area.current = "documents-menu"
+  await p.locator("#start-button").click().catch(() => {})
+  await p.waitForTimeout(250)
+  await p.locator("#start-menu li", { hasText: "ocuments" }).first().hover().catch(() => {})
+  await p.waitForTimeout(700)
   await p.keyboard.press("Escape")
   await p.waitForTimeout(300)
 

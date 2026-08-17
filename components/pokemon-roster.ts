@@ -15,7 +15,6 @@
  * gupphish for LOOPFISH, waysprite for RAMSPRITE, xeon for DAEMONYX.
  */
 
-export const SPRITE_SIZE = 56
 
 /**
  * A cry.

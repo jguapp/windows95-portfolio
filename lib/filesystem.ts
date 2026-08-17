@@ -237,7 +237,7 @@ export function writeFile(path: string[], body: string): boolean {
  * so on, with the extension left alone. Comparison is case-insensitive
  * because the drive is.
  */
-export function copyName(dir: FsDir, name: string): string {
+function copyName(dir: FsDir, name: string): string {
   const taken = (candidate: string) =>
     Object.keys(dir.children).some((k) => k.toLowerCase() === candidate.toLowerCase())
   if (!taken(name)) return name

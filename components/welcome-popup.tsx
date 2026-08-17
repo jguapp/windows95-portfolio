@@ -252,25 +252,25 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
           <div className="win95-content min-h-0 flex-1 overflow-auto p-[10px_20px]">
             <h2 className="text-sm font-bold mb-2">Recent Updates</h2>
             <ul className="list-disc pl-5 text-xs mb-4">
-              <li className="mb-1">The resume saves as Word and PDF, and Winamp's eject button takes your own music</li>
-              <li className="mb-1">Readme.txt on the C:\ drive is now the guide to everything hard to find</li>
-              <li className="mb-1">The secret battle plays by Gen I rules: types, status moves, misses, a real bag</li>
-              <li className="mb-1">Saving is your choice now: the checkbox below decides what this browser remembers</li>
-              <li className="mb-1">The wallpapers Windows 95 shipped, and Appearance schemes that recolor the whole shell</li>
-              <li className="mb-1">A QuickRes menu in the tray, from 640x480 up to 4K</li>
-              <li className="mb-1">Find really searches the C:\ drive, and Sounds really plays the scheme</li>
-              <li className="mb-1">File &gt; Print in Word prints the actual resume</li>
-              <li className="mb-1">A real hit counter on the 1996 home page, and Clippy knows your visitor number</li>
-              <li className="mb-1">The keyboard drives the desktop: Tab, arrows, Enter, and Alt+Q to switch windows</li>
-              <li className="mb-1">Wrong addresses get a proper Windows 95 error page</li>
+              <li className="mb-1">CD Player, Phone Dialer, ScanDisk and Defrag stopped being stubs and became real programs</li>
+              <li className="mb-1">Paint&apos;s Edit menu works: cut, copy, paste, flip, rotate, stretch, skew and a font picker</li>
+              <li className="mb-1">Explorer got a clipboard, a Properties sheet, and Add/Remove Programs joined Control Panel</li>
+              <li className="mb-1">Word&apos;s toolbar does what it says: fonts, sizes, columns, borders, styles and print preview</li>
+              <li className="mb-1">ADVENTURE.EXE is now fourteen rooms, a two-word parser and a night shift with an ending</li>
+              <li className="mb-1">Solitaire pays Vegas, FreeCell deals the joke hands, Hearts learns your name, Pong seats two</li>
+              <li className="mb-1">Minesweeper gained Custom Field, Best Times, and both cheats it shipped with in 1995</li>
+              <li className="mb-1">Chess plays real move recordings, and the guestbook can be moderated by its owner</li>
+              <li className="mb-1">Start &gt; Documents remembers what you opened, and F1 opens help for whatever is focused</li>
+              <li className="mb-1">The battle HUD was rebuilt: capsule HP gauges, centred names, and arrows that all work</li>
             </ul>
 
             <h2 className="text-sm font-bold mb-2">Planned Features</h2>
             <ul className="list-disc pl-5 text-xs">
-              <li className="mb-1">A Properties sheet for files inside Explorer</li>
               <li className="mb-1">Stacked Up Summit 2026 photos in the gallery</li>
               <li className="mb-1">Shell sort joining the sorting visualiser race</li>
-              <li className="mb-1">The behaviour checks moving into the repo as a test suite</li>
+              <li className="mb-1">A Briefcase that actually syncs between two folders on the C:\ drive</li>
+              <li className="mb-1">Solitaire&apos;s draw-three option, and Minesweeper&apos;s best times split by board size</li>
+              <li className="mb-1">Notepad&apos;s Find and Replace, and Word Wrap that remembers its setting</li>
             </ul>
           </div>
 
