@@ -15,20 +15,20 @@ import { useEffect, useRef } from "react"
  */
 const PLAYLIST: [string, string, number][] = [
   ["The Strokes", "Last Nite", 3 * 60 + 17],
-  ["Arctic Monkeys", "Do I Wanna Know", 4 * 60 + 32],
+  ["Jeff Buckley", "Hallelujah", 6 * 60 + 53],
   ["Radiohead", "Karma Police", 4 * 60 + 21],
   ["Mac Miller", "Self Care", 5 * 60 + 45],
-  ["Kendrick Lamar", "Money Trees", 6 * 60 + 26],
-  ["Bob Dylan", "Like a Rolling Stone", 6 * 60 + 13],
+  ["Steve Lacy", "Bad Habit", 3 * 60 + 52],
   ["Marvin Gaye", "What's Going On", 3 * 60 + 53],
   ["Faye Webster", "Kingston", 3 * 60 + 59],
   ["Stevie Wonder", "Superstition", 4 * 60 + 26],
-  ["Queen", "Don't Stop Me Now", 3 * 60 + 29],
+  ["Mazzy Star", "Fade Into You", 4 * 60 + 55],
   ["Michael Jackson", "Rock with You", 3 * 60 + 40],
-  ["Billy Joel", "Vienna", 3 * 60 + 34],
+  ["Fleetwood Mac", "Dreams", 4 * 60 + 14],
   ["Tame Impala", "The Less I Know the Better", 3 * 60 + 36],
   ["The Strokes", "Reptilia", 3 * 60 + 39],
-  ["Arctic Monkeys", "505", 4 * 60 + 13],
+  ["Radiohead", "No Surprises", 3 * 60 + 48],
+  ["Steve Lacy", "Dark Red", 2 * 60 + 38],
 ]
 
 

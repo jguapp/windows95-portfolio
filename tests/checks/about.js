@@ -27,7 +27,7 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const text = await w.innerText()
 
   ok("graduating 2027", /Baruch College '27/.test(text) && !/'26/.test(text))
-  ok("last updated August 16", /August 16, 2026/.test(text), (text.match(/Last Update:\s*\n?(.*)/) || [])[1] || "")
+  ok("last updated August 17", /August 17, 2026/.test(text), (text.match(/Last Update:\s*\n?(.*)/) || [])[1] || "")
   ok("looking for new grad roles", /New Grad Opportunities/.test(text) && !/Internship Opportunities/.test(text))
   ok("the about text is current", /Liberty Mutual/.test(text) && /2027/.test(text))
 

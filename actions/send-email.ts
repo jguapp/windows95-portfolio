@@ -33,7 +33,12 @@ async function clientIp(): Promise<string> {
   return h.get("x-real-ip") ?? "unknown"
 }
 
-export async function sendEmail(formData: FormData): Promise<{ success: boolean; message: string }> {
+export async function sendEmail(formData: FormData): Promise<{
+  success: boolean
+  message: string
+  /** The screened fields the browser is to deliver, present on success. */
+  cleared?: { subject: string; reply_to: string; message: string; email: string }
+}> {
   try {
     // Honeypot: hidden from real users, so a filled value means a bot. Report
     // success so the bot doesn't retry with a different strategy.
@@ -63,42 +68,29 @@ export async function sendEmail(formData: FormData): Promise<{ success: boolean;
 
     const validatedData = result.data
 
-    const web3FormsKey = process.env.WEB3FORMS_ACCESS_KEY
-    if (!web3FormsKey) {
-      console.error("WEB3FORMS_ACCESS_KEY is not set; cannot deliver contact form submission.")
-      return {
-        success: false,
-        message: `The contact form is temporarily unavailable. Please email me directly at ${CONTACT_EMAIL}`,
-      }
-    }
-
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        access_key: web3FormsKey,
+    /*
+      The server does not deliver; it clears. Web3Forms' free tier serves
+      a Cloudflare challenge page to any request whose TLS handshake is
+      not a browser's, so a Node fetch is refused whatever headers it
+      wears (verified: identical headers pass from curl and fail from
+      Node). Their access keys are public by design, an alias for the
+      destination inbox, so delivery belongs in the browser, whose
+      handshake is genuine. What belongs here is everything a browser
+      cannot be trusted to do: the schema, the honeypot, and the per-IP
+      rate limit have all already run above. The client only delivers
+      what this action has cleared, and a bot that posts to Web3Forms
+      directly bypasses nothing that was ever a secret.
+    */
+    return {
+      success: true,
+      message: "Message sent successfully! I'll get back to you soon.",
+      cleared: {
         subject: `[Portfolio Contact] ${validatedData.subject}`,
-        from_name: "Windows 95 Portfolio Contact Form",
         reply_to: validatedData.from,
         message: validatedData.message,
         email: validatedData.from,
-      }),
-    })
-
-    const responseData = await response.json()
-
-    if (!responseData.success) {
-      console.error("Web3Forms rejected the submission:", responseData.message ?? response.status)
-      return {
-        success: false,
-        message: `Your message couldn't be delivered. Please email me directly at ${CONTACT_EMAIL}`,
-      }
+      },
     }
-
-    return { success: true, message: "Message sent successfully! I'll get back to you soon." }
   } catch (error) {
     console.error("Error sending email:", error)
 

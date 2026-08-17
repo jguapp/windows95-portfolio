@@ -155,7 +155,7 @@ Windows emulator; every program is a purpose-built recreation.</p>
     └── window-titles / sound / resolution   shared lib
 
 Server (only two paths leave the page)
-├── actions/send-email.ts   contact form -> Web3Forms, rate limited
+├── actions/send-email.ts   contact form screening; the browser delivers
 └── actions/guestbook.ts    guestbook -> Postgres via DATABASE_URL</code></pre>
 <p><strong>Principles.</strong> One page owns the truth: <code>app/page.tsx</code> keeps
 the list of open, minimised and focused windows and passes callbacks down. Windows talk
@@ -204,7 +204,7 @@ follows what Windows would have done.</p>
 <tr><td><code>app/layout.tsx</code>, <code>app/opengraph-image.tsx</code></td><td>Document shell, the self-hosted pixel fonts, the metadata, and the social preview image.</td></tr>
 <tr><td><code>app/sitemap.ts</code>, <code>app/robots.ts</code></td><td>One route, declared honestly, and the robots file that points at it.</td></tr>
 <tr><td><code>app/not-found.tsx</code></td><td>The 404: a Windows 95 error dialog on the teal desktop with one button back to C:\.</td></tr>
-<tr><td><code>actions/send-email.ts</code></td><td>Contact form server action: zod validation, honeypot, rate limit, Web3Forms delivery.</td></tr>
+<tr><td><code>actions/send-email.ts</code></td><td>Contact form gate: zod validation, honeypot and rate limit run here; the browser then delivers the cleared submission to Web3Forms, whose free tier only accepts a real browser TLS handshake.</td></tr>
 <tr><td><code>actions/guestbook.ts</code></td><td>Guestbook server action over <code>lib/guestbook.ts</code>.</td></tr>
 <tr><td><code>actions/visitors.ts</code>, <code>lib/visitors.ts</code></td><td>The two hit counters: unique visitors for Clippy's greeting, page views for the home page. Rate limited per IP; the IP is stored nowhere.</td></tr>
 <tr><td><code>components/desktop.tsx</code></td><td>Icons, the wrapping default grid, drag and drop, marquee selection, context menus, wallpaper restore, arrow-key navigation, persistence of created items.</td></tr>
@@ -448,12 +448,19 @@ admin surfaces, or protected routes; error paths return generic messages and log
 details server-side only. A full-surface console sweep, part of the behaviour
 checks, opens every window, game, dialog and shell surface under a console
 listener and passes with zero errors; <code>pnpm audit</code> reports no known
-vulnerabilities in the dependency tree. One historical note: an earlier Web3Forms access key
-appeared in the repository's git history, and rotating it is tracked as issue #10.</p>
+vulnerabilities in the dependency tree. A note on the contact
+form's key: Web3Forms designs its access key to be public, an alias for the
+destination inbox rather than a credential, and its free tier serves a Cloudflare
+challenge to any request whose TLS handshake is not a browser's. So the key ships
+in the client bundle as <code>NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY</code> and the
+browser performs delivery, but only after the server action has screened the
+submission: schema, honeypot and the per-IP rate limit all run server-side, and
+the browser delivers exactly what the action cleared. An earlier key appeared in
+the repository's git history and was rotated dead at Web3Forms.</p>
 
 <h2 id="running">Part X. Running the project</h2>
 <pre><code>pnpm install
-cp .env.example .env.local   # WEB3FORMS_ACCESS_KEY, DATABASE_URL, GUESTBOOK_ADMIN_KEY: all optional locally
+cp .env.example .env.local   # NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY, DATABASE_URL, GUESTBOOK_ADMIN_KEY: all optional locally
 pnpm dev                     # http://localhost:3000
 pnpm typecheck && pnpm lint  # checks
 pnpm build && pnpm start     # production</code></pre>
@@ -498,7 +505,7 @@ and the guestbook uses its in-process fallback.</p>
     <td><code>DATABASE_URL</code> is unset or unreachable. Set the pooled connection
         string and restart.</td></tr>
 <tr><td>Contact form says delivery is unavailable</td>
-    <td><code>WEB3FORMS_ACCESS_KEY</code> is unset.</td></tr>
+    <td><code>NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY</code> is unset.</td></tr>
 <tr><td>No sound until you click</td>
     <td>Browsers block audio before a user gesture. The startup chime arms itself and
         fires on your first click or keypress. This is expected.</td></tr>

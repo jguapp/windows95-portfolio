@@ -31,6 +31,17 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const waitMenu = async (ms = 12000) => {
     for (let i = 0; i < ms / 200; i++) {
       if (await onMenu()) return true
+      /*
+        A faint forces the party screen, and with the foe order shuffled a
+        strong lead can knock the starter out mid-check. A player answers
+        it by picking a replacement, so the check does too: Enter takes
+        whoever the cursor offers, and the wait continues to the menu.
+      */
+      const text = await p.evaluate(() => document.querySelector("[data-gameboy]")?.textContent ?? "")
+      if (text.includes("Choose your next")) {
+        await p.keyboard.press("Enter")
+        await p.waitForTimeout(2500)
+      }
       await p.waitForTimeout(200)
     }
     return false
@@ -143,28 +154,50 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     return [...seen].join(" | ")
   }
 
+  /*
+    FIGHT now reopens on the move used last, so the cursor's slot is
+    whatever the chart hunt left it on. Relative arrow presses from an
+    unknown slot land anywhere; the check reads where the arrow actually
+    sits and walks the difference to the move it wants.
+  */
+  const cursorSlot = async () => {
+    return p.evaluate(() => {
+      const ts = [...document.querySelectorAll("[data-gameboy] text")]
+      const arrow = ts.find((t) => t.textContent === "▶")
+      if (!arrow) return 0
+      const y = Number(arrow.getAttribute("y"))
+      return Math.max(0, Math.round((y - 110) / 9))
+    })
+  }
   // PIXELPUP's YIP (100 accuracy) lowers the foe's attack, every time.
   await p.keyboard.press("Enter")
   await p.waitForTimeout(250)
-  await p.keyboard.press("ArrowDown")
-  await p.keyboard.press("ArrowDown")
+  const at = await cursorSlot()
+  const target = 2
+  const presses = (target - at + 4) % 4
+  for (let i = 0; i < presses; i++) await p.keyboard.press("ArrowDown")
   await p.keyboard.press("Enter")
   const yipLog = await watch(9000)
   ok("a status move moves a stage", yipLog.includes("ATTACK fell!"), yipLog.slice(-120))
   ok("status exchange returns to the menu", await waitMenu())
 
-  // SCANLINE is METAL against a CHAOS foe: super effective, bar a 5% miss.
-  let sawSuper = false
-  for (let round = 0; round < 3 && !sawSuper; round++) {
+  /*
+    The foe order is shuffled per battle now, so no single move is reliably
+    super effective against whoever leads. The chart still has to speak:
+    cycling through the moves lands a non-neutral hit within a few rounds
+    against any foe, and either announcement proves the chart is consulted.
+  */
+  let sawChart = false
+  for (let round = 0; round < 6 && !sawChart; round++) {
     await p.keyboard.press("Enter")
     await p.waitForTimeout(250)
-    for (let d = 0; d < 3; d++) await p.keyboard.press("ArrowDown")
+    for (let d = 0; d < round % 4; d++) await p.keyboard.press("ArrowDown")
     await p.keyboard.press("Enter")
     const log = await watch(11000)
-    sawSuper = log.includes("super effective")
+    sawChart = log.includes("super effective") || log.includes("not very effective")
     await waitMenu()
   }
-  ok("the type chart announces itself", sawSuper)
+  ok("the type chart announces itself", sawChart)
 
   // ---- The item menu -------------------------------------------------------
   await p.keyboard.press("ArrowDown")

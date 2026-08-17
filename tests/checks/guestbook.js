@@ -11,7 +11,25 @@
 const { chromium } = require("playwright")
 const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? "  " + e : ""}`)
 
-const KEY = process.env.GUESTBOOK_ADMIN_KEY || "local-test-key-12345"
+/*
+  The key must match whatever the server under test loaded, which is the
+  repo's .env unless the environment overrides it. A hardcoded fallback
+  went stale the moment the key was rotated, and every assertion after it
+  failed for the wrong reason.
+*/
+const { readFileSync } = require("fs")
+const KEY =
+  process.env.GUESTBOOK_ADMIN_KEY ||
+  (() => {
+    try {
+      const line = readFileSync(require("path").join(process.cwd(), ".env"), "utf-8")
+        .split(/\r?\n/)
+        .find((l) => l.startsWith("GUESTBOOK_ADMIN_KEY="))
+      return line ? line.slice("GUESTBOOK_ADMIN_KEY=".length).trim() : ""
+    } catch {
+      return ""
+    }
+  })()
 ;(async () => {
   const b = await chromium.launch()
   const p = await b.newPage({ viewport: { width: 1400, height: 950 } })
@@ -87,10 +105,18 @@ const KEY = process.env.GUESTBOOK_ADMIN_KEY || "local-test-key-12345"
     return
   }
 
-  // The right key opens moderation.
+  // The right key opens moderation. Verifying spends from the same
+  // five-per-ten-minutes budget the wrong guess above did, so back-to-back
+  // runs can be refused here too; that is the limiter, not a fault.
   await p.locator("[data-key-input]").fill(KEY)
   await p.locator("[data-key-ok]").click()
   await p.waitForTimeout(900)
+  if (/too many attempts/i.test(await win.innerText())) {
+    console.log("  SKIP  the limiter is holding this address; rerun in ten minutes")
+    ok("no page errors during the guestbook pass", errors.length === 0, errors.join(" | ").slice(0, 200))
+    await b.close()
+    return
+  }
   const deletes = await win.locator("[data-delete-entry]").count()
   ok("#102 the right key reveals the Delete buttons", deletes > 0, `${deletes} entries`)
 

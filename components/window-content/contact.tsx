@@ -1246,9 +1246,43 @@ the Phone Dialer will book a call.
     }
     try {
       setSubmitting(true)
+      /*
+        Two legs, by necessity. The server action screens the submission:
+        schema, honeypot, per-IP rate limit, none of which a browser can be
+        trusted to run. But it cannot deliver, because Web3Forms' free tier
+        refuses any request whose TLS handshake is not a browser's, so the
+        browser posts what the server cleared. The access key is public by
+        Web3Forms' own design; the controls that matter never left the
+        server.
+      */
       const result = await sendEmail(new FormData(e.currentTarget))
-      setNotice({ ok: result.success, text: result.message })
-      if (result.success) {
+      let delivered = result.success
+      if (result.success && result.cleared) {
+        const key = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+        if (!key) {
+          delivered = false
+          setNotice({ ok: false, text: "The contact form is not configured. Email jfvasq1@gmail.com directly." })
+        } else {
+          const delivery = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              access_key: key,
+              from_name: "Windows 95 Portfolio Contact Form",
+              ...result.cleared,
+            }),
+          })
+            .then((r) => r.json())
+            .catch(() => ({ success: false }))
+          delivered = Boolean(delivery.success)
+          if (!delivered) {
+            setNotice({ ok: false, text: "Your message couldn't be delivered. Email jfvasq1@gmail.com directly." })
+          }
+        }
+      }
+      if (delivered) setNotice({ ok: true, text: result.message })
+      else if (!result.success) setNotice({ ok: false, text: result.message })
+      if (delivered) {
         setSent((prev) => [
           ...prev,
           {

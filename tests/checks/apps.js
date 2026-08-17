@@ -103,6 +103,33 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   ok("#116 the Spam folder holds the junk", /MAKE MONEY FAST/.test(spamText), (spamText.match(/MAKE[^\n]*/) || [""])[0])
   ok("#116 including the chain letter", /DO NOT DELETE THIS/.test(spamText))
 
+  /*
+    The contact form's two legs, with the outside world stubbed. The server
+    action screens the submission; the browser then delivers to Web3Forms,
+    whose free tier only accepts a real browser's TLS handshake, which is
+    why delivery lives in the client at all. The route stub answers as
+    Web3Forms would, so the check proves the wiring offline: cleared fields
+    arrive at the endpoint, the notice reports success, the message reaches
+    Sent Items and the auto-reply is scheduled.
+  */
+  let deliveredBody = null
+  await p.route("https://api.web3forms.com/submit", (route) => {
+    deliveredBody = JSON.parse(route.request().postData() || "{}")
+    route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true }) })
+  })
+  await mail.getByRole("button", { name: "Compose" }).first().click()
+  await p.waitForTimeout(600)
+  await p.getByLabel("From").fill("check@example.com")
+  await p.getByLabel("Subject").fill("Two-leg check")
+  await p.getByLabel("Message").fill("Screened server-side, delivered browser-side.")
+  await p.locator('button[type="submit"]', { hasText: "Send" }).click()
+  await p.waitForFunction(() => !document.querySelector('[aria-label="Message"]'), { timeout: 20000 }).catch(() => {})
+  ok("the send clears the server gate and delivers", deliveredBody !== null && deliveredBody.access_key !== undefined)
+  ok("with the screened fields, not the raw form", deliveredBody?.subject === "[Portfolio Contact] Two-leg check", deliveredBody?.subject ?? "(no body)")
+  const mailAfter = await mail.innerText()
+  ok("the notice reports success", /sent successfully/i.test(mailAfter))
+  await p.unroute("https://api.web3forms.com/submit")
+
   // ---- #132: VIRUS.EXE rattles the assistant ------------------------------
   await closeAll()
   await openApp("msdos", "#window-msdos input")
