@@ -271,6 +271,58 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const missing = soundFiles.filter((f) => sizes[f] === -1)
   ok("all ten chess sound slots serve", missing.length === 0, missing.join(", ") || `${soundFiles.length} files`)
 
+  /*
+    And that a dropped-in recording is actually played. Every HTMLAudioElement
+    play() is recorded before the page loads, so this reads what the game
+    really reached for rather than trusting that it would. Placeholders are
+    silent by design, so with none replaced the game falls back to the
+    synthesiser and there is nothing to assert; the run says so and moves on.
+  */
+  const anyReal = Object.values(sizes).some((n) => n > 0 && n !== 4160)
+  if (!anyReal) {
+    console.log("  SKIP  every chess sound is still the silent placeholder")
+  } else {
+    await p.evaluate(() => {
+      window.__played = []
+      const orig = HTMLMediaElement.prototype.play
+      HTMLMediaElement.prototype.play = function (...args) {
+        // Recordings play from blob URLs, so the element carries its name.
+        window.__played.push(this.dataset?.chessSound ?? (this.src || "").split("/").pop())
+        return orig.apply(this, args)
+      }
+    })
+    // Earlier sections leave another game open, so the launcher is not on
+    // screen; a fresh Games window puts it back.
+    await p.evaluate(() => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "games" } })))
+    await p.waitForTimeout(500)
+    await p.evaluate(() => window.dispatchEvent(new CustomEvent("openWindow", { detail: { id: "games" } })))
+    await p.waitForTimeout(1200)
+    await p.getByText("Chess", { exact: true }).first().dblclick()
+    await p.waitForTimeout(1800)
+    await p.getByText("Play against the computer").click()
+    await p.waitForTimeout(300)
+    await p.locator('[data-colour="white"]').click()
+    await p.waitForSelector("[data-square]", { timeout: 15000 })
+    await p.waitForTimeout(1500)
+    ok("starting a game plays its recording", (await p.evaluate(() => window.__played)).includes("game-start"))
+
+    // e2 to e4, then the computer answers.
+    await p.locator('[data-square="6-4"]').click()
+    await p.waitForTimeout(500)
+    await p.locator('[data-square="4-4"]').click()
+    await p.waitForTimeout(3500)
+    const played = await p.evaluate(() => window.__played)
+    ok("moving plays the move recording", played.includes("move-self"), played.join(", ").slice(0, 80))
+    ok("the computer's reply plays its own", played.includes("move-opponent"), played.join(", ").slice(0, 80))
+
+    // A selected piece sent somewhere it cannot go.
+    await p.locator('[data-square="6-0"]').click()
+    await p.waitForTimeout(400)
+    await p.locator('[data-square="3-7"]').click()
+    await p.waitForTimeout(800)
+    ok("an illegal move plays its recording", (await p.evaluate(() => window.__played)).includes("illegal"))
+  }
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()

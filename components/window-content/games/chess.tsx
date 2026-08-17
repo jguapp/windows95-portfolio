@@ -148,14 +148,31 @@ export default function Chess({ onReturn }: ChessProps) {
   const customSounds = useRef<Partial<Record<SfxKey, HTMLAudioElement>>>({})
   useEffect(() => {
     let live = true
+    const urls: string[] = []
     for (const [key, file] of Object.entries(SOUND_FILES) as [SfxKey, string][]) {
-      fetch(`/sounds/chess/${file}.mp3`, { method: "HEAD" })
-        .then((res) => {
-          if (!live || !res.ok) return
-          const size = Number(res.headers.get("content-length"))
-          if (Number.isFinite(size) && size > 0 && size !== PLACEHOLDER_BYTES) {
-            customSounds.current[key] = new Audio(`/sounds/chess/${file}.mp3`)
-          }
+      /*
+        The whole file is read rather than asking HEAD for a size. A
+        content-length header is not guaranteed: some servers and CDNs omit
+        it on HEAD or report the compressed length, and either way the size
+        test would quietly decide a real recording was the placeholder and
+        fall back to the synthesiser with nothing to show for it. The bytes
+        are needed to play the sound regardless, so reading them settles the
+        question and warms the cache at once. These are single-digit
+        kilobytes each.
+      */
+      fetch(`/sounds/chess/${file}.mp3`)
+        .then((res) => (res.ok ? res.arrayBuffer() : null))
+        .then((buffer) => {
+          if (!live || !buffer || buffer.byteLength === PLACEHOLDER_BYTES) return
+          const url = URL.createObjectURL(new Blob([buffer], { type: "audio/mpeg" }))
+          urls.push(url)
+          const audio = new Audio(url)
+          // Decoded up front, so the first move does not wait on it.
+          audio.preload = "auto"
+          // The blob URL says nothing about which sound this is; the name
+          // makes it legible in devtools and checkable from a test.
+          audio.dataset.chessSound = file
+          customSounds.current[key] = audio
         })
         .catch(() => {
           // No file, no recording; the synthesiser covers it.
@@ -163,6 +180,7 @@ export default function Chess({ onReturn }: ChessProps) {
     }
     return () => {
       live = false
+      for (const url of urls) URL.revokeObjectURL(url)
     }
   }, [])
 
@@ -1497,6 +1515,9 @@ export default function Chess({ onReturn }: ChessProps) {
                       return (
                         <div
                           key={`${row}-${col}`}
+                          // Board coordinates, not screen ones, so a square can
+                          // be named regardless of which way the board sits.
+                          data-square={`${displayRow}-${displayCol}`}
                           className={`flex items-center justify-center cursor-pointer
                             ${isBlack ? currentTheme.darkSquare : currentTheme.lightSquare}
                             ${isSelected ? currentTheme.selected : ""}
