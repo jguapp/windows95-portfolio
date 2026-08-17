@@ -279,8 +279,10 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
       <text x={x - 12} y={y + 2.5} fill={P[3]} fontSize={3.75} className="font-pixel">
         HP:
       </text>
-      {/* A slim frameless gauge: light track, dark fill, nothing else. */}
-      <rect x={x} y={y} width={WIDTH} height={2} fill={P[1]} />
+      {/* A slim frameless gauge: light track, dark fill, nothing else. The
+          ends are rounded, so the bar reads as a capsule rather than a bar
+          of pixels cut off square. */}
+      <rect x={x} y={y} width={WIDTH} height={2} rx={1} ry={1} fill={P[1]} />
       {/* Full-width fill scaled to the ratio: scaling transitions, so damage
           trickles the bar down rather than cutting a chunk in one frame. */}
       <rect
@@ -288,6 +290,8 @@ function HpBar({ x, y, ratio }: { x: number; y: number; ratio: number }) {
         y={y}
         width={WIDTH}
         height={2}
+        rx={1}
+        ry={1}
         fill={shade}
         style={{
           transform: `scaleX(${Math.max(0, ratio)})`,
@@ -987,10 +991,12 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
 
       const count =
         phase === "menu" ? 4 : phase === "party" ? team.length : phase === "items" ? items.length + 1 : player.moves.length
-      if (e.key === "ArrowDown") {
+      // Left and right walk the same list as up and down. The Game Boy's
+      // pad had four directions and the menus answered to all of them.
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         setCursor((c) => (c + 1) % count)
         setNote(null)
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         setCursor((c) => (c - 1 + count) % count)
         setNote(null)
       } else if (e.key === "Enter" || e.key.toLowerCase() === "z") {
@@ -1117,8 +1123,10 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={foe.species.sprite} x={96} y={6} />
                 </g>
               )}
-              {/* The name spans exactly the HP bar's width. */}
-              <Label x={8} y={16} size={4.5} width={48}>
+              {/* The name is spread across its bracket rather than sitting
+                  left of it: the underline runs x=2 to x=84, so the letters
+                  are fitted to the same span, inset two units at each end. */}
+              <Label x={4} y={16} size={4.5} width={78}>
                 {foe.name}
               </Label>
               <Label x={14} y={23} size={4}>
@@ -1136,18 +1144,21 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={playerBack} x={10} y={46} />
                 </g>
               )}
-              <Label x={84} y={72} size={4.5} width={48}>
+              {/* Spread across the player's bracket, which runs x=74 to 158. */}
+              <Label x={76} y={72} size={4.5} width={80}>
                 {player.name}
               </Label>
               <Label x={90} y={79} size={4}>
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
-              <Label x={106} y={96} size={4}>
+              {/* The count sits just under its gauge and reads a size up;
+                  the bracket rises with it so the panel stays closed. */}
+              <Label x={104} y={92} size={5}>
                 {`${player.hp}/${player.maxHp}`}
               </Label>
-              <rect x={74} y={100} width={84} height={1} fill={P[3]} />
-              <rect x={156} y={93} width={2} height={8} fill={P[3]} />
+              <rect x={74} y={96} width={84} height={1} fill={P[3]} />
+              <rect x={156} y={89} width={2} height={8} fill={P[3]} />
             </>
           )}
 

@@ -281,6 +281,17 @@ node so pasting twice cannot alias one object into two folders. A name already i
 takes the original's naming: "Copy of Thing.txt", then "Copy (2) of Thing.txt", extension
 untouched, compared case-insensitively because the drive is. A folder cannot be pasted
 into itself or its own descendant, which <code>isInside</code> decides.</p>
+<h3>The blanket font rule, and what has to escape it</h3>
+<p><code>globals.css</code> carries <code>* { font-family: ... !important }</code> so every
+window inherits the system face without each one asking for it. An important declaration
+in a stylesheet outranks an ordinary inline style, which is a trap for anything that sets
+a font from JavaScript: the recreated Word set a family the page then ignored, so its font
+and size pickers looked broken while behaving exactly as written. Three things escape the
+rule, each deliberately. The MS-DOS prompt and Notepad take <code>.win95-mono</code>, which
+wins by coming later at equal specificity. The resume marks its own declarations important,
+because inline-important is the one thing that outranks stylesheet-important, and reasserts
+them after every formatting command since <code>execCommand</code> keeps producing fresh
+elements. The taskbar menu takes its own rule for the same reason.</p>
 <h3>Guestbook moderation</h3>
 <p>The guestbook shows writing from strangers, so the owner can take an entry down.
 There are no accounts and exactly one moderator, so the control is a shared secret:

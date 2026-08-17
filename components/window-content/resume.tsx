@@ -2,9 +2,8 @@
 
 import React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { CloseIcon, MaximizeIcon, MinimizeIcon } from "@/components/win95-controls"
-import { messageBox } from "@/components/win95-dialog"
 
 // Dialog components
 type SaveFormat = "html" | "doc" | "pdf"
@@ -611,6 +610,15 @@ export default function Resume() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [zoomLevel, setZoomLevel] = useState("100%")
+  /** Word's pilcrow toggle: paragraph marks shown at the end of each block. */
+  const [showMarks, setShowMarks] = useState(false)
+  /** The format painter's loaded brush, or null when it is empty. */
+  const [painted, setPainted] = useState<{
+    fontFamily: string
+    fontSize: string
+    fontWeight: string
+    color: string
+  } | null>(null)
   /** Where the caret is, for the status bar. Word always showed this. */
   const [caret, setCaret] = useState({ line: 1, col: 1 })
 
@@ -670,20 +678,95 @@ export default function Resume() {
     }
   }, [])
 
-  // Inside the Resume component, after the existing useEffect hooks, add:
+  /**
+   * Re-asserts the document's typography over the desktop's blanket rule.
+   *
+   * globals.css carries `* { font-family: ... !important }` so that every
+   * window inherits the system face without each one asking. An important
+   * declaration in a stylesheet beats an ordinary inline style, which meant
+   * the font picker set a family the page then ignored: choosing Georgia
+   * did nothing visible, and neither did a size, because execCommand writes
+   * ordinary inline styles too. Marking the document's own declarations
+   * important puts them back on top, since inline-important is the one
+   * thing that outranks stylesheet-important.
+   *
+   * This runs after every formatting command rather than only on mount,
+   * because execCommand keeps producing fresh elements as text is styled.
+   */
+  const enforceTypography = useCallback(() => {
+    const page = resumeRef.current
+    if (!page) return
+
+    // execCommand emits <font face> and <font size> in some browsers.
+    page.querySelectorAll<HTMLElement>("font[face]").forEach((el) => {
+      const face = el.getAttribute("face")
+      if (face) el.style.setProperty("font-family", face, "important")
+    })
+
+    page.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
+      const family = el.style.fontFamily
+      if (family) el.style.setProperty("font-family", family, "important")
+      const size = el.style.fontSize
+      if (size) el.style.setProperty("font-size", size, "important")
+    })
+  }, [])
+
+  // The document's base typography, applied to every editable block.
   useEffect(() => {
-    if (resumeRef.current) {
-      // Apply font family and size to all content
-      const elements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
-      elements.forEach((el) => {
-        el.style.fontFamily = fontFamily
-        el.style.fontSize = `${fontSize}px`
-      })
-    }
-  }, [fontFamily, fontSize]) // Run when these values change
+    const page = resumeRef.current
+    if (!page) return
+    page.querySelectorAll<HTMLElement>('[contenteditable="true"]').forEach((el) => {
+      el.style.setProperty("font-family", fontFamily, "important")
+      el.style.setProperty("font-size", `${fontSize}px`, "important")
+    })
+    enforceTypography()
+  }, [fontFamily, fontSize, enforceTypography])
 
   const saveResume = () => {
     setSaveDialogOpen(true)
+  }
+
+  /**
+   * Print Preview, which on this desktop is the print dialog itself.
+   *
+   * Every browser's print dialog opens on a rendered preview of the page,
+   * so it is the preview, and it paginates the same document Print does
+   * rather than a separate approximation of it.
+   */
+  const previewPrint = () => {
+    document.body.setAttribute("data-printing", "resume")
+    const done = () => document.body.removeAttribute("data-printing")
+    window.addEventListener("afterprint", done, { once: true })
+    setTimeout(() => window.print(), 50)
+  }
+
+  /**
+   * The format painter, in its two halves.
+   *
+   * The first click remembers the typography under the caret; the second
+   * paints it onto whatever is selected. Word kept the brush loaded until
+   * it was used, which is what the stored value here does.
+   */
+  const copyFormatting = () => {
+    const selection = window.getSelection()
+    const node = selection?.anchorNode
+    const source = (node?.nodeType === 3 ? node.parentElement : (node as HTMLElement | null)) ?? null
+
+    if (!painted && source) {
+      const cs = window.getComputedStyle(source)
+      setPainted({ fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight, color: cs.color })
+      return
+    }
+    if (painted && selection && !selection.isCollapsed) {
+      document.execCommand("styleWithCSS", false, "true")
+      document.execCommand("fontName", false, painted.fontFamily)
+      document.execCommand("foreColor", false, painted.color)
+      resumeRef.current?.querySelectorAll<HTMLElement>("[style]").forEach((el) => {
+        if (el.style.fontFamily) el.style.setProperty("font-size", painted.fontSize, "important")
+      })
+      enforceTypography()
+      setPainted(null)
+    }
   }
 
   const handleSave = (filename: string, format: SaveFormat) => {
@@ -843,12 +926,29 @@ export default function Resume() {
     }
   }
 
+  /** Cycles the page between one, two and three columns, as Word's button did. */
   const handleColumns = () => {
-    messageBox({ title: "Microsoft Word", text: "This would open the columns dialog in a real Word 95 application.", icon: "information" })
+    const page = resumeRef.current
+    if (!page) return
+    const current = Number(page.style.columnCount || "1")
+    const next = current >= 3 ? 1 : current + 1
+    if (next === 1) {
+      page.style.removeProperty("column-count")
+      page.style.removeProperty("column-gap")
+    } else {
+      page.style.setProperty("column-count", String(next))
+      page.style.setProperty("column-gap", "28px")
+    }
   }
 
+  /**
+   * Word's Drawing button opened a toolbar whose most-used control was the
+   * horizontal rule, so that is what this draws: a line across the document
+   * at the caret, which is a thing the page can actually keep.
+   */
   const handleDrawing = () => {
-    messageBox({ title: "Microsoft Word", text: "This would open the drawing tools in a real Word 95 application.", icon: "information" })
+    resumeRef.current?.focus()
+    document.execCommand("insertHorizontalRule")
   }
 
   const handleTextColor = (color: string) => {
@@ -878,7 +978,24 @@ export default function Resume() {
   }
 
   const handleBorders = () => {
-    messageBox({ title: "Microsoft Word", text: "This would open the borders dialog in a real Word 95 application.", icon: "information" })
+    /*
+      The block holding the caret gains or loses a border, which is what the
+      toolbar's Borders button did to a paragraph.
+    */
+    const selection = window.getSelection()
+    const node = selection?.anchorNode
+    const block = (node?.nodeType === 3 ? node.parentElement : (node as HTMLElement | null))?.closest(
+      "p, li, h1, h2, h3, div",
+    ) as HTMLElement | undefined
+    const target = block && resumeRef.current?.contains(block) ? block : resumeRef.current
+    if (!target) return
+    if (target.style.border) {
+      target.style.removeProperty("border")
+      target.style.removeProperty("padding")
+    } else {
+      target.style.setProperty("border", "1px solid #000")
+      target.style.setProperty("padding", "4px")
+    }
   }
 
   const handleMenuClick = (menuName: string, event: React.MouseEvent) => {
@@ -899,10 +1016,14 @@ export default function Resume() {
           { label: "Print...", action: () => setPrintDialogOpen(true) },
           {
             label: "Print Preview...",
-            action: () => messageBox({ title: "Microsoft Word", text: "This would open Print Preview in a real Word 95 application.", icon: "information" }),
+            action: () => previewPrint(),
           },
           { divider: true },
-          { label: "Exit", action: () => messageBox({ title: "Microsoft Word", text: "This would close Word in a real Word 95 application.", icon: "information" }) },
+          {
+            label: "Exit",
+            action: () =>
+              window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "resume" } })),
+          },
         ]
       case "Edit":
         return [
@@ -1164,7 +1285,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => messageBox({ title: "Microsoft Word", text: "This would open Print Preview in a real Word 95 application.", icon: "information" })}
+          onClick={() => previewPrint()}
           title="Print Preview"
         >
           <img
@@ -1223,7 +1344,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => messageBox({ title: "Microsoft Word", text: "This would open the format painter in a real Word 95 application.", icon: "information" })}
+          onClick={() => copyFormatting()}
           title="Format Painter"
         >
           <img
@@ -1248,7 +1369,7 @@ export default function Resume() {
           </button>
           <button
             className="w-3 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center border-l-0"
-            onClick={() => messageBox({ title: "Microsoft Word", text: "This would show a list of actions to undo in a real Word 95 application.", icon: "information" })}
+            onClick={() => document.execCommand("undo")}
             title="Undo List"
             disabled={undoStack.length <= 1}
           >
@@ -1270,7 +1391,7 @@ export default function Resume() {
           </button>
           <button
             className="w-3 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center border-l-0"
-            onClick={() => messageBox({ title: "Microsoft Word", text: "This would show a list of actions to redo in a real Word 95 application.", icon: "information" })}
+            onClick={() => document.execCommand("redo")}
             title="Redo List"
             disabled={redoStack.length === 0}
           >
@@ -1313,7 +1434,7 @@ export default function Resume() {
         </button>
         <button
           className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-[inset_1px_1px_#ffffff,inset_-1px_-1px_#404040] flex items-center justify-center"
-          onClick={() => messageBox({ title: "Microsoft Word", text: "This would show control codes in a real Word 95 application.", icon: "information" })}
+          onClick={() => setShowMarks((v) => !v)}
           title="Control Codes"
         >
           <img
@@ -1335,9 +1456,13 @@ export default function Resume() {
         <select
           className="w-32 h-6 bg-white border border-[#808080] shadow-[inset_1px_1px_#404040] px-1 text-[11px]"
           value="Normal"
-          onChange={() => {
-            // This would apply different predefined styles in a real Word app
-            messageBox({ title: "Microsoft Word", text: "This would apply a style in a real Word 95 application.", icon: "information" })
+          onChange={(e) => {
+            // Word's style box retagged the block the caret sat in.
+            const tag = { Normal: "p", "Heading 1": "h1", "Heading 2": "h2", "Heading 3": "h3" }[e.target.value]
+            if (!tag) return
+            resumeRef.current?.focus()
+            document.execCommand("formatBlock", false, tag)
+            enforceTypography()
           }}
         >
           <option>Normal</option>
@@ -1351,19 +1476,18 @@ export default function Resume() {
           onChange={(e) => {
             setFontFamily(e.target.value)
 
-            // Apply to selected text
+            // Selected text takes the face; with nothing selected the whole
+            // document does, which is what the picker means with no caret.
             const selection = window.getSelection()
             if (selection && !selection.isCollapsed) {
+              document.execCommand("styleWithCSS", false, "true")
               document.execCommand("fontName", false, e.target.value)
-            } else {
-              // If no selection, apply to editable elements for future typing
-              if (resumeRef.current) {
-                const editableElements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
-                editableElements.forEach((el) => {
-                  el.style.fontFamily = e.target.value
-                })
-              }
+            } else if (resumeRef.current) {
+              resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]').forEach((el) => {
+                el.style.setProperty("font-family", e.target.value, "important")
+              })
             }
+            enforceTypography()
           }}
         >
           {/* Serif Fonts */}
@@ -1403,27 +1527,25 @@ export default function Resume() {
             const newSize = Number(e.target.value)
             setFontSize(newSize)
 
-            // Apply to selected text
             const selection = window.getSelection()
             if (selection && !selection.isCollapsed) {
+              /*
+                execCommand only knows the seven HTML font sizes, so the
+                command marks the run and the exact pixel size is written
+                over it afterwards. Only the elements it just produced are
+                touched: they are the ones still carrying a size attribute.
+              */
               document.execCommand("fontSize", false, getFontSizeValue(newSize))
-
-              // Fix the actual size since execCommand fontSize uses 1-7 values
-              const fontElements = document.getElementsByTagName("font")
-              for (let i = 0; i < fontElements.length; i++) {
-                if (fontElements[i].size) {
-                  fontElements[i].style.fontSize = `${newSize}px`
-                }
-              }
-            } else {
-              // If no selection, apply to editable elements for future typing
-              if (resumeRef.current) {
-                const editableElements = resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]')
-                editableElements.forEach((el) => {
-                  el.style.fontSize = `${newSize}px`
-                })
-              }
+              resumeRef.current?.querySelectorAll<HTMLElement>("font[size]").forEach((el) => {
+                el.style.setProperty("font-size", `${newSize}px`, "important")
+                el.removeAttribute("size")
+              })
+            } else if (resumeRef.current) {
+              resumeRef.current.querySelectorAll<HTMLElement>('[contenteditable="true"]').forEach((el) => {
+                el.style.setProperty("font-size", `${newSize}px`, "important")
+              })
             }
+            enforceTypography()
           }}
         >
           <option>8</option>
@@ -1697,9 +1819,20 @@ export default function Resume() {
         the grey workspace, and the zoom scales the sheet rather than the window.
       */}
       <div data-workspace className="flex-1 overflow-auto bg-[#808080] p-4">
+      {/* Paragraph marks, drawn after each block while the toggle is on. */}
+      {showMarks && (
+        <style>{`
+          [data-page][data-marks] p::after,
+          [data-page][data-marks] h1::after,
+          [data-page][data-marks] h2::after,
+          [data-page][data-marks] h3::after,
+          [data-page][data-marks] li::after { content: " B6"; color: #0000cc; margin-left: 2px; }
+        `}</style>
+      )}
       <div
         ref={resumeRef}
         data-page
+        data-marks={showMarks ? "" : undefined}
         className="document mx-auto bg-white shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
         onKeyUp={updateCaret}
         onClick={updateCaret}

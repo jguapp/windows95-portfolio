@@ -65,7 +65,8 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const offsetAt = async () => {
     const nav = await w.locator("a", { hasText: "logout" }).first().boundingBox()
     const headerBox = await w.locator("img[src*='thefacebook-header']").boundingBox()
-    const bitmapW = Math.max(headerBox.width, 1300)
+    // Ten times the band height, or the container width when wider.
+    const bitmapW = Math.max(headerBox.width, 1080)
     return Math.round(((headerBox.x + headerBox.width - (nav.x + nav.width)) / bitmapW) * 1000)
   }
   const toggleSize = async () => {

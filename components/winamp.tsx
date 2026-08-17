@@ -2,23 +2,33 @@
 
 import { useEffect, useRef } from "react"
 
-/** The owner's fifteen, as listed on the profile: artist, then title. */
-const PLAYLIST: [string, string][] = [
-  ["The Strokes", "Last Nite"],
-  ["Arctic Monkeys", "Do I Wanna Know"],
-  ["Radiohead", "Karma Police"],
-  ["Mac Miller", "Self Care"],
-  ["Kendrick Lamar", "Money Trees"],
-  ["Bob Dylan", "Like a Rolling Stone"],
-  ["Marvin Gaye", "What's Going On"],
-  ["Faye Webster", "Kingston"],
-  ["Stevie Wonder", "Superstition"],
-  ["Queen", "Don't Stop Me Now"],
-  ["Michael Jackson", "Rock with You"],
-  ["Billy Joel", "Vienna"],
-  ["Tame Impala", "The Less I Know the Better"],
-  ["The Strokes", "Reptilia"],
-  ["Arctic Monkeys", "505"],
+/**
+ * The owner's fifteen, as listed on the profile: artist, title, seconds.
+ *
+ * The length is carried here because the repository ships silent
+ * placeholders under these names, and Webamp reads a file's real duration:
+ * with nothing supplied every track listed as 0:01, which told you only
+ * that the recording was missing. These are the standard album-version
+ * lengths, so the playlist reads like a playlist before anything is
+ * installed. Drop a real recording in and its own duration takes over once
+ * the file loads, so an alternate cut corrects itself.
+ */
+const PLAYLIST: [string, string, number][] = [
+  ["The Strokes", "Last Nite", 3 * 60 + 17],
+  ["Arctic Monkeys", "Do I Wanna Know", 4 * 60 + 32],
+  ["Radiohead", "Karma Police", 4 * 60 + 21],
+  ["Mac Miller", "Self Care", 5 * 60 + 45],
+  ["Kendrick Lamar", "Money Trees", 6 * 60 + 26],
+  ["Bob Dylan", "Like a Rolling Stone", 6 * 60 + 13],
+  ["Marvin Gaye", "What's Going On", 3 * 60 + 53],
+  ["Faye Webster", "Kingston", 3 * 60 + 59],
+  ["Stevie Wonder", "Superstition", 4 * 60 + 26],
+  ["Queen", "Don't Stop Me Now", 3 * 60 + 29],
+  ["Michael Jackson", "Rock with You", 3 * 60 + 40],
+  ["Billy Joel", "Vienna", 3 * 60 + 34],
+  ["Tame Impala", "The Less I Know the Better", 3 * 60 + 36],
+  ["The Strokes", "Reptilia", 3 * 60 + 39],
+  ["Arctic Monkeys", "505", 4 * 60 + 13],
 ]
 
 
@@ -139,9 +149,10 @@ export default function Winamp({ onClose }: WinampProps) {
             url,
             duration: 24,
           },
-          ...PLAYLIST.map(([artist, title], i) => ({
+          ...PLAYLIST.map(([artist, title, duration], i) => ({
             metaData: { artist, title },
             url: encodeURI(`/audio/winamp/${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`),
+            duration,
           })),
         ],
       })

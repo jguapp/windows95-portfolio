@@ -119,7 +119,13 @@ function FacebookHeader() {
         The bitmap already carries its own clear blue below the wordmark, so
         the space the nav needs is in the art rather than added under it.
       */}
-      <div className="relative h-[130px]">
+      {/*
+        108px, not 130. The artwork is 10:1, so the band's height is what
+        sets the wordmark's size: shorter band, smaller logo, and the whole
+        header stops shouting. Every offset below is derived from the same
+        height, so they move together.
+      */}
+      <div className="relative h-[108px]">
         <div className="absolute inset-0">
           <img
             src="/images/blob/thefacebook-header.png"
@@ -143,20 +149,24 @@ function FacebookHeader() {
         </div>
         {/*
           The wordmark spans fractions 0.512 to 0.908 of the source bitmap,
-          and the bitmap's displayed width is max(container, 1300px) because
-          the art is 10:1 cropped from the right at 130px tall. Sizing the
-          nav box from the same arithmetic keeps the links spread evenly
-          under the logo, windowed and maximised alike.
+          and the bitmap's displayed width is max(container, 1080px) because
+          the art is 10:1 cropped from the right at 108px tall. Sizing the
+          nav box from the same arithmetic keeps the links under the logo,
+          windowed and maximised alike. The padding inside that box pulls the
+          row in from both ends, so the links sit closer together and stay
+          strictly within the wordmark instead of reaching its outer edges.
         */}
         {/*
           justify-between pins the first and last link to the box's edges,
           so the row cannot drift with centring slack when the box scales.
         */}
         <div
-          className="absolute bottom-[5px] flex items-center justify-between text-white text-sm"
+          className="absolute bottom-[4px] flex items-center justify-between px-5 text-white text-xs"
           style={{
-            width: "calc(max(100%, 1300px) * 0.396)",
-            right: "calc(max(100%, 1300px) * 0.092)",
+            // The bitmap renders ten times the band's height, or the
+            // container's width when that is wider.
+            width: "calc(max(100%, 1080px) * 0.396)",
+            right: "calc(max(100%, 1080px) * 0.092)",
           }}
         >
           {NAV_LINKS.map((link) => (
