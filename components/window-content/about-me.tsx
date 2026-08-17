@@ -187,6 +187,39 @@ function FacebookHeader() {
   )
 }
 
+/** The sidebar's adverts, top to bottom. */
+const ADVERTS = [
+  { src: "/images/blob/magazine-ad.jpg", alt: "Diet Pepsi: New Freshness Dating" },
+  { src: "/images/blob/gameboy-ad.jpg", alt: "Nintendo Game Boy" },
+]
+
+/**
+ * One advert in the sidebar.
+ *
+ * A missing file falls back to the skyscraper that used to fill this slot,
+ * so a scan that has not been dropped in yet shows the old advert rather
+ * than a broken image.
+ */
+function Advert({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="bg-white border border-[#B7B7B7] overflow-hidden">
+      <img
+        src={src}
+        alt={alt}
+        data-advert
+        className="block w-full h-auto"
+        onError={(e) => {
+          const img = e.currentTarget
+          if (!img.dataset.fellBack) {
+            img.dataset.fellBack = "1"
+            img.src = "/images/blob/skyscraper-ad.png"
+          }
+        }}
+      />
+    </div>
+  )
+}
+
 function SearchSidebar() {
   return (
     <div className="w-48 flex flex-col gap-4 h-full relative">
@@ -213,40 +246,17 @@ function SearchSidebar() {
         </div>
 
         {/*
-          The advert.
+          The adverts, stacked as a magazine stacked them down a column.
 
-          Drop a scan at /images/blob/magazine-ad.jpg and it replaces the
-          skyscraper; the onError below falls back to the old one, so a
-          missing file shows the previous advert rather than a broken image.
-
-          The image keeps its own proportions rather than being stretched to
-          the panel. The skyscraper was 320x1000 and filled a tall slot by
-          cover-cropping, which works only for art already that shape: a
-          magazine page is closer to 3:4, and cover would have thrown away
-          most of its width to fit. Natural height means whatever is dropped
-          in arrives whole, pinned to the top of the slot.
+          Each keeps its own proportions and its box wraps it, rather than
+          being stretched to a fixed slot: the skyscraper these replaced was
+          320x1000 and filled a tall column by cover-cropping, which works
+          only for art already that shape. A magazine page is nearer 3:4, so
+          cover would have thrown away most of its width.
         */}
-        {/*
-          The box wraps the advert rather than stretching past it. The
-          skyscraper was 320x1000 and filled the whole column; a magazine
-          page is about 3:4, so forcing the old height left it stranded at
-          the top of six hundred pixels of white.
-        */}
-        <div className="bg-white border border-[#B7B7B7] overflow-hidden">
-          <img
-            src="/images/blob/magazine-ad.jpg"
-            alt="Advertisement"
-            data-advert
-            className="block w-full h-auto"
-            onError={(e) => {
-              const img = e.currentTarget
-              if (!img.dataset.fellBack) {
-                img.dataset.fellBack = "1"
-                img.src = "/images/blob/skyscraper-ad.png"
-              }
-            }}
-          />
-        </div>
+        {ADVERTS.map((advert) => (
+          <Advert key={advert.src} {...advert} />
+        ))}
       </div>
     </div>
   )
