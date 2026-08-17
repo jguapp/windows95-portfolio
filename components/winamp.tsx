@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 
 /**
- * The owner's fifteen, as listed on the profile: artist, title, seconds.
+ * The owner's fourteen, as listed on the profile: artist, title, seconds.
  *
  * The length is carried here because the repository ships silent
  * placeholders under these names, and Webamp reads a file's real duration:
@@ -14,12 +14,13 @@ import { useEffect, useRef } from "react"
  * the file loads, so an alternate cut corrects itself.
  */
 const PLAYLIST: [string, string, number][] = [
+  ["The Smiths", "Please Please Please Let Me Get What You Want", 1 * 60 + 52],
   ["The Strokes", "Ode to the Mets", 5 * 60 + 51],
   ["Jeff Buckley", "Lover, You Should've Come Over", 6 * 60 + 43],
   ["Radiohead", "Fake Plastic Trees", 4 * 60 + 50],
-  ["Mac Miller", "Self Care", 5 * 60 + 45],
+  ["Mac Miller", "The Spins", 3 * 60 + 22],
   ["Frank Ocean", "Nights", 5 * 60 + 7],
-  ["Marvin Gaye", "What's Going On", 3 * 60 + 53],
+  ["Anderson .Paak", "Heart Don't Stand a Chance", 3 * 60 + 54],
   ["Faye Webster", "I Know I'm Funny", 3 * 60 + 56],
   ["Stevie Wonder", "Isn't She Lovely", 6 * 60 + 34],
   ["Mazzy Star", "Halah", 3 * 60 + 22],
@@ -41,79 +42,14 @@ const PLAYLIST: [string, string, number][] = [
  * The library is imported only when the window is first opened, so its weight
  * is paid by the visitor who asked for it rather than by everyone.
  *
- * There is no music in the repository, so the opening track is synthesised on
- * the spot: a short chiptune loop rendered through an OfflineAudioContext and
- * wrapped as a WAV blob. Visitors can drop their own MP3s straight onto the
- * playlist, which Webamp supports natively.
+ * Every track is a drop-in slot: the repository ships silent placeholders
+ * under the exact filenames, so the titles and lengths always list, and
+ * overwriting a file with the real recording is the whole installation.
+ * Visitors can also drop their own MP3s straight onto the playlist, which
+ * Webamp supports natively.
  */
 interface WinampProps {
   onClose: () => void
-}
-
-/** Renders a little square-wave loop and returns it as a WAV blob URL. */
-async function synthesiseTrack(): Promise<string> {
-  const rate = 44100
-  const seconds = 24
-  const ctx = new OfflineAudioContext(1, rate * seconds, rate)
-
-  // A four-bar chip loop: lead, bass, and a noise hat.
-  const lead = [523.25, 659.25, 783.99, 659.25, 880, 783.99, 659.25, 523.25]
-  const bass = [130.81, 130.81, 164.81, 164.81, 196, 196, 164.81, 130.81]
-  const beat = seconds / 32
-
-  for (let bar = 0; bar < 4; bar++) {
-    for (let i = 0; i < 8; i++) {
-      const t = (bar * 8 + i) * beat
-      // Lead
-      const osc = ctx.createOscillator()
-      osc.type = "square"
-      osc.frequency.value = lead[(i + bar) % lead.length]
-      const g = ctx.createGain()
-      g.gain.setValueAtTime(0.08, t)
-      g.gain.exponentialRampToValueAtTime(0.005, t + beat * 0.9)
-      osc.connect(g).connect(ctx.destination)
-      osc.start(t)
-      osc.stop(t + beat * 0.9)
-      // Bass
-      const bosc = ctx.createOscillator()
-      bosc.type = "triangle"
-      bosc.frequency.value = bass[i]
-      const bg = ctx.createGain()
-      bg.gain.setValueAtTime(0.1, t)
-      bg.gain.exponentialRampToValueAtTime(0.01, t + beat)
-      bosc.connect(bg).connect(ctx.destination)
-      bosc.start(t)
-      bosc.stop(t + beat)
-    }
-  }
-
-  const rendered = await ctx.startRendering()
-
-  // PCM 16-bit WAV encoding, the simplest container there is.
-  const samples = rendered.getChannelData(0)
-  const buf = new ArrayBuffer(44 + samples.length * 2)
-  const view = new DataView(buf)
-  const writeStr = (at: number, str: string) => {
-    for (let i = 0; i < str.length; i++) view.setUint8(at + i, str.charCodeAt(i))
-  }
-  writeStr(0, "RIFF")
-  view.setUint32(4, 36 + samples.length * 2, true)
-  writeStr(8, "WAVE")
-  writeStr(12, "fmt ")
-  view.setUint32(16, 16, true)
-  view.setUint16(20, 1, true)
-  view.setUint16(22, 1, true)
-  view.setUint32(24, rate, true)
-  view.setUint32(28, rate * 2, true)
-  view.setUint16(32, 2, true)
-  view.setUint16(34, 16, true)
-  writeStr(36, "data")
-  view.setUint32(40, samples.length * 2, true)
-  for (let i = 0; i < samples.length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]))
-    view.setInt16(44 + i * 2, s * 0x7fff, true)
-  }
-  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }))
 }
 
 export default function Winamp({ onClose }: WinampProps) {
@@ -124,35 +60,18 @@ export default function Winamp({ onClose }: WinampProps) {
   useEffect(() => {
     let webamp: { dispose: () => void } | null = null
     let disposed = false
-    let trackUrl: string | null = null
 
     ;(async () => {
-      const [{ default: Webamp }, url] = await Promise.all([import("webamp"), synthesiseTrack()])
-      if (disposed) {
-        URL.revokeObjectURL(url)
-        return
-      }
-      trackUrl = url
+      const { default: Webamp } = await import("webamp")
+      if (disposed) return
 
-      /*
-        The playlist: the synthesised opener, then the owner's actual taste.
-        Each entry points at a drop-in slot in /audio/winamp; the repo ships
-        silent placeholders under those names, so the titles always list and
-        overwriting a file with the real recording is the whole installation.
-      */
+      // The playlist: the owner's actual taste, every entry a drop-in slot.
       const instance = new Webamp({
-        initialTracks: [
-          {
-            metaData: { artist: "Joel Vasquez", title: "Boot Sector Boogie" },
-            url,
-            duration: 24,
-          },
-          ...PLAYLIST.map(([artist, title, duration], i) => ({
-            metaData: { artist, title },
-            url: encodeURI(`/audio/winamp/${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`),
-            duration,
-          })),
-        ],
+        initialTracks: PLAYLIST.map(([artist, title, duration], i) => ({
+          metaData: { artist, title },
+          url: encodeURI(`/audio/winamp/${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`),
+          duration,
+        })),
       })
       webamp = instance
       instance.onClose(() => onCloseRef.current())
@@ -162,7 +81,6 @@ export default function Winamp({ onClose }: WinampProps) {
     return () => {
       disposed = true
       webamp?.dispose()
-      if (trackUrl) URL.revokeObjectURL(trackUrl)
     }
   }, [])
 

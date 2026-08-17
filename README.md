@@ -139,7 +139,7 @@ Type the Konami code anywhere: ↑ ↑ ↓ ↓ ← → ← → B A. Six creature
 
 | | |
 | --- | --- |
-| **Winamp** | the real 2.9 skin engine, whipping the llama, with a synthesised opening track; the eject button takes your own MP3s |
+| **Winamp** | the real 2.9 skin engine, whipping the llama; fourteen named tracks as drop-in slots, and the eject button takes your own MP3s |
 | **Internet Explorer** | carries its own little internet, hit counter included |
 | **Konami code** | ↑ ↑ ↓ ↓ ← → ← → B A, anywhere on the desktop, for a six on six battle with party menus, a real item bag, and back sprites |
 | **Ctrl+Alt+R** | Run takes the real names: `calc`, `winmine`, `sol`, `mspaint`, `iexplore` |
