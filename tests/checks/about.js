@@ -80,14 +80,27 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await toggleSize()
   ok("the nav tracks the wordmark at both sizes", Math.abs(firstOffset - secondOffset) <= 6, `${firstOffset} vs ${secondOffset} per-mille`)
 
-  // The wordmark and the nav row must not touch.
-  const headerGap = await w.evaluate((el) => {
+  /*
+    One band only: the nav sits inside the artwork, on the clear blue the
+    bitmap carries below its wordmark (glyph rows 77-185 of 240). So the row
+    must be within the image, in its lower third, and the band must be the
+    image's own height with nothing added beneath.
+  */
+  const headerBand = await w.evaluate((el) => {
     const img = el.querySelector('img[src*="thefacebook-header"]')
     const nav = [...el.querySelectorAll("a")].find((a) => a.textContent.trim() === "logout")
-    if (!img || !nav) return -1
-    return Math.round(nav.getBoundingClientRect().top - img.getBoundingClientRect().bottom)
+    if (!img || !nav) return null
+    const i = img.getBoundingClientRect()
+    const n = nav.getBoundingClientRect()
+    const band = img.closest(".relative").getBoundingClientRect()
+    return {
+      bandExtra: Math.round(band.height - i.height),
+      navInside: n.bottom <= i.bottom + 1 && n.top >= i.top + i.height * 0.62,
+      navBottomGap: Math.round(i.bottom - n.bottom),
+    }
   })
-  ok("the wordmark clears the nav row", headerGap >= 2, `${headerGap}px`)
+  ok("one band, no extra bar under the art", headerBand !== null && headerBand.bandExtra === 0, `extra ${headerBand?.bandExtra}px`)
+  ok("the nav sits on the art's lower blue", headerBand !== null && headerBand.navInside, `bottom gap ${headerBand?.navBottomGap}px`)
 
   ok("no missing artwork", missing.length === 0, missing.join(",") || "none")
   await browser.close()

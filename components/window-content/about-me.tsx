@@ -115,13 +115,12 @@ function FacebookHeader() {
   return (
     <div className="w-full bg-[#3B5998]">
       {/*
-        The band is taller than the wordmark on purpose: the image keeps its
-        own 130px, and the extra height below it is the gap the nav row sits
-        in, so the two never touch. The nav stays absolutely positioned
-        because its horizontal offset is derived from the bitmap width.
+        One band, the height of the artwork, with the nav sitting inside it.
+        The bitmap already carries its own clear blue below the wordmark, so
+        the space the nav needs is in the art rather than added under it.
       */}
-      <div className="relative h-[160px]">
-        <div className="absolute inset-x-0 top-0 h-[130px]">
+      <div className="relative h-[130px]">
+        <div className="absolute inset-0">
           <img
             src="/images/blob/thefacebook-header.png"
             alt="TheFacebook Header"
@@ -129,8 +128,17 @@ function FacebookHeader() {
             // at any window width, so the nav below can anchor to the same
             // edge and never drift from it.
             className="w-full h-full object-cover"
-            // A touch above centre lifts the wordmark clear of the nav row.
-            style={{ imageRendering: "auto", objectPosition: "right 35%" }}
+            /*
+              Anchored low in the crop, because that is what keeps the nav
+              off the wordmark. The source is 2400x240 with the wordmark on
+              rows 77 to 185, leaving 54 rows of clear blue beneath it. Only
+              a window wider than 10:1 crops vertically at all, and at 35%
+              that crop cut the visible area off at row 185, exactly where
+              the wordmark ends, which is why the links ended up against it.
+              At 80% the whole bottom margin survives and the row has blue
+              to sit in at every width.
+            */
+            style={{ imageRendering: "auto", objectPosition: "right 80%" }}
           />
         </div>
         {/*
@@ -145,7 +153,7 @@ function FacebookHeader() {
           so the row cannot drift with centring slack when the box scales.
         */}
         <div
-          className="absolute bottom-[6px] flex items-center justify-between text-white text-sm"
+          className="absolute bottom-[5px] flex items-center justify-between text-white text-sm"
           style={{
             width: "calc(max(100%, 1300px) * 0.396)",
             right: "calc(max(100%, 1300px) * 0.092)",
