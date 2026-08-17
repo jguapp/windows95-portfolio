@@ -139,9 +139,15 @@ export default function Taskbar({
       {barMenu && (
         <div
           data-taskbar-menu
-          // Identical metrics to the desktop's context menu, so the two
-          // right-click menus read as the same control.
-          className="absolute bottom-[36px] z-[1100] select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
+          /*
+            Identical metrics to the desktop's context menu, so the two
+            right-click menus read as the same control. The context-menu
+            class is what makes that true: the blanket element rule in
+            globals.css forces buttons to 1.2rem with !important, which no
+            utility class outranks, so without the carve-out this menu
+            rendered at 19px and half again the desktop menu's size.
+          */
+          className="context-menu absolute bottom-[36px] z-[1100] select-none bg-[#c5c4c4] p-[4px_2px] outline outline-1 outline-white"
           style={{
             left: barMenu.x,
             minWidth: 138,
