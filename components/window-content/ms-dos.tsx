@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+
+import { takeDosCommand } from "@/lib/dos-queue"
 import { type FsNode, canonical, displayPath, listDir, parsePath, resolve } from "@/lib/filesystem"
 import { type AdvState, advance, newGame } from "@/lib/adventure"
 
@@ -418,6 +420,28 @@ export default function MsDos() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
   }, [lines])
+
+  /**
+   * Lets the rest of the desktop type at this prompt.
+   *
+   * Start > Documents > VIRUS.EXE is a shortcut to a program that only ever
+   * existed at the command line, so opening the window is only half of it:
+   * something has to run the thing. The command is left in lib/dos-queue and
+   * collected here, which works whether this window was already open or is
+   * mounting because of that same click. It then goes through the same run()
+   * a typed line does, so the transcript reads as though it were typed.
+   */
+  useEffect(() => {
+    const collect = () => {
+      const command = takeDosCommand()
+      if (!command) return
+      // A beat, so the window is on screen before its output scrolls past.
+      window.setTimeout(() => void run(command), 250)
+    }
+    collect()
+    window.addEventListener("runDosCommand", collect)
+    return () => window.removeEventListener("runDosCommand", collect)
+  }, [run])
 
   return (
     <div

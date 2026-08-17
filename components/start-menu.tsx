@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import { messageBox } from "@/components/win95-dialog"
+import { queueDosCommand } from "@/lib/dos-queue"
+import { readRecentDocs, type RecentDoc } from "@/lib/recent-docs"
+
 /**
  * What lives in Accessories.
  *
@@ -25,7 +28,6 @@ const ACCESSORIES: { id: string; name: string; icon: string }[] = [
   { id: "soundrec", name: "Sound Recorder", icon: "/images/win95/soundrec-32.png" },
   { id: "wordpad", name: "WordPad", icon: "/images/win95/wordpad-32.png" },
 ]
-import { readRecentDocs, type RecentDoc } from "@/lib/recent-docs"
 
 interface StartMenuProps {
   onOpenWindow: (id: string) => void
@@ -273,6 +275,23 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                     <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                       <img src="/images/win95/notepad-32.png" alt="Release Notes" className="mr-2 w-7 h-7" style={{ imageRendering: "pixelated" }} />
                       <span className="text-sm">Release Notes</span>
+                    </div>
+                  </li>
+                  {/* The one document nobody should open. It opens the DOS
+                      prompt and runs itself, because that is where it lives. */}
+                  <li
+                    data-document="virus"
+                    className="hover:bg-[#000080] hover:text-white"
+                    onClick={() => {
+                      // Queued before the window opens, so the prompt finds it
+                      // waiting however long it takes to mount.
+                      queueDosCommand("VIRUS.EXE")
+                      onOpenWindow("msdos")
+                    }}
+                  >
+                    <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
+                      <img src="/images/win95/msdos-32.png" alt="VIRUS.EXE" className="mr-2 w-7 h-7" style={{ imageRendering: "pixelated" }} />
+                      <span className="text-sm">VIRUS.EXE</span>
                     </div>
                   </li>
                 </ul>

@@ -311,6 +311,32 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     ok(`Accessories opens ${id} for real`, opened > 0 && stub === 0 && missing === 0, `${opened} real, ${stub} stub`)
   }
 
+  // ---- The launch cursor is the hourglass, not the platform's spinner -----
+  const busyCursor = await p.evaluate(() => {
+    document.body.classList.add("win95-busy")
+    const value = getComputedStyle(document.body).cursor
+    document.body.classList.remove("win95-busy")
+    return value
+  })
+  ok("the busy cursor is a drawn hourglass", busyCursor.startsWith('url("data:image/svg+xml'), busyCursor.slice(0, 40))
+  ok("with wait kept as the fallback", busyCursor.includes("wait"))
+
+  // ---- VIRUS.EXE sits in Documents and runs itself ------------------------
+  await p.evaluate(() => window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id: "msdos" } })))
+  await p.waitForTimeout(300)
+  if ((await p.locator("#start-menu").count()) === 0) {
+    await p.locator("#start-button").click()
+    await p.waitForTimeout(250)
+  }
+  await p.locator("#start-menu li", { hasText: "ocuments" }).first().hover()
+  await p.waitForSelector("[data-documents-menu]", { timeout: 10000 })
+  ok("VIRUS.EXE is filed under Documents", (await p.locator('[data-document="virus"]').count()) === 1)
+  await p.locator('[data-document="virus"]').click()
+  await p.waitForTimeout(2200)
+  const dosText = await p.locator(".win95-mono").innerText().catch(() => "")
+  ok("clicking it opens the prompt and runs it", /Definitely Not A Virus/.test(dosText), dosText.slice(-70))
+  ok("and the paperclip is summoned", (await p.locator("[data-clippy]").count()) > 0)
+
   ok("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200))
   await b.close()
 })().catch((e) => {
