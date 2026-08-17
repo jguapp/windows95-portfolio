@@ -190,13 +190,23 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
 
   if (consumed) {
     ok("the item spends the turn", await waitMenu())
-    await p.keyboard.press("ArrowDown")
-    await p.keyboard.press("ArrowDown")
-    await p.keyboard.press("Enter")
-    await p.waitForTimeout(400)
-    const recount = await p.evaluate(() =>
-      [...document.querySelectorAll("[data-items] text")].map((t) => t.textContent).join("|"),
-    )
+    // Reopening the bag has the same problem the party screen had: the turn
+    // that just ran lasted an unpredictable time, and a keypress landing
+    // during it is ignored by design. Ask until it opens.
+    let recount = ""
+    for (let attempt = 0; attempt < 6 && !recount; attempt++) {
+      await p.keyboard.press("ArrowDown")
+      await p.keyboard.press("ArrowDown")
+      await p.keyboard.press("Enter")
+      try {
+        await p.waitForSelector("[data-items]", { timeout: 1200 })
+        recount = await p.evaluate(() =>
+          [...document.querySelectorAll("[data-items] text")].map((t) => t.textContent).join("|"),
+        )
+      } catch {
+        await p.waitForTimeout(600)
+      }
+    }
     ok("the bag counts down", recount.includes("x2"), recount.slice(0, 60))
   } else {
     ok("the item spends the turn", true, "skipped: refused at full HP")

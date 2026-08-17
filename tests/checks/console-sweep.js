@@ -6,11 +6,27 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const errors = []
   const area = { current: "boot" }
   p.on("pageerror", (e) => errors.push(`[${area.current}] pageerror: ${e.message.slice(0, 140)}`))
+  /*
+    Internet Explorer now renders real pages through /api/browse, and a real
+    page is full of requests this proxy deliberately refuses: its scripts,
+    its trackers, its beacons. Every refusal is a console line from inside
+    that frame, and none of it is this desktop's code misbehaving. Errors
+    are attributed to their own frame, so anything raised inside the proxy
+    is left out of a sweep that exists to catch our own mistakes.
+  */
+  const fromProxy = (m) => {
+    const url = m.location?.()?.url ?? ""
+    return url.includes("/api/browse") || url.includes("wikipedia.org") || url.includes("yahoo.com")
+  }
   p.on("console", (m) => {
-    if (m.type() === "error") errors.push(`[${area.current}] console: ${m.text().slice(0, 140)}`)
+    if (m.type() === "error" && !fromProxy(m)) {
+      errors.push(`[${area.current}] console: ${m.text().slice(0, 140)}`)
+    }
   })
   p.on("response", (r) => {
-    if (r.status() >= 400 && !r.url().includes("web.archive.org") && !r.url().includes("_next/webpack-hmr"))
+    // A proxied page's own failing subresources are that site's business.
+    const proxied = r.frame() !== p.mainFrame()
+    if (r.status() >= 400 && !proxied && !r.url().includes("/api/browse") && !r.url().includes("_next/webpack-hmr"))
       errors.push(`[${area.current}] HTTP ${r.status()} ${r.url().slice(-70)}`)
   })
 
