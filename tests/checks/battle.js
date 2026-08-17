@@ -195,9 +195,13 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     // during it is ignored by design. Ask until it opens.
     let recount = ""
     for (let attempt = 0; attempt < 6 && !recount; attempt++) {
-      await p.keyboard.press("ArrowDown")
-      await p.keyboard.press("ArrowDown")
-      await p.keyboard.press("Enter")
+      // A previous attempt's bag may have opened just after its wait gave
+      // up; typing menu keys into an open bag would spend an item.
+      if ((await p.locator("[data-items]").count()) === 0) {
+        await p.keyboard.press("ArrowDown")
+        await p.keyboard.press("ArrowDown")
+        await p.keyboard.press("Enter")
+      }
       try {
         await p.waitForSelector("[data-items]", { timeout: 1200 })
         recount = await p.evaluate(() =>
@@ -212,10 +216,10 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     ok("the item spends the turn", true, "skipped: refused at full HP")
     ok("the bag counts down", true, "skipped: refused at full HP")
   }
-  // CANCEL exits the bag.
-  await p.keyboard.press("ArrowDown")
-  await p.keyboard.press("ArrowDown")
-  await p.keyboard.press("ArrowDown")
+  // CANCEL exits the bag. Walking down assumed the cursor's position and
+  // could land on ETHER instead; one ArrowUp from the top wraps straight to
+  // the last row, which is CANCEL wherever the count stands.
+  await p.keyboard.press("ArrowUp")
   await p.keyboard.press("Enter")
   await p.waitForTimeout(300)
   ok("CANCEL leaves the bag", (await p.locator("[data-items]").count()) === 0)
