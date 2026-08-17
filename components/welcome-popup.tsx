@@ -160,7 +160,7 @@ export default function WelcomePopup({ onClose }: WelcomePopupProps) {
                     </p>
                     <p className="mt-3">
                       I'm Joel, a Computer Science student focused on backend and infrastructure engineering —
-                      distributed systems, APIs, and Kubernetes tooling. I'm also a huge fan of retro tech, so I
+                      distributed systems, operating systems, and containerization. I'm also a huge fan of retro tech, so I
                       decided to create this portfolio based on <strong>Windows 95</strong>! Thank you for visiting,
                       and enjoy the experience!
                     </p>

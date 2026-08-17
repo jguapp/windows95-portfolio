@@ -42,7 +42,7 @@ interface InfoRow {
 const ACCOUNT_ROWS: InfoRow[] = [
   { label: "Name:", value: "Joel Vasquez" },
   { label: "Member Since:", value: "February 4, 2004" },
-  { label: "Last Update:", value: "August 16, 2026" },
+  { label: "Last Update:", value: "August 17, 2026" },
 ]
 
 const BASIC_ROWS: InfoRow[] = [
@@ -70,12 +70,12 @@ const CONTACT_ROWS: InfoRow[] = [
 ]
 
 const PERSONAL_ROWS: InfoRow[] = [
-  { label: "Looking For:", value: "Networking, New Grad Opportunities", blue: true },
+  { label: "Looking For:", value: "New Grad Opportunities", blue: true },
   { label: "Interested In:", value: "Backend, Infrastructure, Machine Learning", blue: true },
   {
     label: "Interests:",
     value:
-      "Reading, Writing, Open Source, Basketball, Lego, Watching Movies, Guitar, Gaming, Math, Coding, Working Out, Sleeping",
+      "Reading, Writing, Chess, Basketball, Lego, Movies, Guitar, Gaming, Comics, Coding, Working Out, Sleeping",
     blue: true,
   },
 ]
@@ -84,7 +84,7 @@ const MUSIC_ROWS: InfoRow[] = [
   {
     label: "Favorite Music:",
     value:
-      "The Strokes, Arctic Monkeys, Radiohead, Mac Miller, Kendrick Lamar, Bob Dylan, Marvin Gaye, Faye Webster, Stevie Wonder, Queen, Michael Jackson, Billy Joel, Tame Impala",
+      "The Strokes, Jeff Buckley, Radiohead, Mac Miller, Steve Lacy, Marvin Gaye, Faye Webster, Stevie Wonder, Mazzy Star, Michael Jackson, Fleetwood Mac, Tame Impala",
     blue: true,
   },
 ]
@@ -93,7 +93,7 @@ const MOVIE_ROWS: InfoRow[] = [
   {
     label: "Favorite Movies:",
     value:
-      "Jojo Rabbit, Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Pitch Perfect, Spiderman 2, Good Will Hunting, Star Wars",
+      "Jojo Rabbit, Fantastic Mr. Fox, The Truman Show, The Grand Budapest Hotel, Knives Out, Spiderman 2, Good Will Hunting, Star Wars",
     blue: true,
   },
 ]
@@ -102,7 +102,7 @@ const ABOUT_ROWS: InfoRow[] = [
   {
     label: "About Me:",
     value:
-      "Hi there! I'm Joel, a Computer Science student at Baruch College, graduating in 2027. I build backend and infrastructure: the things that have to keep working when nobody is watching them. This summer I'm a Software Engineer Intern at Liberty Mutual, where I'm building a Kubernetes right-sizing engine and an automated disaster recovery tool for virtual machines. Before that I spent a year deploying AI agents at the Robert Wood Johnson Foundation and two years doing data work at the CUNY Institute for Demographic Research. Outside work I help run the ColorStack chapter here at Baruch, and I build things like the desktop you are reading this on.",
+      "Hi there! I'm Joel, a Computer Science student at Baruch College, graduating in 2027. I build backend and infrastructure: the things that have to keep working when nobody is watching them. I'm currently interning as a Software Engineer at Liberty Mutual, where I'm building a Kubernetes right-sizing engine and an automated disaster recovery tool for virtual machines. Before that I spent a year deploying AI agents at the Robert Wood Johnson Foundation and two years doing data work at the CUNY Institute for Demographic Research. Outside work I help run the ColorStack chapter here at Baruch, and I build things like the desktop you are reading this on.",
   },
 ]
 
@@ -264,12 +264,7 @@ function SearchSidebar() {
 
 function ProfileColumn() {
   return (
-    /*
-      A flex column rather than spaced blocks, so the friends box below can
-      take flex-1 and carry the column to the same bottom edge as the
-      Information panel beside it. gap-4 keeps the spacing space-y-4 gave.
-    */
-    <div className="w-[300px] flex flex-col gap-4">
+    <div className="w-[300px] space-y-4">
       <div className="bg-white border border-[#B7B7B7]">
         <BoxTitle>Picture</BoxTitle>
         <div className="p-3 flex justify-center">
@@ -304,12 +299,7 @@ function ProfileColumn() {
         </div>
       </div>
 
-      {/*
-        The last box grows to the column's full height, so its bottom edge
-        meets the Information panel's: the two columns end together however
-        much longer the information runs.
-      */}
-      <div className="bg-white border border-[#B7B7B7] flex-1">
+      <div className="bg-white border border-[#B7B7B7]">
         <BoxTitle>Friends at Baruch College</BoxTitle>
         <div className="p-3">
           <div className="grid grid-cols-3 gap-2">
@@ -349,15 +339,8 @@ function InfoTable({ title, rows }: { title?: string; rows: InfoRow[] }) {
 
 function InformationPanel() {
   return (
-    /*
-      A flex child stretches to the row's height, and the row is as tall as
-      its tallest column, so the panel bottom-aligns with the friends grid
-      when the profile column is taller and simply grows when its own text
-      is. The old fixed 719px did neither: it scrolled the About text inside
-      itself and stopped short of the friends box.
-    */
-    <div className="flex-1 flex">
-      <div className="bg-white border border-[#B7B7B7] w-full">
+    <div className="flex-1">
+      <div className="bg-white border border-[#B7B7B7] w-full h-[719px] overflow-auto">
         <BoxTitle>Information</BoxTitle>
         <div className="p-4">
           <div className="space-y-2">
