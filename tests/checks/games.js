@@ -257,6 +257,20 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await p.keyboard.up("s")
   ok("#89 W and S drive without incident", errors.length === 0)
 
+  // ---- Chess: the drop-in sound slot --------------------------------------
+  const soundFiles = ["capture", "castle", "game-end", "game-start", "illegal",
+    "move-check", "move-opponent", "move-self", "premove", "promote"]
+  const sizes = await p.evaluate(async (files) => {
+    const out = {}
+    for (const f of files) {
+      const res = await fetch(`/sounds/chess/${f}.mp3`, { method: "HEAD" })
+      out[f] = res.ok ? Number(res.headers.get("content-length")) : -1
+    }
+    return out
+  }, soundFiles)
+  const missing = soundFiles.filter((f) => sizes[f] === -1)
+  ok("all ten chess sound slots serve", missing.length === 0, missing.join(", ") || `${soundFiles.length} files`)
+
   ok("no page errors during the games pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   console.log(`  (custom counter read: ${counterText.trim().slice(0, 20)})`)
   await b.close()

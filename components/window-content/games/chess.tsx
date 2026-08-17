@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import { play } from "@/lib/sound"
+import { getVolume, isMuted, play } from "@/lib/sound"
 
 interface ChessProps {
   onReturn: () => void
@@ -75,6 +75,24 @@ interface BoardTheme {
   validMove: string
 }
 
+/** The shipped placeholders are exactly this long; any other size is real. */
+const PLACEHOLDER_BYTES = 4160
+
+/** Which file under public/sounds/chess answers for each effect. */
+const SOUND_FILES = {
+  chessMove: "move-self",
+  chessMoveOpponent: "move-opponent",
+  chessCapture: "capture",
+  chessCastle: "castle",
+  chessCheck: "move-check",
+  chessPromote: "promote",
+  chessIllegal: "illegal",
+  chessGameStart: "game-start",
+  chessGameEnd: "game-end",
+} as const
+
+type SfxKey = keyof typeof SOUND_FILES
+
 export default function Chess({ onReturn }: ChessProps) {
   // Game state
   const [board, setBoard] = useState<Board>(
@@ -118,8 +136,47 @@ export default function Chess({ onReturn }: ChessProps) {
   /** The game's own sound switch. A ref backs it so stale closures still obey. */
   const [soundOn, setSoundOn] = useState(true)
   const soundOnRef = useRef(true)
-  const snd: typeof play = (...args) => {
-    if (soundOnRef.current) play(...args)
+
+  /*
+    Drop-in recordings. public/sounds/chess holds a silent placeholder for
+    each effect; replacing one with a real MP3 of the same name makes the
+    game play the recording instead of its synthesised effect, no code
+    change involved. Real is judged by size: the shipped placeholders are
+    exactly PLACEHOLDER_BYTES long, and any other length means someone has
+    dropped their own file in. The probe runs once on mount.
+  */
+  const customSounds = useRef<Partial<Record<SfxKey, HTMLAudioElement>>>({})
+  useEffect(() => {
+    let live = true
+    for (const [key, file] of Object.entries(SOUND_FILES) as [SfxKey, string][]) {
+      fetch(`/sounds/chess/${file}.mp3`, { method: "HEAD" })
+        .then((res) => {
+          if (!live || !res.ok) return
+          const size = Number(res.headers.get("content-length"))
+          if (Number.isFinite(size) && size > 0 && size !== PLACEHOLDER_BYTES) {
+            customSounds.current[key] = new Audio(`/sounds/chess/${file}.mp3`)
+          }
+        })
+        .catch(() => {
+          // No file, no recording; the synthesiser covers it.
+        })
+    }
+    return () => {
+      live = false
+    }
+  }, [])
+
+  const snd: typeof play = (name, ...rest) => {
+    if (!soundOnRef.current) return
+    const custom = customSounds.current[name as SfxKey]
+    if (custom && !isMuted()) {
+      // The desktop's volume slider governs recordings and synth alike.
+      custom.volume = getVolume()
+      custom.currentTime = 0
+      void custom.play().catch(() => {})
+      return
+    }
+    play(name, ...rest)
   }
   const toggleSound = () =>
     setSoundOn((v) => {
@@ -313,6 +370,9 @@ export default function Chess({ onReturn }: ChessProps) {
         setSelectedPosition(clickedPosition)
         setValidMoves(calculateValidMoves(clickedPosition, board))
       } else {
+        // An empty or enemy square that is not a legal destination: the
+        // move was attempted and refused, which has its own sound.
+        snd("chessIllegal")
         // Deselect the piece
         setSelectedPosition(null)
         setValidMoves([])
