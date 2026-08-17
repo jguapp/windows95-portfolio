@@ -1,0 +1,14 @@
+{
+  // These are Playwright driver scripts, deliberately plain JavaScript:
+  // most of their code runs inside page.evaluate, in the browser, where an
+  // element genuinely is an HTMLCanvasElement or carries a window.__played
+  // the page itself installed. An editor with implicit checkJs applies
+  // Node's view of the world to them and fills the Problems panel with
+  // type complaints about code that is correct where it executes. This
+  // file scopes them into their own project with checking off; the app's
+  // own TypeScript is unaffected, and next build never reads this file.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false
+  }
+}
