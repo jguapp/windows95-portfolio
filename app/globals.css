@@ -1423,10 +1423,20 @@ h6 {
   animation: square-alert 180ms steps(1, end) 3;
 }
 
-/* The launch hourglass: everything waits while an app pretends to load. */
+/*
+  The launch hourglass: everything waits while an app pretends to load.
+
+  cursor: wait hands the job to the operating system, which on Windows 11
+  draws its own rotating ring: right meaning, wrong decade. This is the
+  hourglass itself, drawn on a 16-unit grid and served at 32x32 so every
+  pixel stays square, with wait kept as the fallback for anything that
+  refuses an image cursor.
+*/
 body.win95-busy,
 body.win95-busy * {
-  cursor: wait !important;
+  cursor:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2016%2016%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%223%22%20y%3D%220%22%20width%3D%2210%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%221%22%20width%3D%2210%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%225%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%226%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%228%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%229%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2210%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2212%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%2213%22%20width%3D%2210%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%2214%22%20width%3D%2210%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%2215%22%20width%3D%2210%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%221%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%222%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%223%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%224%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%229%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%2210%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2211%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2212%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2213%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2214%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23808080%22%2F%3E%3C%2Fsvg%3E") 16 16,
+    wait !important;
 }
 
 /* VIRUS.EXE: the assistant, rattled. */
