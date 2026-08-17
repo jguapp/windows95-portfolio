@@ -161,12 +161,19 @@ function FacebookHeader() {
           so the row cannot drift with centring slack when the box scales.
         */}
         <div
-          className="absolute bottom-[4px] flex items-center justify-between px-5 text-white text-xs"
+          className="absolute bottom-[4px] flex items-center justify-between text-white text-xs"
           style={{
             // The bitmap renders ten times the band's height, or the
             // container's width when that is wider.
             width: "calc(max(100%, 1080px) * 0.396)",
             right: "calc(max(100%, 1080px) * 0.092)",
+            /*
+              The inset comes off the same measurement as everything else.
+              A fixed padding would be a smaller share of a wider logo, so
+              the row's offset drifted as the window grew; derived from the
+              bitmap it holds at every size.
+            */
+            paddingInline: "calc(max(100%, 1080px) * 0.02)",
           }}
         >
           {NAV_LINKS.map((link) => (
@@ -205,21 +212,37 @@ function SearchSidebar() {
           </ul>
         </div>
 
-        {/* Advertisement Space - McDonald's 90s Ad */}
+        {/*
+          The advert.
+
+          Drop a scan at /images/blob/magazine-ad.png and it replaces the
+          skyscraper; the onError below falls back to the old one, so a
+          missing file shows the previous advert rather than a broken image.
+
+          The image keeps its own proportions rather than being stretched to
+          the panel. The skyscraper was 320x1000 and filled a tall slot by
+          cover-cropping, which works only for art already that shape: a
+          magazine page is closer to 3:4, and cover would have thrown away
+          most of its width to fit. Natural height means whatever is dropped
+          in arrives whole, pinned to the top of the slot.
+        */}
         <div
-          className="bg-white border border-[#B7B7B7] flex flex-col flex-grow h-full overflow-hidden"
+          className="bg-white border border-[#B7B7B7] flex flex-col flex-grow overflow-hidden"
           style={{ minHeight: "calc(100vh - 290px)" }}
         >
-          <div className="flex-1 flex items-stretch h-full">
-            <div className="w-full h-full flex flex-col justify-center bg-white">
-              <img
-                src="/images/blob/skyscraper-ad.png"
-                alt="Advertisement"
-                className="h-full w-full object-cover"
-                style={{ imageRendering: "pixelated" }}
-              />
-            </div>
-          </div>
+          <img
+            src="/images/blob/magazine-ad.png"
+            alt="Advertisement"
+            data-advert
+            className="block w-full h-auto"
+            onError={(e) => {
+              const img = e.currentTarget
+              if (!img.dataset.fellBack) {
+                img.dataset.fellBack = "1"
+                img.src = "/images/blob/skyscraper-ad.png"
+              }
+            }}
+          />
         </div>
       </div>
     </div>

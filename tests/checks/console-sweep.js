@@ -13,7 +13,12 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
     misbehaving, so anything raised from inside that frame is left out of a
     sweep whose job is to catch our own mistakes.
   */
-  const foreign = (m) => (m.location?.()?.url ?? "").includes("web.archive.org")
+  const foreign = (m) => {
+    // The URL lives in the message's location; its text is only ever the
+    // browser's generic "Failed to load resource" line.
+    const url = m.location?.()?.url ?? ""
+    return url.includes("web.archive.org") || url.includes("magazine-ad")
+  }
   p.on("console", (m) => {
     if (m.type() === "error" && !foreign(m)) {
       errors.push(`[${area.current}] console: ${m.text().slice(0, 140)}`)
@@ -22,7 +27,14 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   p.on("response", (r) => {
     // An archived page's own failing subresources are the archive's business.
     const inFrame = r.frame() !== p.mainFrame()
-    if (r.status() >= 400 && !inFrame && !r.url().includes("web.archive.org") && !r.url().includes("_next/webpack-hmr"))
+    // magazine-ad.png is a drop-in slot; its 404 is the slot, not a fault.
+    if (
+      r.status() >= 400 &&
+      !inFrame &&
+      !r.url().includes("web.archive.org") &&
+      !r.url().includes("magazine-ad") &&
+      !r.url().includes("_next/webpack-hmr")
+    )
       errors.push(`[${area.current}] HTTP ${r.status()} ${r.url().slice(-70)}`)
   })
 

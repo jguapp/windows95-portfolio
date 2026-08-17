@@ -593,7 +593,11 @@ export default function Resume() {
     return "7"
   }
 
-  const [fontFamily, setFontFamily] = useState("Times New Roman")
+  /*
+    The document opens in the desktop's own face, which is what every other
+    window is set in and what this one looked like before it had a picker.
+  */
+  const [fontFamily, setFontFamily] = useState("MS Sans Serif")
   const [fontSize, setFontSize] = useState(16)
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
@@ -679,7 +683,7 @@ export default function Resume() {
   }, [])
 
   /**
-   * Re-asserts the document's typography over the desktop's blanket rule.
+   * Re-asserts a formatted run's typography over the desktop's blanket rule.
    *
    * globals.css carries `* { font-family: ... !important }` so that every
    * window inherits the system face without each one asking. An important
@@ -1125,8 +1129,13 @@ export default function Resume() {
 
   return (
     <div className="flex flex-col h-full bg-white overflow-auto">
-      {/* Title Bar - Matches Word 95 exactly */}
-      <div className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between text-xs w-full">
+      {/* Title Bar - Matches Word 95 exactly. This is the window's drag
+          handle: window.tsx draws no header for the resume, so without the
+          marker there was nothing to move the window by. */}
+      <div
+        data-window-drag
+        className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between text-xs w-full cursor-default select-none"
+      >
         <div className="flex items-center">
           <img
             src="/images/blob/tumblr-f2c27a91f54419385ed432fef515e294-f510d5e9-540.png"
@@ -1490,6 +1499,9 @@ export default function Resume() {
             enforceTypography()
           }}
         >
+          {/* The desktop's own face, and the document's default. */}
+          <option style={{ fontFamily: "MS Sans Serif" }}>MS Sans Serif</option>
+
           {/* Serif Fonts */}
           <option style={{ fontFamily: "Times New Roman" }}>Times New Roman</option>
           <option style={{ fontFamily: "Georgia" }}>Georgia</option>
@@ -1819,6 +1831,28 @@ export default function Resume() {
         the grey workspace, and the zoom scales the sheet rather than the window.
       */}
       <div data-workspace className="flex-1 overflow-auto bg-[#808080] p-4">
+      {/*
+        The document's own typography.
+
+        globals.css sets `* { font-family: ... !important }` so every window
+        inherits the system face. That selector matches every element in this
+        document too, which is why changing the font moved only the parts
+        that happened to carry their own inline style: setting it on the page
+        could never cascade past a rule already naming each child. This rule
+        names them more specifically, at (0,1,0) against the blanket rule's
+        (0,0,0), so among important declarations it is the one that wins, and
+        the whole document follows the picker. A run formatted from a
+        selection still overrides it, because an inline important declaration
+        outranks any stylesheet.
+
+        Size is set on the page alone: the blanket rule never touched
+        font-size, so it inherits normally and headings keep their scale.
+      */}
+      <style>{`
+        [data-page], [data-page] * { font-family: var(--doc-font) !important; }
+        [data-page] { font-size: var(--doc-size); }
+      `}</style>
+
       {/* Paragraph marks, drawn after each block while the toggle is on. */}
       {showMarks && (
         <style>{`
@@ -1826,7 +1860,7 @@ export default function Resume() {
           [data-page][data-marks] h1::after,
           [data-page][data-marks] h2::after,
           [data-page][data-marks] h3::after,
-          [data-page][data-marks] li::after { content: " B6"; color: #0000cc; margin-left: 2px; }
+          [data-page][data-marks] li::after { content: "¶"; color: #0000cc; margin-left: 2px; }
         `}</style>
       )}
       <div
@@ -1839,8 +1873,13 @@ export default function Resume() {
         style={{
           width: PAGE_WIDTH,
           padding: PAGE_PADDING,
-          fontFamily: fontFamily,
-          fontSize: `${fontSize}px`,
+          /*
+            The picker's values reach the document through these, which the
+            scoped rule above reads. Setting font-family here directly would
+            be pointless: the blanket rule names every child and would win.
+          */
+          ["--doc-font" as string]: fontFamily,
+          ["--doc-size" as string]: `${fontSize}px`,
           fontWeight: isBold ? "bold" : "normal",
           fontStyle: isItalic ? "italic" : "normal",
           textDecoration: isUnderline ? "underline" : "none",

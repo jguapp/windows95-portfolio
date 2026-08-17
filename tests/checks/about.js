@@ -5,7 +5,14 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const browser = await chromium.launch()
   const page = await browser.newPage({ viewport: { width: 1500, height: 950 } })
   const missing = []
-  page.on("response", (r) => { if (r.status() >= 400 && /\.(png|jpe?g)$/.test(r.url())) missing.push(r.url()) })
+  /*
+    magazine-ad.png is a drop-in slot: absent until a scan is saved there,
+    at which point it replaces the skyscraper. Its 404 is the slot working,
+    not artwork going missing, so it is not counted.
+  */
+  page.on("response", (r) => {
+    if (r.status() >= 400 && /\.(png|jpe?g)$/.test(r.url()) && !r.url().includes("magazine-ad")) missing.push(r.url())
+  })
 
   await page.goto("http://localhost:3000/", { waitUntil: "domcontentloaded" })
   await page.waitForSelector("#win95-popup", { timeout: 90000 })
@@ -46,15 +53,25 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const head = shots.find((s) => s.src.includes("headshot"))
   ok("the profile uses the cropped headshot", !!head, head ? `${head.natural} shown at ${head.drawn}` : "not found")
 
-  const ad = shots.find((s) => s.src.includes("skyscraper"))
-  ok("the advert is the new one", !!ad, ad ? `${ad.natural} shown at ${ad.drawn}` : "not found")
+  /*
+    The advert is a drop-in slot: magazine-ad.png when it is there, the
+    skyscraper when it is not. Either way it spans the panel's width and
+    keeps its own proportions, so whatever is dropped in arrives whole
+    instead of being cover-cropped to a shape it was never drawn for.
+  */
+  const ad = shots.find((s) => /skyscraper|magazine-ad/.test(s.src))
+  ok("an advert is shown", !!ad, ad ? `${ad.src} ${ad.natural} shown at ${ad.drawn}` : "not found")
   if (ad) {
     const [dw, dh] = ad.drawn.split("x").map(Number)
-    const panel = await w.locator("img[src*='skyscraper']").evaluate((i) => {
+    const [nw, nh] = ad.natural.split("x").map(Number)
+    const panel = await w.locator("[data-advert]").evaluate((i) => {
       const p = i.parentElement.getBoundingClientRect()
       return { w: Math.round(p.width), h: Math.round(p.height) }
     })
-    ok("it fills its panel", dw >= panel.w - 2 && dh >= panel.h - 2, `ad ${dw}x${dh} in panel ${panel.w}x${panel.h}`)
+    ok("it spans the panel's width", Math.abs(dw - panel.w) <= 2, `ad ${dw} wide in panel ${panel.w}`)
+    // Undistorted: the drawn aspect matches the file's own within a pixel.
+    const drift = Math.abs(dw / dh - nw / nh)
+    ok("and keeps its own proportions", drift < 0.02, `drawn ${dw}x${dh} of ${nw}x${nh}`)
   }
 
   const header = shots.find((s) => s.src.includes("thefacebook-header"))

@@ -395,6 +395,7 @@ function Label({
   children,
   size = 7,
   width,
+  anchor,
 }: {
   x: number
   y: number
@@ -402,6 +403,8 @@ function Label({
   size?: number
   /** Fit the text to exactly this width, for names that must match the bar. */
   width?: number
+  /** Where x sits in the text: its start by default, or its middle. */
+  anchor?: "start" | "middle" | "end"
 }) {
   // Press Start 2P is the classic 8x8 arcade face, which is as close to the
   // Game Boy character set as a web font gets.
@@ -412,8 +415,15 @@ function Label({
       fill={P[3]}
       fontSize={size}
       className="font-pixel"
+      textAnchor={anchor}
       textLength={width}
-      lengthAdjust={width ? "spacingAndGlyphs" : undefined}
+      /*
+        Spacing only. spacingAndGlyphs stretched the letterforms themselves
+        to reach the width, which thickened every stroke and read as bold
+        beside the rest of the screen. Adjusting the gaps spreads a name
+        across its bracket at the weight it was drawn.
+      */
+      lengthAdjust={width ? "spacing" : undefined}
     >
       {children}
     </text>
@@ -1129,7 +1139,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <Label x={4} y={16} size={4.5} width={78}>
                 {foe.name}
               </Label>
-              <Label x={14} y={23} size={4}>
+              {/* Centred on the name above it, which spans x=4 to x=82. */}
+              <Label x={43} y={23} size={5} anchor="middle">
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
@@ -1148,7 +1159,8 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
               <Label x={76} y={72} size={4.5} width={80}>
                 {player.name}
               </Label>
-              <Label x={90} y={79} size={4}>
+              {/* Centred on the name above it, which spans x=76 to x=156. */}
+              <Label x={116} y={79} size={5} anchor="middle">
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />

@@ -31,7 +31,26 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
       return { family: cs.fontFamily.split(",")[0].replace(/"/g, ""), size: cs.fontSize }
     })
 
+  /*
+    The window moves by its own title bar. window.tsx draws no header for
+    the resume, because Word's bar is part of Word, so that bar has to be
+    the drag handle: without it the window could not be moved at all.
+  */
+  const box = await win.boundingBox()
+  await p.mouse.move(box.x + 150, box.y + 10)
+  await p.mouse.down()
+  await p.mouse.move(box.x + 260, box.y + 95, { steps: 12 })
+  await p.mouse.up()
+  await p.waitForTimeout(400)
+  const moved = await win.boundingBox()
+  ok(
+    "the window drags by Word's own title bar",
+    Math.abs(moved.x - box.x) > 80 && Math.abs(moved.y - box.y) > 60,
+    `dx ${Math.round(moved.x - box.x)}, dy ${Math.round(moved.y - box.y)}`,
+  )
+
   const before = await styleOf()
+  ok("it opens in the desktop's own face", before.family === "MS Sans Serif", before.family)
 
   // ---- The font picker actually changes the document ----------------------
   const selects = win.locator("select")
@@ -39,6 +58,14 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await p.waitForTimeout(500)
   const afterFont = await styleOf()
   ok("the font picker changes the document", afterFont.family === "Georgia", `${before.family} -> ${afterFont.family}`)
+
+  // And the whole of it, not the parts that happened to carry inline styles.
+  const families = await p.evaluate(() => {
+    const page = document.querySelector("#window-resume [data-page]")
+    const els = [page, ...page.querySelectorAll("h1,h2,h3,p,li,span,td")].slice(0, 60)
+    return [...new Set(els.map((e) => getComputedStyle(e).fontFamily.split(",")[0].replace(/"/g, "")))]
+  })
+  ok("every element in the document follows it", families.length === 1 && families[0] === "Georgia", families.join(", "))
 
   await selects.nth(2).selectOption("18")
   await p.waitForTimeout(500)

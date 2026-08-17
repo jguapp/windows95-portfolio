@@ -441,6 +441,21 @@ export default function Window({ id, isActive, isMinimized, onClose, onMinimize,
         zIndex: isActive ? 200 : 100,
       }}
       onClick={onFocus}
+      /*
+        Content may draw its own title bar instead of taking this one: the
+        resume is Microsoft Word, and Word's bar is part of the program. Such
+        a bar marks itself data-window-drag and the window moves by it, which
+        is why the resume could not be dragged at all before. Buttons inside
+        the bar are excluded so minimise and close still just press.
+      */
+      onMouseDown={(e) => {
+        const target = e.target as HTMLElement
+        if (target.closest("[data-window-drag]") && !target.closest("button")) startDrag(e)
+      }}
+      onDoubleClick={(e) => {
+        const target = e.target as HTMLElement
+        if (target.closest("[data-window-drag]") && !target.closest("button")) toggleMaximize()
+      }}
     >
       {/* Only show the window header if it's not the resume window */}
       {id !== "resume" && (
