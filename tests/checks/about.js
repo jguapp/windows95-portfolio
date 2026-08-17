@@ -121,6 +121,32 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   ok("one band, no extra bar under the art", headerBand !== null && headerBand.bandExtra === 0, `extra ${headerBand?.bandExtra}px`)
   ok("the nav sits on the art's lower blue", headerBand !== null && headerBand.navInside, `bottom gap ${headerBand?.navBottomGap}px`)
 
+  /*
+    The two profile columns end on the same bottom edge and the About text
+    shows in full. This regressed once already, silently, when a stale
+    editor buffer overwrote the layout while keeping the content around it;
+    an assertion is what makes the next accident loud.
+  */
+  const columns = await w.evaluate(() => {
+    const friendsTitle = [...document.querySelectorAll("#window-about-me div")].find(
+      (d) => d.textContent === "Friends at Baruch College",
+    )
+    const infoTitle = [...document.querySelectorAll("#window-about-me div")].find((d) => d.textContent === "Information")
+    if (!friendsTitle || !infoTitle) return null
+    const infoBox = infoTitle.parentElement
+    return {
+      friendsBottom: Math.round(friendsTitle.parentElement.getBoundingClientRect().bottom),
+      infoBottom: Math.round(infoBox.getBoundingClientRect().bottom),
+      scrolls: infoBox.scrollHeight > infoBox.clientHeight + 2,
+    }
+  })
+  ok(
+    "the info panel ends level with the friends box",
+    columns !== null && Math.abs(columns.friendsBottom - columns.infoBottom) <= 2,
+    columns ? `${columns.infoBottom} vs ${columns.friendsBottom}` : "boxes not found",
+  )
+  ok("and the About text needs no inner scrollbar", columns !== null && !columns.scrolls)
+
   ok("no missing artwork", missing.length === 0, missing.join(",") || "none")
   await browser.close()
 })()
