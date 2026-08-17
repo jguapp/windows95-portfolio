@@ -88,10 +88,29 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   ok("the exchange returns to the menu", await waitMenu())
 
   // ---- The party screen ----------------------------------------------------
-  await p.keyboard.press("ArrowDown")
-  await p.keyboard.press("Enter")
-  await p.waitForTimeout(400)
-  ok("PKMN opens the full party screen", (await p.locator("[data-party]").count()) === 1)
+  /*
+    The exchange before this runs on a random move, so it lasts a different
+    number of milliseconds every time, and a keypress that lands while the
+    animation is still playing is ignored on purpose. Waiting on the screen
+    itself, and pressing again if it has not arrived, tests the behaviour
+    rather than the timing.
+  */
+  const openParty = async () => {
+    for (let attempt = 0; attempt < 6; attempt++) {
+      await p.keyboard.press("ArrowDown")
+      await p.waitForTimeout(80)
+      await p.keyboard.press("Enter")
+      try {
+        await p.waitForSelector("[data-party]", { timeout: 1200 })
+        return true
+      } catch {
+        // Still busy with the last exchange; let it finish and try again.
+        await p.waitForTimeout(600)
+      }
+    }
+    return false
+  }
+  ok("PKMN opens the full party screen", await openParty())
   const partySprites = await p.locator("[data-party] g[transform*='scale(0.275)']").count()
   ok("with a mini sprite per creature", partySprites === 6, `${partySprites}`)
   const party = await measure("party screen")

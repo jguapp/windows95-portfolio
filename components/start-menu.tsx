@@ -2,7 +2,29 @@
 
 import { useEffect, useRef, useState } from "react"
 import { messageBox } from "@/components/win95-dialog"
-import { STUB_PROGRAMS } from "@/components/window-content/stub-app"
+/**
+ * What lives in Accessories.
+ *
+ * This is deliberately its own list rather than a render of STUB_PROGRAMS.
+ * The cascade used to map over that array, so the moment CD Player, Phone
+ * Dialer, ScanDisk and Disk Defragmenter were built for real and left it,
+ * they left the Start menu with it and became unreachable. What belongs in
+ * a menu folder has nothing to do with how finished the program behind the
+ * entry is, so the two are no longer the same list.
+ *
+ * Ordered the way Windows 95 ordered a folder: alphabetically.
+ */
+const ACCESSORIES: { id: string; name: string; icon: string }[] = [
+  { id: "cdplayer", name: "CD Player", icon: "/images/win95/cdplayer-32.png" },
+  { id: "charmap", name: "Character Map", icon: "/images/win95/charmap-32.png" },
+  { id: "defrag", name: "Disk Defragmenter", icon: "/images/win95/defrag-32.png" },
+  { id: "hyperterm", name: "HyperTerminal", icon: "/images/win95/hyperterm-32.png" },
+  { id: "mediaplayer", name: "Media Player", icon: "/images/win95/mediaplayer-32.png" },
+  { id: "phonedialer", name: "Phone Dialer", icon: "/images/win95/phone-32.png" },
+  { id: "scandisk", name: "ScanDisk", icon: "/images/win95/scandisk-32.png" },
+  { id: "soundrec", name: "Sound Recorder", icon: "/images/win95/soundrec-32.png" },
+  { id: "wordpad", name: "WordPad", icon: "/images/win95/wordpad-32.png" },
+]
 import { readRecentDocs, type RecentDoc } from "@/lib/recent-docs"
 
 interface StartMenuProps {
@@ -120,10 +142,10 @@ export default function StartMenu({ onOpenWindow }: StartMenuProps) {
                       <span className="ml-auto mr-2">&#9654;</span>
                     </div>
                     {accessoriesOpen && (
-                      <div className="absolute left-full top-0 w-[210px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]">
+                      <div data-accessories className="absolute left-full top-0 w-[210px] bg-[#c0c0c0] border-t-2 border-l-2 border-white border-r-2 border-b-2 border-r-[#404040] border-b-[#404040] shadow-[3px_3px_10px_rgba(0,0,0,0.5)]">
                         <ul className="list-none m-0 p-0">
-                          {STUB_PROGRAMS.map((prog) => (
-                            <li key={prog.id} className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow(prog.id)}>
+                          {ACCESSORIES.map((prog) => (
+                            <li key={prog.id} data-accessory={prog.id} className="hover:bg-[#000080] hover:text-white" onClick={() => onOpenWindow(prog.id)}>
                               <div className="p-[4px_4px_4px_8px] text-xs flex items-center h-[36px] cursor-pointer w-full">
                                 <img src={prog.icon} alt="" className="mr-2 w-7 h-7" style={{ imageRendering: "pixelated" }} />
                                 <span className="text-sm">{prog.name}</span>

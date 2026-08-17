@@ -253,6 +253,64 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   ok("#170 removal is politely refused", /cannot remove/i.test(refusal), refusal.replace(/\n/g, " ").slice(0, 60))
   await p.locator("[data-ok]").click()
 
+  // ---- Accessories: every entry must open a real window --------------------
+  // The cascade once rendered STUB_PROGRAMS, so a program built for real
+  // dropped out of the menu silently. This walks the folder itself.
+  await p.evaluate(() => {
+    for (const id of ["cdplayer", "phonedialer", "scandisk", "defrag"]) {
+      window.dispatchEvent(new CustomEvent("windowAction", { detail: { action: "close", id } }))
+    }
+  })
+  await p.waitForTimeout(300)
+
+  const openAccessories = async () => {
+    // The menu does not close itself when an entry is clicked, so toggling
+    // blindly would shut it rather than open it.
+    if ((await p.locator("#start-menu").count()) === 0) {
+      await p.locator("#start-button").click()
+      await p.waitForTimeout(250)
+    }
+    await p.locator("#start-menu li", { hasText: "rograms" }).first().hover()
+    await p.waitForSelector("#start-menu li >> text=Accessories", { timeout: 10000 })
+    await p.locator("#start-menu li", { hasText: "Accessories" }).last().hover()
+    await p.waitForSelector("[data-accessories]", { timeout: 10000 })
+  }
+
+  await openAccessories()
+  const listed = await p.locator("[data-accessory]").evaluateAll((els) =>
+    els.map((el) => el.getAttribute("data-accessory")),
+  )
+  const expected = [
+    "cdplayer",
+    "charmap",
+    "defrag",
+    "hyperterm",
+    "mediaplayer",
+    "phonedialer",
+    "scandisk",
+    "soundrec",
+    "wordpad",
+  ]
+  ok("Accessories lists all nine programs", expected.every((id) => listed.includes(id)), listed.join(", "))
+
+  // The four that graduated from stubs must open their real windows, not
+  // the stub frame and not the fallback.
+  const real = [
+    ["cdplayer", "[data-cdplayer]"],
+    ["phonedialer", "[data-dialer]"],
+    ["scandisk", "[data-scandisk]"],
+    ["defrag", "[data-defrag]"],
+  ]
+  for (const [id, selector] of real) {
+    await openAccessories()
+    await p.locator(`[data-accessory="${id}"]`).click()
+    await p.waitForTimeout(800)
+    const opened = await p.locator(selector).count()
+    const stub = await p.locator(`[data-stub="${id}"]`).count()
+    const missing = await p.getByText("Content not available").count()
+    ok(`Accessories opens ${id} for real`, opened > 0 && stub === 0 && missing === 0, `${opened} real, ${stub} stub`)
+  }
+
   ok("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200))
   await b.close()
 })().catch((e) => {
