@@ -1133,21 +1133,29 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={foe.species.sprite} x={96} y={6} />
                 </g>
               )}
-              {/* The name is spread across its bracket rather than sitting
-                  left of it: the underline runs x=2 to x=84, so the letters
-                  are fitted to the same span, inset two units at each end. */}
-              <Label x={4} y={16} size={4.5} width={78}>
+              {/*
+                Centred on the panel at its own width, not fitted to it.
+                Fitting a name to the full bracket meant the widest gaps the
+                letters would ever need, and eight characters stretched over
+                seventy-eight units read as a different typeface. The panel
+                is narrower now, and the name simply sits in the middle of
+                it: the longest name in the roster is nine characters, which
+                is fifty units at this size and clears the bracket either
+                side.
+              */}
+              <Label x={50} y={16} size={5.5} anchor="middle">
                 {foe.name}
               </Label>
-              {/* Centred on the name above it, which spans x=4 to x=82. */}
-              <Label x={43} y={23} size={5} anchor="middle">
+              <Label x={50} y={23} size={5} anchor="middle">
                 {`:L${foe.level}`}
               </Label>
               <HpBar x={32} y={27} ratio={foe.hp / foe.maxHp} />
               {/* The enemy's bracket: the underline rises at its left end,
-                  the mirror of the player's, which rises at its right. */}
-              <rect x={2} y={33} width={82} height={1} fill={P[3]} />
-              <rect x={2} y={26} width={2} height={8} fill={P[3]} />
+                  the mirror of the player's, which rises at its right. It
+                  starts where the HP cap does rather than at the screen
+                  edge, which is what narrows the card. */}
+              <rect x={16} y={33} width={68} height={1} fill={P[3]} />
+              <rect x={16} y={26} width={2} height={8} fill={P[3]} />
 
               {/* Player: back sprite lower left, thin status area lower right */}
               {playerOut && (
@@ -1155,21 +1163,20 @@ export default function PokemonBattle({ onClose }: PokemonBattleProps) {
                   <Sprite grid={playerBack} x={10} y={46} />
                 </g>
               )}
-              {/* Spread across the player's bracket, which runs x=74 to 158. */}
-              <Label x={76} y={72} size={4.5} width={80}>
+              {/* Centred on its panel, which runs x=88 to x=158. */}
+              <Label x={123} y={72} size={5.5} anchor="middle">
                 {player.name}
               </Label>
-              {/* Centred on the name above it, which spans x=76 to x=156. */}
-              <Label x={116} y={79} size={5} anchor="middle">
+              <Label x={123} y={79} size={5} anchor="middle">
                 {`:L${player.level}`}
               </Label>
               <HpBar x={102} y={83} ratio={player.hp / player.maxHp} />
               {/* The count sits just under its gauge and reads a size up;
                   the bracket rises with it so the panel stays closed. */}
-              <Label x={104} y={92} size={5}>
+              <Label x={123} y={92} size={5} anchor="middle">
                 {`${player.hp}/${player.maxHp}`}
               </Label>
-              <rect x={74} y={96} width={84} height={1} fill={P[3]} />
+              <rect x={88} y={96} width={70} height={1} fill={P[3]} />
               <rect x={156} y={89} width={2} height={8} fill={P[3]} />
             </>
           )}
