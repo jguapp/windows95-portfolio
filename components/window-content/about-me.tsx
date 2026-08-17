@@ -215,7 +215,7 @@ function SearchSidebar() {
         {/*
           The advert.
 
-          Drop a scan at /images/blob/magazine-ad.png and it replaces the
+          Drop a scan at /images/blob/magazine-ad.jpg and it replaces the
           skyscraper; the onError below falls back to the old one, so a
           missing file shows the previous advert rather than a broken image.
 
@@ -226,12 +226,15 @@ function SearchSidebar() {
           most of its width to fit. Natural height means whatever is dropped
           in arrives whole, pinned to the top of the slot.
         */}
-        <div
-          className="bg-white border border-[#B7B7B7] flex flex-col flex-grow overflow-hidden"
-          style={{ minHeight: "calc(100vh - 290px)" }}
-        >
+        {/*
+          The box wraps the advert rather than stretching past it. The
+          skyscraper was 320x1000 and filled the whole column; a magazine
+          page is about 3:4, so forcing the old height left it stranded at
+          the top of six hundred pixels of white.
+        */}
+        <div className="bg-white border border-[#B7B7B7] overflow-hidden">
           <img
-            src="/images/blob/magazine-ad.png"
+            src="/images/blob/magazine-ad.jpg"
             alt="Advertisement"
             data-advert
             className="block w-full h-auto"
