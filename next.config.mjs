@@ -12,8 +12,8 @@ const csp = [
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",
   "connect-src 'self' https://api.web3forms.com",
-  // Internet Explorer frames the Wayback Machine for its 1996 web.
-  "frame-src 'self' https://web.archive.org",
+  // Internet Explorer frames /api/browse, which is same-origin.
+  "frame-src 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
@@ -41,8 +41,28 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/:path*",
+        /*
+          Everything but the page proxy. X-Frame-Options: DENY and
+          frame-ancestors 'none' are what stop this site being framed by
+          someone else, and they are worth keeping everywhere they can be,
+          but applied to /api/browse they also stop Internet Explorer
+          framing its own proxy, which is the one thing that route exists
+          to be.
+        */
+        source: "/((?!api/browse).*)",
         headers: securityHeaders,
+      },
+      {
+        // The proxy sets its own Content-Security-Policy per response, one
+        // that forbids scripts in the fetched page; only the framing rule
+        // is relaxed, and only to this origin.
+        source: "/api/browse",
+        headers: [
+          ...securityHeaders.filter(
+            (header) => header.key !== "Content-Security-Policy" && header.key !== "X-Frame-Options",
+          ),
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
       },
     ]
   },

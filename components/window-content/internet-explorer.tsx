@@ -6,11 +6,12 @@ import { bumpVisitors } from "@/actions/visitors"
 /**
  * Internet Explorer, and the internet as it was.
  *
- * Modern sites refuse to be framed, so typing an address does not load
- * today's web. It loads the Internet Archive's snapshot of that address from
- * 1996, which is both allowed and better: microsoft.com arrives with its
- * grey background and its Best Viewed In badge. The Wayback Machine sends no
- * frame-blocking headers, so the pages render inside the window.
+ * Modern sites refuse to be framed: they send X-Frame-Options or a
+ * frame-ancestors policy, the browser enforces it, and nothing client-side
+ * gets around it. So typing an address fetches the page on the server, at
+ * /api/browse, which strips its scripts and hands it back from this origin,
+ * where the frame will take it. Pages arrive without their JavaScript,
+ * which is roughly what a 1996 browser would have made of them anyway.
  *
  * A few built-in pages remain: the home page, the WebRing, the search page.
  * Input that is not an address at all still gets the grey "page cannot be
@@ -118,9 +119,9 @@ const SITES: Record<string, Site> = {
           </tbody>
         </table>
         <p className="mb-3 text-sm">
-          Or type any address up there. <strong>microsoft.com</strong>, <strong>yahoo.com</strong>,
-          <strong> spacejam.com</strong>: the address bar serves the web as it looked in 1996,
-          by way of the Internet Archive.
+          Or type any address up there. <strong>wikipedia.org</strong>, <strong>example.com</strong>,
+          <strong> spacejam.com</strong>: the address bar fetches the real page and shows it
+          the way a browser of this vintage would, which is to say without the JavaScript.
         </p>
         <VisitorCounter />
         <p className="text-xs text-[#404040]">This page is under construction. It always will be.</p>
@@ -174,10 +175,8 @@ const SITES: Record<string, Site> = {
 }
 
 /**
- * The home page: archived Yahoo, the page most people actually started at,
- * by the owner's preference. The preconnect below starts the archive's TLS
- * handshake the moment the window opens, which softens the wait, and
- * joel95.net stays one typed address away.
+ * The home page: Yahoo, the page most people actually started at, by the
+ * owner's preference. joel95.net stays one typed address away.
  */
 const HOME = "http://www.yahoo.com/"
 
@@ -220,13 +219,30 @@ function recordVisit(url: string): Visit[] {
   return next
 }
 
-/** Normalises whatever was typed into something the site table might hold. */
+/**
+ * Normalises whatever was typed into an address.
+ *
+ * This used to lowercase the whole string and staple a slash on the end,
+ * which was harmless while the only destinations were the built-in pages it
+ * looks up. Against the real web it is destructive: a path is
+ * case-sensitive, so en.wikipedia.org/wiki/Windows_95 became
+ * .../windows_95/ and fetched a 404. Only the scheme and host, which are
+ * genuinely case-insensitive, are lowered; a bare host still gains its
+ * trailing slash because URL adds one, which is the form the table is
+ * keyed by.
+ */
 function normalise(input: string): string {
-  let url = input.trim().toLowerCase()
-  if (!url) return url
-  if (!/^https?:\/\//.test(url)) url = `http://${url}`
-  if (!url.endsWith("/")) url += "/"
-  return url
+  const raw = input.trim()
+  if (!raw) return raw
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`
+  try {
+    const url = new URL(withScheme)
+    url.protocol = url.protocol.toLowerCase()
+    url.hostname = url.hostname.toLowerCase()
+    return url.href
+  } catch {
+    return withScheme
+  }
 }
 
 export default function InternetExplorer() {
@@ -234,17 +250,6 @@ export default function InternetExplorer() {
   /** True from asking the archive for a page until its iframe finishes. */
   const [loading, setLoading] = useState(true)
 
-  // Typed addresses go to the Wayback Machine; starting the TLS handshake
-  // the moment the window opens shaves the slowest part off the first fetch.
-  useEffect(() => {
-    const link = document.createElement("link")
-    link.rel = "preconnect"
-    link.href = "https://web.archive.org"
-    document.head.appendChild(link)
-    return () => {
-      document.head.removeChild(link)
-    }
-  }, [])
   const [at, setAt] = useState(0)
   const [typed, setTyped] = useState(HOME)
   /** The Favorites menu, and the History sidebar down the left. */
@@ -267,7 +272,14 @@ export default function InternetExplorer() {
     }
   }
   const webby = !site && isWebby(current)
-  const waybackSrc = `https://web.archive.org/web/1996/${current}`
+  /*
+    Real sites cannot be framed: they send X-Frame-Options or a
+    frame-ancestors policy and the browser enforces it, so pointing an
+    iframe straight at one shows nothing whatever we do here. The page is
+    fetched by /api/browse instead, which strips its scripts and hands it
+    back from this origin, where the frame will accept it.
+  */
+  const proxySrc = `/api/browse?url=${encodeURIComponent(current)}`
 
   const go = useCallback(
     (url: string) => {
@@ -462,8 +474,15 @@ export default function InternetExplorer() {
               onLoad={() => setLoading(false)}
             key={current}
             data-ie-frame
-            src={waybackSrc}
-            title="The World Wide Web, 1996"
+            src={proxySrc}
+            title="The World Wide Web"
+            /*
+              No allow-same-origin: the proxied page lands in an opaque
+              origin and cannot read this site's storage. No allow-scripts
+              either, which is belt and braces with the stripping the proxy
+              already did.
+            */
+            sandbox="allow-forms allow-popups-to-escape-sandbox"
             className="h-full w-full border-0"
           />
           </>

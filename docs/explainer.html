@@ -84,14 +84,16 @@ resize, minimise and maximise. Inside those windows: a resume in a recreated Mic
 Word, an About page styled as a 2005 profile site, a projects page styled as 2005
 YouTube, mail in a recreated Outlook Express with 59 messages, a photo gallery, a
 guestbook backed by Postgres, MS Paint, Notepad, an MS-DOS prompt, a calculator, a file
-explorer, a recycle bin, Internet Explorer with its own built-in pages, a real Winamp,
+explorer, a recycle bin, Internet Explorer that really loads pages, a real Winamp,
 and eight playable games. Around them: wallpaper and resolution
 switching that actually apply, a sound scheme, Clippy, a shutdown sequence, and one
 secret behind a famous ten-key code.</p>
 <p><strong>What it does not do:</strong> it does not persist visitor changes between
 reloads except the guestbook, wallpaper and resolution choices. It does not
-run real DOS software. Its Internet Explorer cannot load external websites. It is not a
-Windows emulator; every program is a purpose-built recreation.</p>
+run real DOS software. Its Internet Explorer loads real pages but strips their
+JavaScript, so anything that draws itself with script arrives empty, and nothing needing
+a login works. It is not a Windows emulator; every program is a purpose-built
+recreation.</p>
 
 <h2 id="background">Part II. Background concepts</h2>
 <dl>
@@ -281,6 +283,26 @@ node so pasting twice cannot alias one object into two folders. A name already i
 takes the original's naming: "Copy of Thing.txt", then "Copy (2) of Thing.txt", extension
 untouched, compared case-insensitively because the drive is. A folder cannot be pasted
 into itself or its own descendant, which <code>isInside</code> decides.</p>
+<h3>The page proxy behind Internet Explorer</h3>
+<p>Modern sites cannot be framed. They send <code>X-Frame-Options</code> or a
+<code>frame-ancestors</code> policy, the browser enforces it, and no client-side code
+gets around it, which is why the address bar used to reach only built-in pages. Typing an
+address now calls <code>/api/browse</code>, which fetches the page on the server, strips
+every script and inline handler, injects a <code>&lt;base&gt;</code> so the page's own
+images and stylesheets still load from where they live, and rewrites its links to come
+back through the proxy. What arrives is roughly what a browser of this vintage would have
+made of the page anyway.</p>
+<p>An endpoint that fetches whatever URL it is handed is a server-side request forgery
+engine unless it is fenced in, so the fencing is in <code>lib/browse-guard.ts</code>,
+apart from the route, and is tested without a network. Only http and https, only ports 80
+and 443, no credentials in the URL. Every hostname is resolved and its address checked
+before a socket opens, and every redirect is re-resolved and re-checked, because a public
+name that answers with 127.0.0.1 is the whole trick; loopback, private ranges, link-local
+and the cloud metadata address are all refused. At most three redirects, ten seconds, two
+megabytes. Nothing of the visitor is forwarded: no cookies, no authorization header, no
+referrer. The response carries a policy forbidding scripts and the frame is sandboxed
+without <code>allow-same-origin</code>, so a fetched page lands in an opaque origin and
+cannot read anything of this site's.</p>
 <h3>Guestbook moderation</h3>
 <p>The guestbook shows writing from strangers, so the owner can take an entry down.
 There are no accounts and exactly one moderator, so the control is a shared secret:
@@ -457,8 +479,10 @@ and the guestbook uses its in-process fallback.</p>
   <li>Display settings, the guestbook, high scores, files written to the virtual
       drive and created desktop items persist; open windows and their layout still
       reset on reload.</li>
-  <li>Internet Explorer carries built-in pages only, since external sites refuse
-      framing.</li>
+  <li>Internet Explorer shows real pages, but without their JavaScript: the proxy
+      strips it, so anything that draws itself with script arrives empty. Sites
+      needing a login cannot be used, because nothing of the visitor is
+      forwarded.</li>
   <li>The Playwright checks that verify behaviour live in <code>tests/checks/</code>
       and run with <code>pnpm checks</code> against a server on port 3000. They run
       on demand only; there is no hosted CI, so nothing runs them automatically on
