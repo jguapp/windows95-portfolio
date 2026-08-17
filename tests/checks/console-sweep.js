@@ -7,26 +7,22 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const area = { current: "boot" }
   p.on("pageerror", (e) => errors.push(`[${area.current}] pageerror: ${e.message.slice(0, 140)}`))
   /*
-    Internet Explorer now renders real pages through /api/browse, and a real
-    page is full of requests this proxy deliberately refuses: its scripts,
-    its trackers, its beacons. Every refusal is a console line from inside
-    that frame, and none of it is this desktop's code misbehaving. Errors
-    are attributed to their own frame, so anything raised inside the proxy
-    is left out of a sweep that exists to catch our own mistakes.
+    Internet Explorer frames the Internet Archive, and a 1996 page pulled
+    out of the archive is full of requests that fail: images that no longer
+    exist, hosts that no longer answer. None of that is this desktop's code
+    misbehaving, so anything raised from inside that frame is left out of a
+    sweep whose job is to catch our own mistakes.
   */
-  const fromProxy = (m) => {
-    const url = m.location?.()?.url ?? ""
-    return url.includes("/api/browse") || url.includes("wikipedia.org") || url.includes("yahoo.com")
-  }
+  const foreign = (m) => (m.location?.()?.url ?? "").includes("web.archive.org")
   p.on("console", (m) => {
-    if (m.type() === "error" && !fromProxy(m)) {
+    if (m.type() === "error" && !foreign(m)) {
       errors.push(`[${area.current}] console: ${m.text().slice(0, 140)}`)
     }
   })
   p.on("response", (r) => {
-    // A proxied page's own failing subresources are that site's business.
-    const proxied = r.frame() !== p.mainFrame()
-    if (r.status() >= 400 && !proxied && !r.url().includes("/api/browse") && !r.url().includes("_next/webpack-hmr"))
+    // An archived page's own failing subresources are the archive's business.
+    const inFrame = r.frame() !== p.mainFrame()
+    if (r.status() >= 400 && !inFrame && !r.url().includes("web.archive.org") && !r.url().includes("_next/webpack-hmr"))
       errors.push(`[${area.current}] HTTP ${r.status()} ${r.url().slice(-70)}`)
   })
 
