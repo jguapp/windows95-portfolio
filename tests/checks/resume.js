@@ -120,7 +120,7 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   const playlist = await p.evaluate(() => document.body.innerText)
   const oneSecond = (playlist.match(/0:01/g) || []).length
   ok("no track is left at the 0:01 placeholder", oneSecond === 0, `${oneSecond} tracks read 0:01`)
-  ok("real lengths are listed", /3:17|6:53|4:55/.test(playlist), (playlist.match(/\d+:\d\d/g) || []).slice(0, 6).join(" "))
+  ok("real lengths are listed", /5:51|6:43|4:50/.test(playlist), (playlist.match(/\d+:\d\d/g) || []).slice(0, 6).join(" "))
 
   ok("no page errors", errors.length === 0, errors.join(" | ").slice(0, 160))
   await b.close()

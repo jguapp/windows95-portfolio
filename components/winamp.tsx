@@ -14,21 +14,19 @@ import { useEffect, useRef } from "react"
  * the file loads, so an alternate cut corrects itself.
  */
 const PLAYLIST: [string, string, number][] = [
-  ["The Strokes", "Last Nite", 3 * 60 + 17],
-  ["Jeff Buckley", "Hallelujah", 6 * 60 + 53],
-  ["Radiohead", "Karma Police", 4 * 60 + 21],
+  ["The Strokes", "Ode to the Mets", 5 * 60 + 51],
+  ["Jeff Buckley", "Lover, You Should've Come Over", 6 * 60 + 43],
+  ["Radiohead", "Fake Plastic Trees", 4 * 60 + 50],
   ["Mac Miller", "Self Care", 5 * 60 + 45],
-  ["Steve Lacy", "Bad Habit", 3 * 60 + 52],
+  ["Frank Ocean", "Nights", 5 * 60 + 7],
   ["Marvin Gaye", "What's Going On", 3 * 60 + 53],
-  ["Faye Webster", "Kingston", 3 * 60 + 59],
-  ["Stevie Wonder", "Superstition", 4 * 60 + 26],
-  ["Mazzy Star", "Fade Into You", 4 * 60 + 55],
-  ["Michael Jackson", "Rock with You", 3 * 60 + 40],
+  ["Faye Webster", "I Know I'm Funny", 3 * 60 + 56],
+  ["Stevie Wonder", "Isn't She Lovely", 6 * 60 + 34],
+  ["Mazzy Star", "Halah", 3 * 60 + 22],
+  ["Michael Jackson", "Wanna Be Startin' Somethin'", 6 * 60 + 3],
   ["Fleetwood Mac", "Dreams", 4 * 60 + 14],
-  ["Tame Impala", "The Less I Know the Better", 3 * 60 + 36],
-  ["The Strokes", "Reptilia", 3 * 60 + 39],
-  ["Radiohead", "No Surprises", 3 * 60 + 48],
-  ["Steve Lacy", "Dark Red", 2 * 60 + 38],
+  ["Tame Impala", "Feel Like We Only Go Backwards", 3 * 60 + 12],
+  ["Mac DeMarco", "Heart to Heart", 2 * 60 + 33],
 ]
 
 

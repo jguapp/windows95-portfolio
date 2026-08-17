@@ -84,7 +84,7 @@ const MUSIC_ROWS: InfoRow[] = [
   {
     label: "Favorite Music:",
     value:
-      "The Strokes, Jeff Buckley, Radiohead, Mac Miller, Steve Lacy, Marvin Gaye, Faye Webster, Stevie Wonder, Mazzy Star, Michael Jackson, Fleetwood Mac, Tame Impala",
+      "The Strokes, Jeff Buckley, Radiohead, Mac Miller, Frank Ocean, Marvin Gaye, Faye Webster, Stevie Wonder, Mazzy Star, Michael Jackson, Fleetwood Mac, Tame Impala, Mac DeMarco",
     blue: true,
   },
 ]
