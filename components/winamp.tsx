@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 
 /**
- * The owner's fourteen, as listed on the profile: artist, title, seconds.
+ * The owner's fifteen, as listed on the profile: artist, title, seconds.
  *
  * The length is carried here because the repository ships silent
  * placeholders under these names, and Webamp reads a file's real duration:
@@ -28,6 +28,7 @@ const PLAYLIST: [string, string, number][] = [
   ["Fleetwood Mac", "Dreams", 4 * 60 + 14],
   ["Tame Impala", "Feel Like We Only Go Backwards", 3 * 60 + 12],
   ["Mac DeMarco", "Heart to Heart", 2 * 60 + 33],
+  ["Elliott Smith", "Ballad of Big Nothing", 2 * 60 + 48],
 ]
 
 
