@@ -79,6 +79,7 @@ const PHRASES: { phrase: string; animation: string }[] = [
   { phrase: "Type joel95.net into Internet Explorer. The home page counts your visit.", animation: GIF(6) },
   { phrase: "Winamp's eject button takes your own music. It never leaves your browser.", animation: GIF(2) },
   { phrase: "The playlist in Winamp is Joel's actual taste. The Strokes lead, obviously.", animation: GIF(6) },
+  { phrase: "Winamp keeps playing while you wander the desk. Start the playlist, then go exploring.", animation: GIF(5) },
   { phrase: "In the battle, METAL beats CHAOS beats CODE beats DATA beats METAL. Now you know.", animation: GIF(4) },
   { phrase: "Status moves are worth it. A foe at minus six attack is a foe defeated politely.", animation: GIF(3) },
   { phrase: "The battle music loops seamlessly. It took four attempts. I watched.", animation: GIF(7) },
