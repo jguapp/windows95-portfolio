@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { PALETTE, TOOLS, ToolGlyph } from "./paint-parts"
-import { CUSTOM_WALLPAPER_ID, CUSTOM_WALLPAPER_KEY } from "@/lib/wallpapers"
+import { CUSTOM_WALLPAPER_ID, setCustomWallpaper, setSessionWallpaperId } from "@/lib/wallpapers"
 import type React from "react"
 import { messageBox } from "@/components/win95-dialog"
 
@@ -642,13 +642,9 @@ export default function Paint() {
     const canvas = canvasRef.current
     if (!canvas) return
     const url = canvas.toDataURL("image/png")
-    try {
-      localStorage.setItem(CUSTOM_WALLPAPER_KEY, url)
-      localStorage.setItem("win95-background-image", CUSTOM_WALLPAPER_ID)
-    } catch {
-      messageBox({ title: "Paint", text: "That drawing is too large to store as wallpaper.", icon: "error" })
-      return
-    }
+    // Held in memory for the session; wallpaper reverts on refresh.
+    setCustomWallpaper(url)
+    setSessionWallpaperId(CUSTOM_WALLPAPER_ID)
     const desktop = document.getElementById("desktop")
     if (desktop) {
       desktop.style.backgroundImage = `url(${url})`

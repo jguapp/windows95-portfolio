@@ -14,21 +14,35 @@ export interface Wallpaper {
 }
 
 /**
- * A wallpaper the visitor supplied, kept as a data URL in localStorage
- * under this id. Display Properties writes it; the desktop's boot restore
- * reads it back, because a custom bitmap is not in the shipped table.
+ * The session's wallpaper, held in memory on purpose.
+ *
+ * Wallpaper is a mood, not a setting: a visitor redecorating the desk gets
+ * their choice for as long as the window lives, and a refresh hands the
+ * next arrival the teal default, the way a shared machine in 1995 greeted
+ * everyone with the same desktop. Nothing here touches localStorage, which
+ * is exactly why a refresh reverts it.
  */
 export const CUSTOM_WALLPAPER_ID = "custom-upload"
-export const CUSTOM_WALLPAPER_KEY = "win95-wallpaper-custom"
+
+let sessionWallpaperId: string | null = null
+let sessionCustomBitmap: string | null = null
+
+/** The wallpaper chosen this session, or null for the default. */
+export function getSessionWallpaperId(): string | null {
+  return sessionWallpaperId
+}
+
+export function setSessionWallpaperId(id: string) {
+  sessionWallpaperId = id
+}
+
+/** A bitmap the visitor supplied this session, as a data URL. */
+export function setCustomWallpaper(dataUrl: string) {
+  sessionCustomBitmap = dataUrl
+}
 
 export function readCustomWallpaper(): string | null {
-  if (typeof window === "undefined") return null
-  try {
-    const raw = window.localStorage.getItem(CUSTOM_WALLPAPER_KEY)
-    return raw && raw.startsWith("data:image/") ? raw : null
-  } catch {
-    return null
-  }
+  return sessionCustomBitmap
 }
 
 /** Resolves any wallpaper id to a URL, custom uploads included. */

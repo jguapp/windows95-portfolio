@@ -3,7 +3,6 @@
 import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import DesktopItem from "./desktop-item"
-import { wallpaperUrl } from "@/lib/wallpapers"
 import { persistenceEnabled } from "@/lib/persistence"
 import { applyScheme } from "@/lib/color-schemes"
 import ContextMenu from "./context-menu"
@@ -350,21 +349,19 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       setNextItemId(maxId + 1)
 
       // Load saved background settings
-      const savedBackground = localStorage.getItem("win95-background-image")
       const savedColorScheme = localStorage.getItem("win95-color-scheme")
 
-      // Apply saved background if it exists. A stored id the set no longer
-      // carries simply falls through to the default paint.
-      if (savedBackground && desktopRef.current) {
-        // wallpaperUrl covers the shipped set and a bitmap the visitor uploaded.
-        const url = wallpaperUrl(savedBackground)
-        if (url) {
-          desktopRef.current.style.backgroundImage = `url(${url})`
-          // Wallpaper tiles; Center and Stretch did not exist in 1995.
-          desktopRef.current.style.backgroundSize = "auto"
-          desktopRef.current.style.backgroundRepeat = "repeat"
-          desktopRef.current.style.backgroundPosition = "top left"
-        }
+      /*
+        Wallpaper deliberately does not survive a refresh: every boot paints
+        the default and the session's redecorating lives in memory only. The
+        two keys older builds stored are cleared so returning visitors also
+        start from teal rather than from a choice made weeks ago.
+      */
+      try {
+        localStorage.removeItem("win95-background-image")
+        localStorage.removeItem("win95-wallpaper-custom")
+      } catch {
+        // Storage being unavailable clears nothing, and needs nothing.
       }
 
       // Apply the color scheme through the shared table on every boot, so
@@ -373,7 +370,7 @@ export default function Desktop({ onOpenWindow }: DesktopProps) {
       // applyScheme resolves to Windows Standard: the default is explicit
       // rather than an accident of CSS fallbacks.
       const scheme = applyScheme(savedColorScheme)
-      if (!savedBackground && desktopRef.current) {
+      if (desktopRef.current) {
         desktopRef.current.style.backgroundColor = scheme.desktop
       }
 

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CUSTOM_WALLPAPER_ID, CUSTOM_WALLPAPER_KEY, WALLPAPERS, readCustomWallpaper, wallpaperUrl } from "@/lib/wallpapers"
+import { CUSTOM_WALLPAPER_ID, WALLPAPERS, getSessionWallpaperId, readCustomWallpaper, setCustomWallpaper as storeCustomWallpaper, setSessionWallpaperId, wallpaperUrl } from "@/lib/wallpapers"
 import { COLOR_SCHEMES, applyScheme } from "@/lib/color-schemes"
 import { RESOLUTIONS, applyResolution, readResolution } from "@/lib/resolution"
 import { CloseIcon } from "@/components/win95-controls"
@@ -25,8 +25,8 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
   // Load current settings from localStorage or use defaults
   const [activeTab, setActiveTab] = useState(initialTab ?? "background")
   const [selectedBackground, setSelectedBackground] = useState(() => {
-    const saved = localStorage.getItem("win95-background-image")
-    return saved || "windows-default"
+    // The session's choice, never storage: a refresh reverts wallpaper.
+    return getSessionWallpaperId() || "windows-default"
   })
   const [resolution, setResolution] = useState<string>(() => readResolution())
   const [selectedColorScheme, setSelectedColorScheme] = useState(() => {
@@ -56,7 +56,7 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
         desktop.style.backgroundRepeat = "repeat"
         desktop.style.backgroundPosition = "top left"
 
-        localStorage.setItem("win95-background-image", selectedBackground)
+        setSessionWallpaperId(selectedBackground)
       }
     }
   }, [selectedBackground])
@@ -128,8 +128,8 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
 
   // Update the handleApply function to apply all settings at once
   const handleApply = () => {
-    // Save all settings to localStorage
-    localStorage.setItem("win95-background-image", selectedBackground)
+    // The scheme persists; the wallpaper lives for the session only.
+    setSessionWallpaperId(selectedBackground)
     localStorage.setItem("win95-color-scheme", selectedColorScheme)
 
     // Apply background image
@@ -280,20 +280,25 @@ export default function DisplayProperties({ onClose, initialTab }: DisplayProper
                     onChange={(e) => {
                       const file = e.target.files?.[0]
                       if (!file) return
-                      // Read as a data URL: the bitmap has to survive a reload,
-                      // and there is no server to upload it to.
+                      // Read as a data URL, held in memory for the
+                      // session; wallpaper reverts on refresh by design.
                       const reader = new FileReader()
                       reader.onload = () => {
                         const url = String(reader.result ?? "")
                         if (!url.startsWith("data:image/")) return
                         try {
-                          localStorage.setItem(CUSTOM_WALLPAPER_KEY, url)
+                          /*
+                            Both stores matter: the lib's session memory is
+                            what wallpaperUrl resolves when the desktop
+                            paints, and the local state is what previews it
+                            in this dialog. The local setter shadows the
+                            import's name, hence the alias.
+                          */
+                          storeCustomWallpaper(url)
                           setCustomWallpaper(url)
                           setSelectedBackground(CUSTOM_WALLPAPER_ID)
                         } catch {
-                          // A bitmap too big for storage is not applied, rather
-                          // than applied and silently lost on reload.
-                          window.alert("That image is too large to store as wallpaper.")
+                          window.alert("That image could not be read as wallpaper.")
                         }
                       }
                       reader.readAsDataURL(file)

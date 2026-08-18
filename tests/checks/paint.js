@@ -134,8 +134,10 @@ const ok = (l, c, e = "") => console.log(`  ${c ? "PASS" : "FAIL"}  ${l}${e ? " 
   await p.waitForTimeout(300)
   const bg = await p.evaluate(() => document.getElementById("desktop").style.backgroundImage)
   ok("#62 the drawing becomes the wallpaper", bg.includes("data:image/"), bg.slice(0, 32))
+  // Wallpaper is session-only by design: nothing may reach storage, and
+  // a reload comes back to the default.
   const stored = await p.evaluate(() => localStorage.getItem("win95-background-image"))
-  ok("#62 and is chosen for next time", stored === "custom-upload", String(stored))
+  ok("#62 and nothing is written to storage", stored === null, String(stored))
 
   ok("no page errors during the paint pass", errors.length === 0, errors.join(" | ").slice(0, 200))
   await b.close()

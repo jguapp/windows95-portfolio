@@ -90,7 +90,8 @@ playable games. Around them: wallpaper and resolution
 switching that actually apply, a sound scheme, Clippy, a shutdown sequence, and one
 secret behind a famous ten-key code.</p>
 <p><strong>What it does not do:</strong> it persists only what you opt into on the
-welcome dialog, plus the guestbook, wallpaper and resolution choices. It does not
+welcome dialog, plus the guestbook, the colour scheme and the resolution; wallpaper
+reverts to the teal default on refresh by design. It does not
 run real DOS software. Its Internet Explorer cannot load external websites. It is not a
 Windows emulator; every program is a purpose-built recreation.</p>
 
@@ -127,8 +128,9 @@ Windows emulator; every program is a purpose-built recreation.</p>
   move recordings, and fifteen silent placeholders Winamp lists by name until real
   recordings replace them.</dd>
   <dt>localStorage</dt>
-  <dd>A small key-value store the browser keeps per site. Wallpaper and
-  resolution choices live there.</dd>
+  <dd>A small key-value store the browser keeps per site. The colour scheme and
+  resolution choices live there; wallpaper deliberately does not, so it reverts
+  on refresh.</dd>
   <dt>Postgres</dt>
   <dd>A relational database. The guestbook keeps its entries in one, reached through a
   pooled connection string in an environment variable.</dd>
