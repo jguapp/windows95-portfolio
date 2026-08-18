@@ -37,6 +37,8 @@ export default function Home() {
   /** Windows Help, opened by F1; the topic reads activeWindow at render. */
   const [helpFor, setHelpFor] = useState<{ open: boolean } | null>(null)
   const [showWinamp, setShowWinamp] = useState(false)
+  /** Webamp minimised: hidden but alive, so the music keeps playing. */
+  const [winampMinimized, setWinampMinimized] = useState(false)
   const [showShutdown, setShowShutdown] = useState(false)
   /** Ids of windows currently maximised, reported by the windows themselves. */
   const [maximizedWindows, setMaximizedWindows] = useState<Set<string>>(new Set())
@@ -79,9 +81,11 @@ export default function Home() {
   // Handle opening a window
   const handleOpenWindow = useCallback(
     (id: string) => {
-      // Winamp draws its own windows, so it never joins the window list.
+      // Winamp draws its own windows, so it never joins the window list;
+      // its taskbar button and minimise state are handled here instead.
       if (id === "winamp") {
         setShowWinamp(true)
+        setWinampMinimized(false)
         return
       }
       if (!openWindows.includes(id)) {
@@ -336,9 +340,9 @@ export default function Home() {
       )}
 
       <Taskbar
-        openWindows={openWindows}
+        openWindows={showWinamp ? [...openWindows, "winamp"] : openWindows}
         activeWindow={activeWindow}
-        minimizedWindows={minimizedWindows}
+        minimizedWindows={winampMinimized ? [...minimizedWindows, "winamp"] : minimizedWindows}
         onWindowSelect={handleOpenWindow}
         onToggleStartMenu={toggleStartMenu}
       />
@@ -360,7 +364,16 @@ export default function Home() {
       {switcher && <WindowSwitcher windows={switcher.list} selected={switcher.index} />}
 
       {/* Winamp, loaded on first open */}
-      {showWinamp && <Winamp onClose={() => setShowWinamp(false)} />}
+      {showWinamp && (
+        <Winamp
+          hidden={winampMinimized}
+          onMinimize={() => setWinampMinimized(true)}
+          onClose={() => {
+            setShowWinamp(false)
+            setWinampMinimized(false)
+          }}
+        />
+      )}
 
       {/* Shut Down, ending on the amber screen */}
       {showShutdown && <Shutdown onCancel={() => setShowShutdown(false)} />}

@@ -7,6 +7,7 @@
  */
 const TITLES: Record<string, string> = {
   msdos: "MS-DOS Prompt",
+  winamp: "Winamp",
   explorer: "Exploring - C:\\",
   "recycle-bin": "Recycle Bin",
   notepad: "Readme.txt - Notepad",
@@ -87,6 +88,7 @@ const ICONS: Record<string, string> = {
   calculator: "/images/win95/calculator-16.png",
   notepad: "/images/win95/notepad-16.png",
   msdos: "/images/win95/msdos-16.png",
+  winamp: "/images/win95/winamp-32.png",
   explorer: "/images/win95/explorer-16.png",
   "recycle-bin": "/images/win95/recycle-empty-16.png",
   guestbook: "/images/win95/guestbook-16.png",

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react"
 
+import { getVolume, isMuted, subscribeVolume } from "@/lib/sound"
+
 /**
  * The owner's fifteen, as listed on the profile: artist, title, seconds.
  *
@@ -51,16 +53,23 @@ const PLAYLIST: [string, string, number][] = [
  */
 interface WinampProps {
   onClose: () => void
+  /** Webamp's own minimise button, surfaced so the shell can hold the state. */
+  onMinimize: () => void
+  /** Minimised: the windows hide but the instance lives, so music keeps playing. */
+  hidden: boolean
 }
 
-export default function Winamp({ onClose }: WinampProps) {
+export default function Winamp({ onClose, onMinimize, hidden }: WinampProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  const onMinimizeRef = useRef(onMinimize)
+  onMinimizeRef.current = onMinimize
 
   useEffect(() => {
     let webamp: { dispose: () => void } | null = null
     let disposed = false
+    let unsubscribeVolume: (() => void) | null = null
 
     ;(async () => {
       const { default: Webamp } = await import("webamp")
@@ -81,11 +90,24 @@ export default function Winamp({ onClose }: WinampProps) {
       })
       webamp = instance
       instance.onClose(() => onCloseRef.current())
+      instance.onMinimize(() => onMinimizeRef.current())
+
+      /*
+        The tray's volume governs the whole desk, and Winamp is part of the
+        desk: the slider's value lands here as Webamp's 0-100, with mute as
+        zero. One-way on purpose. Webamp's own slider still works locally,
+        but the next touch of the tray reasserts the desk's setting.
+      */
+      const syncVolume = () => instance.setVolume(isMuted() ? 0 : Math.round(getVolume() * 100))
+      syncVolume()
+      unsubscribeVolume = subscribeVolume(syncVolume)
+
       if (containerRef.current) await instance.renderWhenReady(containerRef.current)
     })()
 
     return () => {
       disposed = true
+      unsubscribeVolume?.()
       webamp?.dispose()
     }
   }, [])
@@ -97,7 +119,13 @@ export default function Winamp({ onClose }: WinampProps) {
     <div
       ref={containerRef}
       data-winamp
-      className="pointer-events-none fixed inset-0 z-[500] [&_#webamp]:pointer-events-auto"
+      data-minimized={hidden ? "" : undefined}
+      /*
+        Minimised is hidden, not unmounted: the Webamp instance and its
+        audio keep running, which is what lets the playlist play on while
+        the windows are down on the taskbar.
+      */
+      className={`pointer-events-none fixed inset-0 z-[500] [&_#webamp]:pointer-events-auto ${hidden ? "hidden" : ""}`}
     />
   )
 }
