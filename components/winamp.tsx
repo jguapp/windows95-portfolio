@@ -25,10 +25,10 @@ const PLAYLIST: [string, string, number][] = [
   ["Stevie Wonder", "Isn't She Lovely", 6 * 60 + 34],
   ["Mazzy Star", "Halah", 3 * 60 + 22],
   ["Michael Jackson", "Wanna Be Startin' Somethin'", 6 * 60 + 3],
-  ["Fleetwood Mac", "Dreams", 4 * 60 + 14],
+  ["Fleetwood Mac", "Gypsy", 4 * 60 + 24],
   ["Tame Impala", "Feel Like We Only Go Backwards", 3 * 60 + 12],
   ["Mac DeMarco", "This Old Dog", 2 * 60 + 31],
-  ["Elliott Smith", "Ballad of Big Nothing", 2 * 60 + 48],
+  ["Elliott Smith", "Waltz #2 (XO)", 4 * 60 + 40],
 ]
 
 
@@ -70,7 +70,12 @@ export default function Winamp({ onClose }: WinampProps) {
       const instance = new Webamp({
         initialTracks: PLAYLIST.map(([artist, title, duration], i) => ({
           metaData: { artist, title },
-          url: encodeURI(`/audio/winamp/${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`),
+          /*
+            encodeURIComponent, not encodeURI: a title like Waltz #2 puts a
+            # in the filename, encodeURI preserves # as a fragment marker,
+            and the browser would truncate the request right there.
+          */
+          url: `/audio/winamp/${encodeURIComponent(`${String(i + 1).padStart(2, "0")} - ${artist} - ${title}.mp3`)}`,
           duration,
         })),
       })
