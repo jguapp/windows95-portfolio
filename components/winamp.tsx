@@ -21,7 +21,7 @@ const PLAYLIST: [string, string, number][] = [
   ["Mac Miller", "The Spins", 3 * 60 + 22],
   ["Frank Ocean", "Nights", 5 * 60 + 7],
   ["Anderson .Paak", "Heart Don't Stand a Chance", 3 * 60 + 54],
-  ["Faye Webster", "I Know I'm Funny", 3 * 60 + 56],
+  ["Faye Webster", "A Dream With a Baseball Player", 3 * 60 + 20],
   ["Stevie Wonder", "Isn't She Lovely", 6 * 60 + 34],
   ["Mazzy Star", "Halah", 3 * 60 + 22],
   ["Michael Jackson", "Wanna Be Startin' Somethin'", 6 * 60 + 3],
