@@ -129,10 +129,24 @@ export default function Home() {
     }
   }
 
+  /*
+    The taskbar button behaves as a taskbar button: click the visible
+    Winamp and it minimises, click the minimised one and it comes back.
+    Opening from an icon goes through handleOpenWindow instead, which
+    always restores, because launching something is never a request to
+    hide it.
+  */
+  const handleWinampTaskbar = useCallback(() => {
+    setWinampMinimized((m) => !m)
+  }, [])
+
   // Show Desktop and the taskbar menu ask for this by event.
   useEffect(() => {
     const minimizeAll = () => {
       setMinimizedWindows((prev) => [...new Set([...prev, ...openWindows])])
+      // Winamp goes down with the rest; hidden, not stopped, so the music
+      // plays on from the taskbar.
+      setWinampMinimized(true)
       setActiveWindow(null)
     }
     window.addEventListener("minimizeAllWindows", minimizeAll)
@@ -344,6 +358,7 @@ export default function Home() {
         activeWindow={activeWindow}
         minimizedWindows={winampMinimized ? [...minimizedWindows, "winamp"] : minimizedWindows}
         onWindowSelect={handleOpenWindow}
+        onWinampSelect={handleWinampTaskbar}
         onToggleStartMenu={toggleStartMenu}
       />
 

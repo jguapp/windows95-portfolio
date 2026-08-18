@@ -18,6 +18,8 @@ interface TaskbarProps {
   activeWindow: string | null
   minimizedWindows: string[]
   onWindowSelect: (id: string) => void
+  /** The Winamp button toggles minimise, as a real taskbar button does. */
+  onWinampSelect?: () => void
   onToggleStartMenu: () => void
 }
 
@@ -27,6 +29,7 @@ export default function Taskbar({
   activeWindow,
   minimizedWindows,
   onWindowSelect,
+  onWinampSelect,
   onToggleStartMenu,
 }: TaskbarProps) {
   const [time, setTime] = useState<string>("")
@@ -243,7 +246,7 @@ export default function Taskbar({
                   ? "border-[#404040] border-t-[#404040] border-l-[#404040] border-r-white border-b-white"
                   : "border-white border-t-white border-l-white border-r-[#404040] border-b-[#404040]"
               } pl-0 pr-2 text-xs cursor-pointer text-black hover:bg-[#d0d0d0]`}
-              onClick={() => onWindowSelect(id)}
+              onClick={() => (id === "winamp" && onWinampSelect ? onWinampSelect() : onWindowSelect(id))}
             >
               <img
                 src={windowIcon(id) || "/placeholder.svg?height=16&width=16"}
