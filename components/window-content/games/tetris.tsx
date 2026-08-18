@@ -104,10 +104,25 @@ const SEEDED_SCORES: ScoreEntry[] = []
 
 const createEmptyBoard = (): Cell[][] => Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0))
 
-// Random tetromino generator
+/*
+  The 7-bag randomizer. Uniform rolls give every piece a 1-in-7 chance per
+  spawn, which sounds fair and plays wrong: droughts of twenty spawns
+  without an I-piece are routine, long enough that a player reasonably
+  concludes the piece does not exist. The bag deals all seven in shuffled
+  order and reshuffles, so every piece appears at least once every seven
+  and never three times in a row. This is how the licensed games have done
+  it since 2001.
+*/
+const bag: string[] = []
 const randomTetromino = () => {
-  const keys = Object.keys(TETROMINOES)
-  const tetromino = keys[Math.floor(Math.random() * keys.length)]
+  if (bag.length === 0) {
+    bag.push(...Object.keys(TETROMINOES))
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[bag[i], bag[j]] = [bag[j], bag[i]]
+    }
+  }
+  const tetromino = bag.pop() as string
   return {
     type: tetromino,
     shape: TETROMINOES[tetromino as keyof typeof TETROMINOES].shape,
