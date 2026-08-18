@@ -436,10 +436,23 @@ export default function Chess({ onReturn }: ChessProps) {
 
     // Check for pawn promotion
     if (piece.type === "pawn" && (to.row === 0 || to.row === 7)) {
-      setPromotionPosition(to)
-      setShowPromotionDialog(true)
-      // The actual move will be completed after promotion selection
-      return
+      if (gameMode === "bot" && piece.color !== playerColor) {
+        /*
+          The dialog is for the human. Before this branch a bot pawn
+          reaching the last rank opened it anyway and the game stalled on
+          a choice nobody could make: handlePromotion reads the human's
+          selectedPosition, which a bot move never sets. The bot queens,
+          as every engine at this level does, and the move carries on
+          through the normal path below.
+        */
+        piece.type = "queen"
+        moveRecord.isPromotion = true
+      } else {
+        setPromotionPosition(to)
+        setShowPromotionDialog(true)
+        // The actual move will be completed after promotion selection
+        return
+      }
     }
 
     // Update the piece's hasMoved property (for castling and pawn double move)
@@ -1230,120 +1243,205 @@ export default function Chess({ onReturn }: ChessProps) {
   }
 
   // Bot move logic
+  /*
+    The bot: material and placement, searched ahead.
+
+    Evaluation is the classic simplified pair: centipawn material plus a
+    piece-square table per piece, so the search prefers knights toward the
+    centre, pawns advancing, and the king tucked away, without any of it
+    being hand-scored per move. The search is minimax with alpha-beta,
+    captures ordered first (most valuable victim, least valuable attacker)
+    so the pruning actually bites.
+
+    Difficulty is depth, which is the honest dial: Easy searches one ply
+    and picks among the top three, so it plays reasonable moves and still
+    blunders like a beginner; Medium searches two plies, enough to stop
+    hanging pieces; Hard searches four plies and punishes anything left
+    loose. Ties at the top are broken at random so openings vary.
+  */
+  const PIECE_CP: Record<PieceType, number> = { pawn: 100, knight: 320, bishop: 330, rook: 500, queen: 900, king: 20000 }
+
+  // Tables read with row 0 as Black's back rank, as the board array does;
+  // White reads them directly and Black mirrors the rows.
+  const PST: Record<PieceType, number[][]> = {
+    pawn: [
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [50, 50, 50, 50, 50, 50, 50, 50],
+      [10, 10, 20, 30, 30, 20, 10, 10],
+      [5, 5, 10, 25, 25, 10, 5, 5],
+      [0, 0, 0, 20, 20, 0, 0, 0],
+      [5, -5, -10, 0, 0, -10, -5, 5],
+      [5, 10, 10, -20, -20, 10, 10, 5],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    knight: [
+      [-50, -40, -30, -30, -30, -30, -40, -50],
+      [-40, -20, 0, 0, 0, 0, -20, -40],
+      [-30, 0, 10, 15, 15, 10, 0, -30],
+      [-30, 5, 15, 20, 20, 15, 5, -30],
+      [-30, 0, 15, 20, 20, 15, 0, -30],
+      [-30, 5, 10, 15, 15, 10, 5, -30],
+      [-40, -20, 0, 5, 5, 0, -20, -40],
+      [-50, -40, -30, -30, -30, -30, -40, -50],
+    ],
+    bishop: [
+      [-20, -10, -10, -10, -10, -10, -10, -20],
+      [-10, 0, 0, 0, 0, 0, 0, -10],
+      [-10, 0, 5, 10, 10, 5, 0, -10],
+      [-10, 5, 5, 10, 10, 5, 5, -10],
+      [-10, 0, 10, 10, 10, 10, 0, -10],
+      [-10, 10, 10, 10, 10, 10, 10, -10],
+      [-10, 5, 0, 0, 0, 0, 5, -10],
+      [-20, -10, -10, -10, -10, -10, -10, -20],
+    ],
+    rook: [
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [5, 10, 10, 10, 10, 10, 10, 5],
+      [-5, 0, 0, 0, 0, 0, 0, -5],
+      [-5, 0, 0, 0, 0, 0, 0, -5],
+      [-5, 0, 0, 0, 0, 0, 0, -5],
+      [-5, 0, 0, 0, 0, 0, 0, -5],
+      [-5, 0, 0, 0, 0, 0, 0, -5],
+      [0, 0, 0, 5, 5, 0, 0, 0],
+    ],
+    queen: [
+      [-20, -10, -10, -5, -5, -10, -10, -20],
+      [-10, 0, 0, 0, 0, 0, 0, -10],
+      [-10, 0, 5, 5, 5, 5, 0, -10],
+      [-5, 0, 5, 5, 5, 5, 0, -5],
+      [0, 0, 5, 5, 5, 5, 0, -5],
+      [-10, 5, 5, 5, 5, 5, 0, -10],
+      [-10, 0, 5, 0, 0, 0, 0, -10],
+      [-20, -10, -10, -5, -5, -10, -10, -20],
+    ],
+    king: [
+      [-30, -40, -40, -50, -50, -40, -40, -30],
+      [-30, -40, -40, -50, -50, -40, -40, -30],
+      [-30, -40, -40, -50, -50, -40, -40, -30],
+      [-30, -40, -40, -50, -50, -40, -40, -30],
+      [-20, -30, -30, -40, -40, -30, -30, -20],
+      [-10, -20, -20, -20, -20, -20, -20, -10],
+      [20, 20, 0, 0, 0, 0, 20, 20],
+      [20, 30, 10, 0, 0, 10, 30, 20],
+    ],
+  }
+
+  /** Board score in centipawns, positive when `forColor` stands better. */
+  const evaluateBoard = (bd: Board, forColor: PieceColor): number => {
+    let white = 0
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = bd[r][c]
+        if (!piece) continue
+        // The tables are written from White's side of the board; Black
+        // reads them with the rows mirrored.
+        const pst = piece.color === "white" ? PST[piece.type][r][c] : PST[piece.type][7 - r][c]
+        const value = PIECE_CP[piece.type] + pst
+        white += piece.color === "white" ? value : -value
+      }
+    }
+    return forColor === "white" ? white : -white
+  }
+
+  /** Every legal move for a colour, captures first so pruning bites. */
+  const allLegalMoves = (bd: Board, color: PieceColor) => {
+    const moves: { from: Position; to: Position; order: number }[] = []
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = bd[r][c]
+        if (!piece || piece.color !== color) continue
+        for (const to of calculateValidMoves({ row: r, col: c }, bd)) {
+          const victim = bd[to.row][to.col]
+          // Most valuable victim with the least valuable attacker first.
+          const order = victim ? PIECE_CP[victim.type] * 10 - PIECE_CP[piece.type] : -1
+          moves.push({ from: { row: r, col: c }, to, order })
+        }
+      }
+    }
+    moves.sort((a, b) => b.order - a.order)
+    return moves
+  }
+
+  /** The move applied to a copy, pawns queening as they land. */
+  const applyMove = (bd: Board, from: Position, to: Position): Board => {
+    const next = bd.map((row) => [...row])
+    const piece = next[from.row][from.col]
+    if (!piece) return next
+    const lands = to.row === 0 || to.row === 7
+    next[to.row][to.col] =
+      piece.type === "pawn" && lands ? { ...piece, type: "queen", hasMoved: true } : { ...piece, hasMoved: true }
+    next[from.row][from.col] = null
+    return next
+  }
+
+  const MATE = 100000
+
+  /** Alpha-beta minimax, scored from the bot's side of the table. */
+  const search = (
+    bd: Board,
+    depth: number,
+    alpha: number,
+    beta: number,
+    turn: PieceColor,
+    botColor: PieceColor,
+  ): number => {
+    if (depth === 0) return evaluateBoard(bd, botColor)
+    const moves = allLegalMoves(bd, turn)
+    if (moves.length === 0) {
+      // No moves is mate or stalemate; nearer mates score stronger so the
+      // bot takes the short win over the long one.
+      if (isKingInCheck(bd, turn)) return turn === botColor ? -MATE - depth : MATE + depth
+      return 0
+    }
+    const nextTurn: PieceColor = turn === "white" ? "black" : "white"
+    if (turn === botColor) {
+      let best = -Infinity
+      for (const move of moves) {
+        best = Math.max(best, search(applyMove(bd, move.from, move.to), depth - 1, alpha, beta, nextTurn, botColor))
+        alpha = Math.max(alpha, best)
+        if (beta <= alpha) break
+      }
+      return best
+    }
+    let worst = Infinity
+    for (const move of moves) {
+      worst = Math.min(worst, search(applyMove(bd, move.from, move.to), depth - 1, alpha, beta, nextTurn, botColor))
+      beta = Math.min(beta, worst)
+      if (beta <= alpha) break
+    }
+    return worst
+  }
+
   const makeBotMove = () => {
     setIsThinking(true)
+    const botColor: PieceColor = playerColor === "white" ? "black" : "white"
+    const depth = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 4
 
-    // Get all possible moves for the bot
-    const botColor = playerColor === "white" ? "black" : "white"
-    const allMoves: { from: Position; to: Position; score: number }[] = []
-
-    // Collect all possible moves with scores
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        const piece = board[row][col]
-        if (piece && piece.color === botColor) {
-          const validMoves = calculateValidMoves({ row, col }, board)
-
-          for (const move of validMoves) {
-            // Create a new board with the move applied
-            const newBoard = [...board.map((row) => [...row])]
-            // Same square as the `piece &&` guard above, so this is non-null.
-            const movingPiece = piece
-            const capturedPiece = newBoard[move.row][move.col]
-
-            // Make the move
-            newBoard[move.row][move.col] = movingPiece
-            newBoard[row][col] = null
-
-            // Calculate score for this move
-            let score = 0
-
-            // Prioritize captures based on piece value
-            if (capturedPiece) {
-              const pieceValues: Record<PieceType, number> = {
-                pawn: 1,
-                knight: 3,
-                bishop: 3,
-                rook: 5,
-                queen: 9,
-                king: 100,
-              }
-              score += pieceValues[capturedPiece.type]
-            }
-
-            // Prioritize checking the opponent
-            if (isKingInCheck(newBoard, playerColor)) {
-              score += 0.5
-
-              // Even higher priority for checkmate
-              if (!hasAnyValidMoves(newBoard, playerColor)) {
-                score += 100
-              }
-            }
-
-            // Prioritize center control for knights and bishops
-            if (movingPiece.type === "knight" || movingPiece.type === "bishop") {
-              const centerDistance = Math.abs(move.row - 3.5) + Math.abs(move.col - 3.5)
-              score += (4 - centerDistance) * 0.1
-            }
-
-            // Prioritize pawn advancement
-            if (movingPiece.type === "pawn") {
-              const advancementRow = botColor === "white" ? 7 - move.row : move.row
-              score += advancementRow * 0.05
-
-              // Extra points for promotion
-              if ((botColor === "white" && move.row === 7) || (botColor === "black" && move.row === 0)) {
-                score += 5
-              }
-            }
-
-            // Add some randomness to make the bot less predictable
-            score += Math.random() * 0.2
-
-            allMoves.push({ from: { row, col }, to: move, score })
-          }
-        }
-      }
-    }
-
-    // Hard looks one reply ahead and subtracts whatever the opponent could
-    // take in return, which is the difference between a computer that grabs
-    // material and one that stops leaving pieces hanging.
-    if (difficulty === "hard") {
-      const values: Record<PieceType, number> = { pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 100 }
-      for (const move of allMoves) {
-        const after = board.map((row) => [...row])
-        after[move.to.row][move.to.col] = after[move.from.row][move.from.col]
-        after[move.from.row][move.from.col] = null
-
-        let worst = 0
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const piece = after[r][c]
-            if (!piece || piece.color === botColor) continue
-            for (const reply of calculateValidMoves({ row: r, col: c }, after)) {
-              const target = after[reply.row][reply.col]
-              if (target && target.color === botColor) worst = Math.max(worst, values[target.type])
-            }
-          }
-        }
-        move.score -= worst * 0.9
-      }
-    }
-
-    // Sort moves by score (highest first)
-    allMoves.sort((a, b) => b.score - a.score)
-
-    // Make the best move after a delay
     setTimeout(() => {
-      if (allMoves.length > 0) {
-        // Easy takes any legal move; the others take the best one found.
-        const choice = difficulty === "easy" ? allMoves[Math.floor(Math.random() * allMoves.length)] : allMoves[0]
-        movePiece(choice.from, choice.to)
+      const moves = allLegalMoves(board, botColor)
+      if (moves.length === 0) {
+        setIsThinking(false)
+        return
       }
+      const opponent: PieceColor = botColor === "white" ? "black" : "white"
+      const scored = moves.map((move) => ({
+        move,
+        score: search(applyMove(board, move.from, move.to), depth - 1, -Infinity, Infinity, opponent, botColor),
+      }))
+      scored.sort((a, b) => b.score - a.score)
+
+      let pick: (typeof scored)[number]
+      if (difficulty === "easy") {
+        // Any of the top three: sensible, and still beatably human.
+        pick = scored[Math.floor(Math.random() * Math.min(3, scored.length))]
+      } else {
+        // The best, with ties broken at random so openings vary.
+        const ties = scored.filter((entry) => entry.score === scored[0].score)
+        pick = ties[Math.floor(Math.random() * ties.length)]
+      }
+      movePiece(pick.move.from, pick.move.to)
       setIsThinking(false)
-    }, difficulty === "hard" ? 700 : 500)
+    }, difficulty === "hard" ? 400 : 600)
   }
 
   /**
