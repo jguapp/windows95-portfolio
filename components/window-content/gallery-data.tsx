@@ -121,4 +121,46 @@ export const galleryImages: GalleryImage[] = [
     date: "2025-03-07",
     event: "nsbe",
   },
+
+  // Stacked Up Summit 2026
+  {
+    id: 15,
+    title: "Stacked Up Summit - Main Stage",
+    src: "/images/gallery/stacked-up-mainstage.jpeg",
+    description: "The main stage lighting up for ColorStack's Stacked Up Summit 2026 opening session",
+    date: "2026-08-18",
+    event: "stacked-up-2026",
+  },
+  {
+    id: 16,
+    title: "Stacked Up Summit - Hotel Atrium",
+    src: "/images/gallery/stacked-up-atrium.jpeg",
+    description: "The incredible sculpture hanging in the atrium at the Stacked Up Summit venue",
+    date: "2026-08-18",
+    event: "stacked-up-2026",
+  },
+  {
+    id: 17,
+    title: "Stacked Up Summit - Dinner Group Photo",
+    src: "/images/gallery/stacked-up-dinner-group.jpeg",
+    description: "The Baruch ColorStack crew together at dinner during the Stacked Up Summit",
+    date: "2026-08-18",
+    event: "stacked-up-2026",
+  },
+  {
+    id: 18,
+    title: "Stacked Up Summit - Dinner Selfie",
+    src: "/images/gallery/stacked-up-selfie.jpeg",
+    description: "Selfie with the whole table at the Stacked Up Summit dinner!",
+    date: "2026-08-18",
+    event: "stacked-up-2026",
+  },
+  {
+    id: 19,
+    title: "Stacked Up Summit - Conference Headshot",
+    src: "/images/gallery/stacked-up-headshot.jpeg",
+    description: "Fresh professional headshot from the headshot booth at the Stacked Up Summit",
+    date: "2026-08-18",
+    event: "stacked-up-2026",
+  },
 ]
