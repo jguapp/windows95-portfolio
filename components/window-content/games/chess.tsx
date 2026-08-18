@@ -261,7 +261,15 @@ export default function Chess({ onReturn }: ChessProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameMode, playerColor])
 
-  // Bot move effect
+  /*
+    The bot moves whenever the turn is its own. The board is a dependency
+    because a fresh deal is what starts a game: picking Black on a second
+    game changes neither currentPlayer (a new deal is always White's turn)
+    nor gameMode, so without it this never re-ran and the bot sat waiting
+    for a move it was supposed to make. Each run holds one timeout and the
+    cleanup clears it, so a re-run replaces the pending move, never doubles
+    it.
+  */
   useEffect(() => {
     if (gameMode === "bot" && currentPlayer !== playerColor && !isCheckmate && !isStalemate) {
       const botMoveTimeout = setTimeout(() => {
@@ -270,10 +278,10 @@ export default function Chess({ onReturn }: ChessProps) {
 
       return () => clearTimeout(botMoveTimeout)
     }
-    // makeBotMove closes over the live board; re-subscribing on its identity
-    // would fire a second bot move for the same turn.
+    // makeBotMove is redefined per render; the board standing in for it
+    // keeps this from firing twice for one turn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlayer, gameMode, isCheckmate, isStalemate])
+  }, [currentPlayer, gameMode, playerColor, isCheckmate, isStalemate, board])
 
   /**
    * One sound per move, chosen by what the move did.
