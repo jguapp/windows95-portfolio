@@ -27,7 +27,7 @@ const PLAYLIST: [string, string, number][] = [
   ["Michael Jackson", "Wanna Be Startin' Somethin'", 6 * 60 + 3],
   ["Fleetwood Mac", "Dreams", 4 * 60 + 14],
   ["Tame Impala", "Feel Like We Only Go Backwards", 3 * 60 + 12],
-  ["Mac DeMarco", "Heart to Heart", 2 * 60 + 33],
+  ["Mac DeMarco", "This Old Dog", 2 * 60 + 31],
   ["Elliott Smith", "Ballad of Big Nothing", 2 * 60 + 48],
 ]
 
