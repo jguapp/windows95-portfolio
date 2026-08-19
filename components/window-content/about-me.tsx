@@ -59,10 +59,25 @@ const CONTACT_ROWS: InfoRow[] = [
   {
     label: "Websites:",
     value: (
+      // The two links on this profile that really go somewhere.
       <>
-        https://github.com/jguapp
+        <a
+          href="https://github.com/jguapp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-[#3B5998]"
+        >
+          https://github.com/jguapp
+        </a>
         <br />
-        https://www.linkedin.com/in/jvasquezcs/
+        <a
+          href="https://www.linkedin.com/in/jvasquezcs/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-[#3B5998]"
+        >
+          https://www.linkedin.com/in/jvasquezcs/
+        </a>
       </>
     ),
     blue: true,
@@ -176,10 +191,9 @@ function FacebookHeader() {
             paddingInline: "calc(max(100%, 1080px) * 0.02)",
           }}
         >
+          {/* Dressing, not doors: the words stay, the pretence goes. */}
           {NAV_LINKS.map((link) => (
-            <a key={link} href="#" className="hover:underline">
-              {link}
-            </a>
+            <span key={link}>{link}</span>
           ))}
         </div>
       </div>
@@ -237,9 +251,7 @@ function SearchSidebar() {
           <ul className="text-[#42b3f5] text-sm space-y-1 border border-dashed border-[#538ADC] p-2">
             {SIDEBAR_LINKS.map((link) => (
               <li key={link}>
-                <a href="#" className="hover:underline">
-                  {link}
-                </a>
+                <span>{link}</span>
               </li>
             ))}
           </ul>
@@ -316,9 +328,7 @@ function ProfileColumn() {
             {FRIENDS.map((friend) => (
               <div key={friend.name} className="text-center">
                 <img src={friend.src} alt="Friend" className="w-16 h-16 object-cover mx-auto mb-1" />
-                <a href="#" className="text-black text-xs hover:underline">
-                  {friend.name}
-                </a>
+                <span className="text-black text-xs">{friend.name}</span>
               </div>
             ))}
           </div>

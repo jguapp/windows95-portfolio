@@ -45,36 +45,6 @@ interface Message {
 
 const INBOX: Message[] = [
   {
-    id: 1,
-    fromName: "Priya Raghavan",
-    from: "p.raghavan@stripe.com",
-    subject: "Stripe - Infrastructure New Grad, next steps",
-    date: "8/11/2026 10:24 AM",
-    read: false,
-    body: `Hi Joel,
-
-Thanks for the time on Thursday. The team liked how you talked through the Kubernetes right-sizing work, particularly the part about not trusting the p50.
-
-We would like to move you to the final loop: two systems rounds and a values conversation. Are you free the week of the 24th?
-
-Priya`,
-  },
-  {
-    id: 2,
-    fromName: "Marcus Webb",
-    from: "mwebb@datadoghq.com",
-    subject: "Following up on your application",
-    date: "8/09/2026 4:12 PM",
-    read: false,
-    body: `Joel,
-
-Your portfolio came up in our pipeline review and the recruiting team passed it along. The Windows 95 thing is a good hook but the Prisma schema behind Booklet is what got my attention.
-
-Do you have 30 minutes next week? No prep needed.
-
-Marcus, Engineering Manager, Datadog`,
-  },
-  {
     id: 3,
     fromName: "ColorStack Baruch",
     from: "eboard@colorstackbaruch.org",
@@ -585,21 +555,6 @@ Office hours move to Wednesdays 2-4 in VC 6-215 starting this week. Thursday slo
 Bring your project proposals.`,
   },
   {
-    id: 40,
-    fromName: "LOSE 30 POUNDS",
-    from: "health@miracle-slim-solutions.biz",
-    subject: "Doctors HATE this one simple trick",
-    date: "8/26/2025 3:55 AM",
-    read: false,
-    body: `Are you TIRED of diets that do not work?
-
-A local mother of three discovered a SIMPLE HOUSEHOLD INGREDIENT that melts fat while you SLEEP. The diet industry does not want you to know about it because they would LOSE BILLIONS.
-
-Featured on television. Results in as little as SEVEN DAYS.
-
-Click here before this page is TAKEN DOWN.`,
-  },
-  {
     id: 41,
     fromName: "Baruch Bursar",
     from: "bursar@baruch.cuny.edu",
@@ -792,21 +747,6 @@ Four of us in a library corner in September and now this. Meeting Thursday to pl
 Two courses were not accepted as direct equivalents and have been applied as free electives. Contact your advisor if you wish to appeal.`,
   },
   {
-    id: 58,
-    fromName: "HOT SINGLES IN YOUR AREA",
-    from: "connect@meet-tonight-network.biz",
-    subject: "Someone viewed your profile 47 times",
-    date: "9/03/2024 4:44 AM",
-    read: false,
-    body: `Hi!
-
-I saw your profile and I could not stop looking. I am new in your area and looking to meet someone genuine.
-
-Click here to see my pictures and chat with me now. I am online RIGHT NOW.
-
-You do not have a profile? That is okay, we made one for you!`,
-  },
-  {
     id: 59,
     fromName: "Joel Vasquez",
     from: "jfvasq1@gmail.com",
@@ -928,21 +868,6 @@ Batch: 074/05/ZY369
 To claim, contact our fiduciary agent with your full name, address, telephone number and a copy of your identification. A processing fee of 450 EUR applies.
 
 Note: you may not have entered this lottery. Entries are drawn from a database of email addresses.`,
-  },
-  {
-    id: 202,
-    fromName: "HOT SINGLES IN YOUR AREA",
-    from: "connect@meet-tonight-network.biz",
-    subject: "Someone viewed your profile 47 times",
-    date: "9/03/2024 4:44 AM",
-    read: true,
-    body: `Hi!
-
-I saw your profile and I could not stop looking. I am new in your area and looking to meet someone genuine.
-
-Click here to see my pictures and chat with me now. I am online RIGHT NOW.
-
-You do not have a profile? That is okay, we made one for you!`,
   },
   {
     id: 203,

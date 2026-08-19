@@ -630,9 +630,7 @@ function Masthead({ tab, onTab }: { tab: string; onTab: (t: string) => void }) {
             {["Sign Up", "My Account", "History", "Help", "Log In"].map((label, i) => (
               <span key={label}>
                 {i > 0 && " | "}
-                <a href="#" style={LINK}>
-                  {label}
-                </a>
+                <span style={LINK}>{label}</span>
               </span>
             ))}
           </div>
@@ -746,9 +744,9 @@ function WatchPane({ project }: { project: Project }) {
       <div className="t11 mt-3">
         <strong>Tags:</strong>{" "}
         {project.tags.map((t) => (
-          <a key={t} href="#" style={{ ...LINK, marginRight: 6 }}>
+          <span key={t} style={{ ...LINK, marginRight: 6 }}>
             {t}
-          </a>
+          </span>
         ))}
       </div>
 
@@ -791,9 +789,7 @@ function WatchPane({ project }: { project: Project }) {
 function CommentThread({ comment }: { comment: Comment }) {
   const byline = (name: string, owner: boolean | undefined, when: string) => (
     <div className="t11">
-      <a href="#" style={{ ...LINK, fontWeight: "bold" }}>
-        {name}
-      </a>
+      <span style={{ ...LINK, fontWeight: "bold" }}>{name}</span>
       {owner && <span style={{ color: "#666" }}> (Video Owner)</span>}
       <span style={{ color: "#666" }}> &#8212; {when}</span>
     </div>

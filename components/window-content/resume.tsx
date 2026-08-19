@@ -1866,6 +1866,12 @@ export default function Resume() {
       <div
         ref={resumeRef}
         data-page
+        /*
+          The browser's spellchecker underlines Vasquez, Baruch, ColorStack
+          and Kubernetes in red, which reads as typos on a resume. Word had
+          its own ideas about spelling; the browser's do not belong here.
+        */
+        spellCheck={false}
         data-marks={showMarks ? "" : undefined}
         className="document mx-auto bg-white shadow-[2px_2px_0_rgba(0,0,0,0.4)]"
         onKeyUp={updateCaret}
