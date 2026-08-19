@@ -2102,7 +2102,7 @@ export default function Resume() {
               </div>
               <ul className="list-disc pl-5">
                 <li>
-                  Architected a <strong>Fastify/PostgreSQL</strong> backend with <strong>82 REST endpoints</strong> and a
+                  Designed a <strong>Fastify/PostgreSQL</strong> backend with <strong>82 REST endpoints</strong> and a
                   20-table Prisma schema, supporting web, mobile, and browser-extension clients through a unified{" "}
                   <strong>API</strong>.
                 </li>
@@ -2173,7 +2173,7 @@ export default function Resume() {
                   job readiness.
                 </li>
                 <li>
-                  Fostered partnerships with <strong>5+</strong> tech companies, including <strong>Bloomberg</strong> and{" "}
+                  Negotiated partnerships with <strong>5+</strong> tech companies, including <strong>Bloomberg</strong> and{" "}
                   <strong>Datadog</strong>, creating opportunities for office visits, networking, and technical interview
                   preparation.
                 </li>
